@@ -86,7 +86,8 @@ class ThreeDemo extends React.Component {
   };
 
   componentDidMount() {
-    const width = window.innerWidth;
+    // make room for control pannel
+    const width = window.innerWidth * 0.88;
     const height = window.innerHeight;
     const aspect = width / height;
 
@@ -167,7 +168,7 @@ class ThreeDemo extends React.Component {
       this.setState(
         {
           dimension,
-          theta: new Array(dimension).fill(0),
+          theta: new Array(Math.max(1, dimension)).fill(0),
         },
         () => {},
       );
@@ -181,6 +182,7 @@ class ThreeDemo extends React.Component {
     const norms = Object.keys(NORMS);
     return (
       <Component>
+        {this.chartComponent()}
         <div id="control-panel">
           <span>
             <label>Dimension</label>
@@ -207,24 +209,42 @@ class ThreeDemo extends React.Component {
             </select>
           </span>
         </div>
-        <div
-          ref={el =>
-            this.renderer && el && el.appendChild(this.renderer.domElement)
-          }
-        ></div>
       </Component>
     );
+  }
+
+  chartComponent() {
+    if (this.renderer) {
+      return (
+        <div ref={el => el && el.appendChild(this.renderer.domElement)}></div>
+      );
+    } else {
+      return <div></div>;
+    }
   }
 }
 
 const Index = () => <ThreeDemo />;
 
 const Component = styled.div`
-  #control-panel {
-    display: grid;
-    place-content: center end;
-    font-size: 16px;
-    gap: 5px;
+  & {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    #chart {
+      flex: 1;
+    }
+
+    #control-panel {
+      padding: 8px;
+      grid-column: 2;
+      display: grid;
+      place-content: start end;
+      font-size: 16px;
+      gap: 5px;
+    }
   }
 `;
 

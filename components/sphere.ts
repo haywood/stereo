@@ -48,7 +48,7 @@ export default class Sphere {
   }
 
   sphere0(theta: number[]) {
-    return [Math.cos(this.phi[0]) + theta[0]];
+    return [this.cos[0][0]];
   }
 
   sphere1(theta: number[]) {
