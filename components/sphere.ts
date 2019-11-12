@@ -22,8 +22,12 @@ export default class Sphere {
   readonly phi: number[];
   private cos: number[][];
   private sin: number[][];
+  norm = (r, phi) => r * Math.cos(phi);
 
   constructor(readonly dimension: number, readonly order: number) {
+    if (this.dimension < 0) {
+      throw new Error(`invalid dimension: ${this.dimension}`);
+    }
     this.phi = Sphere.phi(order);
   }
 
@@ -31,20 +35,15 @@ export default class Sphere {
     this.cos = Sphere.cos(this.phi, theta);
     this.sin = Sphere.sin(this.phi, theta);
 
-    return this.recur(this.dimension, theta);
-  }
-
-  recur(dimension: number, theta: number[]): number[] {
-    if (dimension < 0) {
-      throw new Error(`invalid dimension: ${dimension}`);
-    } else if (dimension === 0) {
-      return this.sphere0(theta);
-    } else if (dimension === 1) {
-      return this.sphere1(theta);
-    } else if (dimension === 2) {
-      return this.sphere2(theta);
-    } else {
-      return this.sphereN(this.dimension, theta);
+    switch (this.dimension) {
+      case 0:
+        return this.sphere0(theta);
+      case 1:
+        return this.sphere1(theta);
+      case 2:
+        return this.sphere2(theta);
+      default:
+        return this.sphereN(this.dimension, theta);
     }
   }
 
@@ -69,19 +68,25 @@ export default class Sphere {
   }
 
   sphereN(dimension: number, theta: number[]) {
-    const circle = this.recur(dimension - 1, theta);
-    const points = [];
+    let circle = this.sphere2(theta);
+    let points = [];
 
-    for (let phi = 0; phi < this.order; phi++) {
-      for (let offset = 0; offset < circle.length; offset += dimension - 1) {
-        const p = circle
-          .slice(offset, offset + dimension - 1)
-          .map(q => q * this.cos[phi][dimension - 1]);
+    for (let d = 2; d < dimension; d++) {
+      points = [];
+      for (let phi = 0; phi < this.order; phi++) {
+        for (let offset = 0; offset < circle.length; offset += d) {
+          const p = circle
+            .slice(offset, offset + d)
+            .map(r =>
+              this.norm(r, PI / 2 + (PI2 * phi) / this.order + theta[d]),
+            );
 
-        points.push(p[0]);
-        points.push(this.sin[phi][dimension - 1]);
-        points.push(...p.slice(1));
+          points.push(p[0]);
+          points.push(this.sin[phi][d]);
+          points.push(...p.slice(1));
+        }
       }
+      circle = points;
     }
 
     return points;

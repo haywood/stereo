@@ -22,8 +22,40 @@ const PI = Math.PI;
 const fieldOfView = 100; // degrees
 const near = 0.1;
 const far = 1000;
-const DEFAULT_DIMENSION = 0;
-const DEFAULT_ORDER = 10;
+const DEFAULT_DIMENSION = 3;
+const DEFAULT_ORDER = 100;
+
+const simpleNorm = f => (r, phi) => r * f(phi);
+const NORMS = [
+  "abs",
+  "cbrt",
+  "ceil",
+  "clz32",
+  "cos",
+  "cosh",
+  "exp",
+  "floor",
+  "log",
+  "log10",
+  "log1p",
+  "log2",
+  "sign",
+  "sin",
+  "sinh",
+  "sqrt",
+  "tan",
+  "tanh",
+  "trunc",
+].reduce(
+  (norms, name) => {
+    norms[name] = simpleNorm(Math[name]);
+    return norms;
+  },
+  {
+    sincos: (r, phi) => r * Math.sin(phi) * Math.cos(phi),
+    sincosp: (r, phi) => r * (Math.sin(phi) + Math.cos(phi)),
+  },
+);
 
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
@@ -43,11 +75,13 @@ class ThreeDemo extends React.Component {
     order: number;
     theta: number[];
     count: number;
+    norm: "cos" | "sincos" | "sin";
     nextFrame?: number;
   } = {
     dimension: DEFAULT_DIMENSION,
     order: DEFAULT_ORDER,
     theta: new Array(Math.max(1, DEFAULT_DIMENSION)).fill(0),
+    norm: "cos",
     count: 0,
   };
 
@@ -81,25 +115,25 @@ class ThreeDemo extends React.Component {
     const geometry = this.points.geometry as BufferGeometry;
     const { theta } = this.state;
 
-    const sphere = new Sphere(this.state.dimension, this.state.order).compute(
-      theta,
-    );
+    const sphere = new Sphere(this.state.dimension, this.state.order);
+    sphere.norm = NORMS[this.state.norm];
+    const points = sphere.compute(theta);
 
     const dimension = this.state.dimension;
     if (dimension > 3) {
       for (
-        let offset = sphere.length - dimension + 3;
+        let offset = points.length - dimension + 3;
         offset > 0;
         offset -= dimension
       ) {
-        sphere.splice(offset, dimension - 3);
+        points.splice(offset, dimension - 3);
       }
     }
 
     geometry.setAttribute(
       "position",
       new BufferAttribute(
-        new Float32Array(sphere),
+        new Float32Array(points),
         Math.max(1, Math.min(dimension, 3)),
       ),
     );
@@ -107,7 +141,7 @@ class ThreeDemo extends React.Component {
       "color",
       new BufferAttribute(
         new Float32Array(
-          sphere.map((x, n) =>
+          points.map((x, n) =>
             Math.abs((n % 2 === 0 ? Math.cos : Math.sin)(x)),
           ),
         ),
@@ -117,15 +151,12 @@ class ThreeDemo extends React.Component {
 
     this.renderer.render(this.scene, this.camera);
 
-    const dTheta = -PI / 900;
+    const dTheta = -(PI / 180) / 60;
     this.setState({
       theta:
         dimension < 2
           ? [theta[0] + dTheta]
-          : [
-              ...theta.slice(0, theta.length - 1).map(t => t + dTheta),
-              theta[theta.length - 1],
-            ],
+          : [...theta.slice(0).map(t => t + dTheta)],
       nextFrame: requestAnimationFrame(this.animate.bind(this)),
     });
   }
@@ -144,8 +175,10 @@ class ThreeDemo extends React.Component {
     const onOrderChange = event => {
       this.setState({ order: parseInt(event.target.value) }, () => {});
     };
-    const dimensions = Array.from(new Array(6).keys());
-    const orders = Array.from(new Array(10).keys()).map(o => o + 1);
+    const onNormChange = event => this.setState({ norm: event.target.value });
+    const dimensions = Array.from(new Array(4).keys());
+    const orders = Array.from(new Array(5).keys()).map(o => 10 ** o);
+    const norms = Object.keys(NORMS);
     return (
       <Component>
         <div id="control-panel">
@@ -162,6 +195,14 @@ class ThreeDemo extends React.Component {
             <select value={this.state.order} onChange={onOrderChange}>
               {orders.map(d => (
                 <option value={d}>{d}</option>
+              ))}
+            </select>
+          </span>
+          <span>
+            <label>Norm</label>
+            <select value={this.state.norm} onChange={onNormChange}>
+              {norms.map(n => (
+                <option value={n}>{n}</option>
               ))}
             </select>
           </span>
