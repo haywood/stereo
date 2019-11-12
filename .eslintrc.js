@@ -4,7 +4,8 @@ module.exports = {
     es6: true
   },
   extends: [
-    'standard'
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended"
   ],
   globals: {
     Atomics: 'readonly',
@@ -24,5 +25,7 @@ module.exports = {
   ],
   rules: {
     'comma-dangle': ['error', 'always-multiline']
+    semi: ['error', 'always']
+    'max-len': ['error']
   }
 }
