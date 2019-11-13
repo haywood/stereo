@@ -14,7 +14,7 @@ import {
   WebGLRenderer,
   BoxGeometry,
   MeshBasicMaterial,
-  Mesh,
+  Mesh
 } from "three";
 import React from "react";
 
@@ -23,7 +23,7 @@ const fieldOfView = 100; // degrees
 const near = 0.1;
 const far = 1000;
 const DEFAULT_DIMENSION = 3;
-const DEFAULT_ORDER = 100;
+const DEFAULT_ORDER = 10;
 
 const simpleNorm = f => (r, phi) => r * f(phi);
 const NORMS = [
@@ -45,7 +45,7 @@ const NORMS = [
   "sqrt",
   "tan",
   "tanh",
-  "trunc",
+  "trunc"
 ].reduce(
   (norms, name) => {
     norms[name] = simpleNorm(Math[name]);
@@ -53,8 +53,8 @@ const NORMS = [
   },
   {
     sincos: (r, phi) => r * Math.sin(phi) * Math.cos(phi),
-    sincosp: (r, phi) => r * (Math.sin(phi) + Math.cos(phi)),
-  },
+    sincosp: (r, phi) => r * (Math.sin(phi) + Math.cos(phi))
+  }
 );
 
 class ThreeDemo extends React.Component {
@@ -62,8 +62,8 @@ class ThreeDemo extends React.Component {
     new BufferGeometry(),
     new PointsMaterial({
       vertexColors: VertexColors,
-      size: 0.01,
-    }),
+      size: 0.01
+    })
   );
 
   camera?: PerspectiveCamera;
@@ -73,16 +73,16 @@ class ThreeDemo extends React.Component {
   state: {
     dimension: number;
     order: number;
-    theta: number[];
+    theta: number;
     count: number;
     norm: "cos" | "sincos" | "sin";
     nextFrame?: number;
   } = {
     dimension: DEFAULT_DIMENSION,
     order: DEFAULT_ORDER,
-    theta: new Array(Math.max(1, DEFAULT_DIMENSION)).fill(0),
+    theta: 0,
     norm: "cos",
-    count: 0,
+    count: 0
   };
 
   componentDidMount() {
@@ -101,7 +101,7 @@ class ThreeDemo extends React.Component {
     this.renderer.setSize(width, height);
 
     this.setState({
-      nextFrame: requestAnimationFrame(this.animate.bind(this)),
+      nextFrame: requestAnimationFrame(this.animate.bind(this))
     });
   }
 
@@ -135,30 +135,22 @@ class ThreeDemo extends React.Component {
       "position",
       new BufferAttribute(
         new Float32Array(points),
-        Math.max(1, Math.min(dimension, 3)),
-      ),
+        Math.max(1, Math.min(dimension, 3))
+      )
     );
     geometry.setAttribute(
       "color",
       new BufferAttribute(
-        new Float32Array(
-          points.map((x, n) =>
-            Math.abs((n % 2 === 0 ? Math.cos : Math.sin)(x)),
-          ),
-        ),
-        Math.max(1, Math.min(dimension, 3)),
-      ),
+        new Float32Array(points.map((x, n) => 1)),
+        Math.max(1, Math.min(dimension, 3))
+      )
     );
 
     this.renderer.render(this.scene, this.camera);
 
-    const dTheta = -(PI / 180) / 60;
     this.setState({
-      theta:
-        dimension < 2
-          ? [theta[0] + dTheta]
-          : [...theta.slice(0).map(t => t + dTheta)],
-      nextFrame: requestAnimationFrame(this.animate.bind(this)),
+      theta: theta - (20 * (PI / 180)) / 60,
+      nextFrame: requestAnimationFrame(this.animate.bind(this))
     });
   }
 
@@ -168,16 +160,18 @@ class ThreeDemo extends React.Component {
       this.setState(
         {
           dimension,
-          theta: new Array(Math.max(1, dimension)).fill(0),
+          theta: 0
         },
-        () => {},
+        () => this.animate()
       );
     };
     const onOrderChange = event => {
-      this.setState({ order: parseInt(event.target.value) }, () => {});
+      this.setState({ order: parseInt(event.target.value) }, () =>
+        this.animate()
+      );
     };
     const onNormChange = event => this.setState({ norm: event.target.value });
-    const dimensions = Array.from(new Array(4).keys());
+    const dimensions = Array.from(new Array(4).keys()).map(d => d + 1);
     const orders = Array.from(new Array(5).keys()).map(o => 10 ** o);
     const norms = Object.keys(NORMS);
     return (

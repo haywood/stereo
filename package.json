@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/mathjs": "^6.0.2",
+    "mathjs": "^6.2.3",
     "next": "^9.1.3",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
