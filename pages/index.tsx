@@ -1,5 +1,6 @@
 import Sphere from "../components/sphere";
 import styled from "styled-components";
+import { flatten, Matrix, size } from "mathjs";
 import {
   BufferGeometry,
   BufferAttribute,
@@ -23,7 +24,7 @@ const fieldOfView = 100; // degrees
 const near = 0.1;
 const far = 1000;
 const DEFAULT_DIMENSION = 3;
-const DEFAULT_ORDER = 10;
+const DEFAULT_ORDER = 0;
 
 const simpleNorm = f => (r, phi) => r * f(phi);
 const NORMS = [
@@ -77,6 +78,7 @@ class ThreeDemo extends React.Component {
     count: number;
     norm: "cos" | "sincos" | "sin";
     nextFrame?: number;
+    points?: number[][] | Matrix | number[];
   } = {
     dimension: DEFAULT_DIMENSION,
     order: DEFAULT_ORDER,
@@ -114,39 +116,40 @@ class ThreeDemo extends React.Component {
 
   draw() {
     const geometry = this.points.geometry as BufferGeometry;
-    const { theta } = this.state;
+    const { dimension, order, theta } = this.state;
 
-    const sphere = new Sphere(this.state.dimension, this.state.order);
+    const sphere = new Sphere(dimension, order);
     sphere.norm = NORMS[this.state.norm];
     const points = sphere.compute(theta);
+    const vertices = flatten(points).valueOf() as number[];
 
-    const dimension = this.state.dimension;
     if (dimension > 3) {
       for (
-        let offset = points.length - dimension + 3;
+        let offset = vertices.length - dimension + 3;
         offset > 0;
         offset -= dimension
       ) {
-        points.splice(offset, dimension - 3);
+        vertices.splice(offset, dimension - 3);
       }
     }
 
     geometry.setAttribute(
       "position",
       new BufferAttribute(
-        new Float32Array(points),
+        new Float32Array(vertices),
         Math.max(1, Math.min(dimension, 3))
       )
     );
     geometry.setAttribute(
       "color",
       new BufferAttribute(
-        new Float32Array(points.map((x, n) => 1)),
+        new Float32Array(vertices.map((x, n) => 1)),
         Math.max(1, Math.min(dimension, 3))
       )
     );
 
     this.renderer.render(this.scene, this.camera);
+    this.setState({ points: points });
   }
 
   animate() {
@@ -179,7 +182,7 @@ class ThreeDemo extends React.Component {
     };
     const onNormChange = event => this.setState({ norm: event.target.value });
     const dimensions = Array.from(new Array(4).keys()).map(d => d + 1);
-    const orders = Array.from(new Array(5).keys()).map(o => 10 ** o);
+    const orders = Array.from(new Array(11).keys());
     const norms = Object.keys(NORMS);
     return (
       <Component>
@@ -208,6 +211,10 @@ class ThreeDemo extends React.Component {
                 <option value={n}>{n}</option>
               ))}
             </select>
+          </span>
+          <span>
+            <label>Point Count </label>
+            <span>{this.state.points && size(this.state.points)[0]}</span>
           </span>
         </div>
       </Component>

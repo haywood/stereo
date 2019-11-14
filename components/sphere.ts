@@ -23,8 +23,8 @@ import {
   Matrix,
   identity,
   matrix,
-  flatten,
-  multiply
+  multiply,
+  abs
 } from "mathjs";
 
 export default class Sphere {
@@ -36,10 +36,8 @@ export default class Sphere {
     }
   }
 
-  compute(theta: { value: number; d0: number; d1: number }): number[] {
-    return flatten(
-      Sphere.sphere(this.dimension, this.order, theta)
-    ).valueOf() as number[];
+  compute(theta: { value: number; d0: number; d1: number }) {
+    return Sphere.sphere(this.dimension, this.order, theta);
   }
 
   static sphere(
@@ -51,54 +49,45 @@ export default class Sphere {
 
     const dimensions = Array.from(new Array(dimension).keys());
     const points = [];
-    const used = [];
+    function* phis() {
+      const increment = tau / 2 ** order;
+      const limit = 2 ** order;
+      for (let o = 0; o < limit; o++) {
+        yield o * increment;
+      }
+    }
+
+    // generate the shape by drawing a 2d circle in the plane formed by each
+    // pair of dimensions
     for (let d0 = 0; d0 < dimension; d0++) {
       for (let d1 = 0; d1 < d0; d1++) {
-        for (let phi = 0; phi < tau; phi += tau / order) {
+        for (const phi of phis()) {
           const p = new Array(dimension).fill(0);
-          if (d0 === 0) {
-            p[d0] = cos(phi);
-            p[d1] = sin(phi);
-          } else {
-            p[d0] = cos(phi);
-            p[d1] = sin(phi);
-          }
+          p[d0] = cos(phi);
+          p[d1] = sin(phi);
           points.push(p);
-          used.push(new Set([d0, d1]));
+          console.log(d0, d1, phi, p);
         }
       }
     }
+    console.log("--------end--------");
 
-    const pointCount = points.length;
-    for (let i = 0; i < pointCount; i++) {
-      const available = dimensions.filter(d => !used[i].has(d));
-      if (available.length === 0) continue;
-
-      const d0 = available[0];
-      const p = points[i].slice();
-      for (const d1 of used[i]) {
-        const v = [p[d0], p[d1]];
-        for (let phi = 0; phi < tau; phi += tau / order) {
-          const u = multiply(R(phi), v).valueOf();
-          const q = p.slice();
-          q[d0] = u[0];
-          q[d1] = u[1];
-          points.push(q);
-        }
-      }
-    }
-
+    // rotate the shape
     for (const p of points) {
-      const { value: phi, d0, d1 } = theta;
-      const v = [p[d0], p[d1]];
-      const u = multiply(R(phi), v).valueOf();
-      p[d0] = u[0];
-      p[d1] = u[1];
+      rotate(p, theta);
     }
 
     return points;
   }
 }
+
+const rotate = (p, theta) => {
+  const { value: phi, d0, d1 } = theta;
+  const v = [p[d0], p[d1]];
+  const u = multiply(R(phi), v).valueOf();
+  p[d0] = u[0];
+  p[d1] = u[1];
+};
 
 const R = theta =>
   matrix([
