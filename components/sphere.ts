@@ -28,7 +28,8 @@ import {
 } from "mathjs";
 
 export default class Sphere {
-  norm = (r, phi) => r * cos(phi);
+  f0 = cos;
+  f1 = sin;
 
   constructor(readonly dimension: number, readonly order: number) {
     if (this.dimension < 0) {
@@ -37,20 +38,18 @@ export default class Sphere {
   }
 
   compute(theta: { value: number; d0: number; d1: number }) {
-    return Sphere.sphere(this.dimension, this.order, theta);
+    return this.sphere(this.dimension, this.order, theta);
   }
 
-  static sphere(
+  sphere(
     dimension: number,
     order: number,
     theta: { value: number; d0: number; d1: number }
   ) {
-    if (dimension === 1) return [1, -1];
-
     const dimensions = Array.from(new Array(dimension).keys());
+    const increment = tau / 2 ** order;
     const points = [];
     function* phis() {
-      const increment = tau / 2 ** order;
       const limit = 2 ** order;
       for (let o = 0; o < limit; o++) {
         yield o * increment;
@@ -59,12 +58,13 @@ export default class Sphere {
 
     // generate the shape by drawing a 2d circle in the plane formed by each
     // pair of dimensions
+    // TODO: make it stop generating duplicate points :/
     for (let d0 = 0; d0 < dimension; d0++) {
       for (let d1 = 0; d1 < d0; d1++) {
         for (const phi of phis()) {
           const p = new Array(dimension).fill(0);
-          p[d0] = cos(phi);
-          p[d1] = sin(phi);
+          p[d0] = this.f0(phi);
+          p[d1] = this.f1(phi);
           points.push(p);
           console.log(d0, d1, phi, p);
         }
@@ -73,8 +73,10 @@ export default class Sphere {
     console.log("--------end--------");
 
     // rotate the shape
-    for (const p of points) {
-      rotate(p, theta);
+    if (dimension > 1) {
+      for (const p of points) {
+        rotate(p, theta);
+      }
     }
 
     return points;

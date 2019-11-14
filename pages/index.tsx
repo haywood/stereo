@@ -26,8 +26,7 @@ const far = 1000;
 const DEFAULT_DIMENSION = 3;
 const DEFAULT_ORDER = 0;
 
-const simpleNorm = f => (r, phi) => r * f(phi);
-const NORMS = [
+const COORDINATE_FUNCTIONS = [
   "abs",
   "cbrt",
   "ceil",
@@ -49,7 +48,7 @@ const NORMS = [
   "trunc"
 ].reduce(
   (norms, name) => {
-    norms[name] = simpleNorm(Math[name]);
+    norms[name] = Math[name];
     return norms;
   },
   {
@@ -76,14 +75,16 @@ class ThreeDemo extends React.Component {
     order: number;
     theta: { value: number; d0: number; d1: number };
     count: number;
-    norm: "cos" | "sincos" | "sin";
+    f0: string;
+    f1: string;
     nextFrame?: number;
     points?: number[][] | Matrix | number[];
   } = {
     dimension: DEFAULT_DIMENSION,
     order: DEFAULT_ORDER,
     theta: { value: 0, d0: 0, d1: 2 },
-    norm: "cos",
+    f0: "cos",
+    f1: "sin",
     count: 0
   };
 
@@ -116,10 +117,11 @@ class ThreeDemo extends React.Component {
 
   draw() {
     const geometry = this.points.geometry as BufferGeometry;
-    const { dimension, order, theta } = this.state;
+    const { dimension, order, theta, f0, f1 } = this.state;
 
     const sphere = new Sphere(dimension, order);
-    sphere.norm = NORMS[this.state.norm];
+    sphere.f0 = COORDINATE_FUNCTIONS[f0];
+    sphere.f1 = COORDINATE_FUNCTIONS[f1];
     const points = sphere.compute(theta);
     const vertices = flatten(points).valueOf() as number[];
 
@@ -180,10 +182,11 @@ class ThreeDemo extends React.Component {
     const onOrderChange = event => {
       this.setState({ order: parseInt(event.target.value) }, () => this.draw());
     };
-    const onNormChange = event => this.setState({ norm: event.target.value });
+    const onF0Change = event => this.setState({ f0: event.target.value });
+    const onF1Change = event => this.setState({ f1: event.target.value });
     const dimensions = Array.from(new Array(4).keys()).map(d => d + 1);
     const orders = Array.from(new Array(11).keys());
-    const norms = Object.keys(NORMS);
+    const coordinateFunctions = Object.keys(COORDINATE_FUNCTIONS);
     return (
       <Component>
         {this.chartComponent()}
@@ -205,10 +208,22 @@ class ThreeDemo extends React.Component {
             </select>
           </span>
           <span>
-            <label>Norm</label>
-            <select value={this.state.norm} onChange={onNormChange}>
-              {norms.map(n => (
-                <option value={n}>{n}</option>
+            <label>
+              f<sub>0</sub>
+            </label>
+            <select value={this.state.f0} onChange={onF0Change}>
+              {coordinateFunctions.map(f => (
+                <option value={f}>{f}</option>
+              ))}
+            </select>
+          </span>
+          <span>
+            <label>
+              f<sub>1</sub>
+            </label>
+            <select value={this.state.f1} onChange={onF1Change}>
+              {coordinateFunctions.map(f => (
+                <option value={f}>{f}</option>
               ))}
             </select>
           </span>
