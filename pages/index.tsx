@@ -112,7 +112,7 @@ class ThreeDemo extends React.Component {
     }
   }
 
-  animate() {
+  draw() {
     const geometry = this.points.geometry as BufferGeometry;
     const { theta } = this.state;
 
@@ -147,7 +147,11 @@ class ThreeDemo extends React.Component {
     );
 
     this.renderer.render(this.scene, this.camera);
+  }
 
+  animate() {
+    const { theta } = this.state;
+    this.draw();
     this.setState({
       theta: theta - (20 * (PI / 180)) / 60,
       nextFrame: requestAnimationFrame(this.animate.bind(this))
@@ -162,13 +166,11 @@ class ThreeDemo extends React.Component {
           dimension,
           theta: 0
         },
-        () => this.animate()
+        () => this.draw()
       );
     };
     const onOrderChange = event => {
-      this.setState({ order: parseInt(event.target.value) }, () =>
-        this.animate()
-      );
+      this.setState({ order: parseInt(event.target.value) }, () => this.draw());
     };
     const onNormChange = event => this.setState({ norm: event.target.value });
     const dimensions = Array.from(new Array(4).keys()).map(d => d + 1);
