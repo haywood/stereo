@@ -51,13 +51,12 @@ export default class Sphere {
       for (let d1 = 0; d1 < d0; d1++) {
         for (let phi = 0; phi < tau; phi += tau / order) {
           const p = new Array(dimension).fill(0);
-          const rho = phi + theta;
           if (d0 === 0) {
             p[d0] = cos(phi);
             p[d1] = sin(phi);
           } else {
-            p[d0] = cos(rho);
-            p[d1] = sin(rho);
+            p[d0] = cos(phi);
+            p[d1] = sin(phi);
           }
           points.push(p);
           used.push(new Set([d0, d1]));
@@ -82,7 +81,14 @@ export default class Sphere {
           points.push(q);
         }
       }
-      used.push(d0);
+    }
+
+    for (const p of points) {
+      // TODO make rotation dimensions configurable
+      const v = [p[0], p[2]];
+      const u = multiply(R(theta), v).valueOf();
+      p[0] = u[0];
+      p[2] = u[1];
     }
 
     return points;
