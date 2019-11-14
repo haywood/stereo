@@ -36,14 +36,19 @@ export default class Sphere {
     }
   }
 
-  compute(theta: number): number[] {
+  compute(theta: { value: number; d0: number; d1: number }): number[] {
     return flatten(
       Sphere.sphere(this.dimension, this.order, theta)
     ).valueOf() as number[];
   }
 
-  static sphere(dimension: number, order: number, theta: number) {
-    if (dimension === 1) return [cos(theta), cos(pi + theta)];
+  static sphere(
+    dimension: number,
+    order: number,
+    theta: { value: number; d0: number; d1: number }
+  ) {
+    if (dimension === 1) return [1, -1];
+
     const dimensions = Array.from(new Array(dimension).keys());
     const points = [];
     const used = [];
@@ -84,11 +89,11 @@ export default class Sphere {
     }
 
     for (const p of points) {
-      // TODO make rotation dimensions configurable
-      const v = [p[0], p[2]];
-      const u = multiply(R(theta), v).valueOf();
-      p[0] = u[0];
-      p[2] = u[1];
+      const { value: phi, d0, d1 } = theta;
+      const v = [p[d0], p[d1]];
+      const u = multiply(R(phi), v).valueOf();
+      p[d0] = u[0];
+      p[d1] = u[1];
     }
 
     return points;

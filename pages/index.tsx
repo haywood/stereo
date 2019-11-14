@@ -73,14 +73,14 @@ class ThreeDemo extends React.Component {
   state: {
     dimension: number;
     order: number;
-    theta: number;
+    theta: { value: number; d0: number; d1: number };
     count: number;
     norm: "cos" | "sincos" | "sin";
     nextFrame?: number;
   } = {
     dimension: DEFAULT_DIMENSION,
     order: DEFAULT_ORDER,
-    theta: 0,
+    theta: { value: 0, d0: 0, d1: 2 },
     norm: "cos",
     count: 0
   };
@@ -153,7 +153,11 @@ class ThreeDemo extends React.Component {
     const { theta } = this.state;
     this.draw();
     this.setState({
-      theta: theta - (20 * (PI / 180)) / 60,
+      theta: {
+        value: theta.value - (20 * (PI / 180)) / 60,
+        d0: theta.d0,
+        d1: theta.d1
+      },
       nextFrame: requestAnimationFrame(this.animate.bind(this))
     });
   }
@@ -161,10 +165,11 @@ class ThreeDemo extends React.Component {
   render() {
     const onDimensionChange = event => {
       const dimension = parseInt(event.target.value);
+      const { theta } = this.state;
       this.setState(
         {
           dimension,
-          theta: 0
+          theta: { value: theta.value, d0: 0, d1: dimension > 2 ? 2 : 1 }
         },
         () => this.draw()
       );
