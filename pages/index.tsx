@@ -1,6 +1,6 @@
 import Sphere from "../components/sphere";
 import styled from "styled-components";
-import { flatten, Matrix, size } from "mathjs";
+import { pi, flatten, Matrix, size } from "mathjs";
 import {
   BufferGeometry,
   BufferAttribute,
@@ -24,7 +24,7 @@ const fieldOfView = 100; // degrees
 const near = 0.1;
 const far = 1000;
 const DEFAULT_DIMENSION = 3;
-const DEFAULT_ORDER = 0;
+const DEFAULT_ORDER = 16;
 
 const COORDINATE_FUNCTIONS = [
   "abs",
@@ -78,19 +78,21 @@ class ThreeDemo extends React.Component {
     f0: string;
     f1: string;
     nextFrame?: number;
-    points?: number[][] | Matrix | number[];
+    points?: number[][];
+    animate: boolean;
   } = {
     dimension: DEFAULT_DIMENSION,
     order: DEFAULT_ORDER,
     theta: { value: 0, d0: 0, d1: 2 },
     f0: "cos",
     f1: "sin",
-    count: 0
+    count: 0,
+    animate: true
   };
 
   componentDidMount() {
     // make room for control pannel
-    const width = window.innerWidth * 0.88;
+    const width = window.innerWidth;
     const height = window.innerHeight;
     const aspect = width / height;
 
@@ -122,31 +124,19 @@ class ThreeDemo extends React.Component {
     const sphere = new Sphere(dimension, order);
     sphere.f0 = COORDINATE_FUNCTIONS[f0];
     sphere.f1 = COORDINATE_FUNCTIONS[f1];
-    const points = sphere.compute(theta);
+    const points = sphere.rotate(theta).valueOf() as number[][];
+    const colors = flatten(sphere.points).valueOf() as number[];
     const vertices = flatten(points).valueOf() as number[];
-
-    if (dimension > 3) {
-      for (
-        let offset = vertices.length - dimension + 3;
-        offset > 0;
-        offset -= dimension
-      ) {
-        vertices.splice(offset, dimension - 3);
-      }
-    }
 
     geometry.setAttribute(
       "position",
-      new BufferAttribute(
-        new Float32Array(vertices),
-        Math.max(1, Math.min(dimension, 3))
-      )
+      new BufferAttribute(new Float32Array(vertices), 3)
     );
     geometry.setAttribute(
       "color",
       new BufferAttribute(
-        new Float32Array(vertices.map((x, n) => 1)),
-        Math.max(1, Math.min(dimension, 3))
+        new Float32Array(colors.map((x, n) => (x + 1) / 2)),
+        3
       )
     );
 
@@ -163,51 +153,59 @@ class ThreeDemo extends React.Component {
         d0: theta.d0,
         d1: theta.d1
       },
-      nextFrame: requestAnimationFrame(this.animate.bind(this))
+      nextFrame: this.state.animate
+        ? requestAnimationFrame(this.animate.bind(this))
+        : null
     });
+  }
+
+  setStateAndDraw(state) {
+    this.setState(state, () => this.draw());
   }
 
   render() {
     const onDimensionChange = event => {
       const dimension = parseInt(event.target.value);
       const { theta } = this.state;
-      this.setState(
-        {
-          dimension,
-          theta: { value: theta.value, d0: 0, d1: dimension > 2 ? 2 : 1 }
-        },
-        () => this.draw()
-      );
+      this.setStateAndDraw({
+        dimension,
+        theta: { value: theta.value, d0: 0, d1: dimension < 3 ? 1 : 2 }
+      });
     };
     const onOrderChange = event => {
-      this.setState({ order: parseInt(event.target.value) }, () => this.draw());
+      this.setStateAndDraw({ order: parseInt(event.target.value) });
     };
-    const onF0Change = event => this.setState({ f0: event.target.value });
-    const onF1Change = event => this.setState({ f1: event.target.value });
+    const onF0Change = event =>
+      this.setStateAndDraw({ f0: event.target.value });
+    const onF1Change = event =>
+      this.setStateAndDraw({ f1: event.target.value });
+    const onAnimateChange = event =>
+      this.setState({ animate: event.target.checked }, () => this.animate());
+
     const dimensions = Array.from(new Array(4).keys()).map(d => d + 1);
-    const orders = Array.from(new Array(11).keys());
+    const orders = Array.from(new Array(10).keys()).map(x => 2 ** x);
     const coordinateFunctions = Object.keys(COORDINATE_FUNCTIONS);
+
     return (
       <Component>
-        {this.chartComponent()}
         <div id="control-panel">
-          <span>
+          <div>
             <label>Dimension</label>
             <select value={this.state.dimension} onChange={onDimensionChange}>
               {dimensions.map(d => (
                 <option value={d}>{d}</option>
               ))}
             </select>
-          </span>
-          <span>
+          </div>
+          <div>
             <label>Order</label>
             <select value={this.state.order} onChange={onOrderChange}>
               {orders.map(d => (
                 <option value={d}>{d}</option>
               ))}
             </select>
-          </span>
-          <span>
+          </div>
+          <div>
             <label>
               f<sub>0</sub>
             </label>
@@ -216,8 +214,8 @@ class ThreeDemo extends React.Component {
                 <option value={f}>{f}</option>
               ))}
             </select>
-          </span>
-          <span>
+          </div>
+          <div>
             <label>
               f<sub>1</sub>
             </label>
@@ -226,12 +224,21 @@ class ThreeDemo extends React.Component {
                 <option value={f}>{f}</option>
               ))}
             </select>
-          </span>
-          <span>
+          </div>
+          <div>
             <label>Point Count </label>
             <span>{this.state.points && size(this.state.points)[0]}</span>
-          </span>
+          </div>
+          <div>
+            <label>Animate</label>
+            <input
+              type="checkbox"
+              checked={this.state.animate}
+              onChange={onAnimateChange}
+            />
+          </div>
         </div>
+        {this.chartComponent()}
       </Component>
     );
   }
@@ -250,23 +257,23 @@ class ThreeDemo extends React.Component {
 const Index = () => <ThreeDemo />;
 
 const Component = styled.div`
-  & {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  #chart {
+    flex: 1;
+  }
+
+  #control-panel {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    place-content: center center;
+    font-size: 16px;
+    gap: 5px;
 
-    #chart {
-      flex: 1;
-    }
-
-    #control-panel {
+    div {
       padding: 8px;
-      grid-column: 2;
-      display: grid;
-      place-content: start end;
-      font-size: 16px;
-      gap: 5px;
     }
   }
 `;

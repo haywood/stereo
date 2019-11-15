@@ -24,10 +24,15 @@ import {
   identity,
   matrix,
   multiply,
-  abs
+  abs,
+  MathType,
+  clone
 } from "mathjs";
 
 export default class Sphere {
+  readonly points;
+  private f0s = [];
+  private f1s = [];
   f0 = cos;
   f1 = sin;
 
@@ -35,64 +40,77 @@ export default class Sphere {
     if (this.dimension < 0) {
       throw new Error(`invalid dimension: ${this.dimension}`);
     }
+    for (let o = 0; o < order; o++) {
+      const phi = (pi * o) / order;
+      this.f0s[o] = this.f0(phi);
+      this.f1s[o] = this.f1(phi);
+    }
+    this.points = this.sphere(this.dimension, order);
   }
 
-  compute(theta: { value: number; d0: number; d1: number }) {
-    return this.sphere(this.dimension, this.order, theta);
-  }
+  rotate(theta?: { value: number; d0: number; d1: number }) {
+    const points = clone(this.points);
 
-  sphere(
-    dimension: number,
-    order: number,
-    theta: { value: number; d0: number; d1: number }
-  ) {
-    const dimensions = Array.from(new Array(dimension).keys());
-    const increment = tau / 2 ** order;
-    const points = [];
-    function* phis() {
-      const limit = 2 ** order;
-      for (let o = 0; o < limit; o++) {
-        yield o * increment;
+    if (this.dimension < 3) {
+      for (const p of points) {
+        p.push(...new Array(3 - this.dimension).fill(0));
       }
     }
 
-    // generate the shape by drawing a 2d circle in the plane formed by each
-    // pair of dimensions
-    // TODO: make it stop generating duplicate points :/
-    for (let d0 = 0; d0 < dimension; d0++) {
-      for (let d1 = 0; d1 < d0; d1++) {
-        for (const phi of phis()) {
-          const p = new Array(dimension).fill(0);
-          p[d0] = this.f0(phi);
-          p[d1] = this.f1(phi);
+    if (theta) {
+      for (const p of points) {
+        this.rotatePoint(p, theta);
+      }
+    }
+
+    return points.map(p => p.slice(0, 3));
+  }
+
+  sphere(dimension: number, order: number) {
+    if (dimension < 1) return [];
+    let seeds = [1, -1].map(x => {
+      const p = new Array(dimension).fill(0);
+      p[0] = x;
+      return p;
+    });
+    let points = seeds.slice();
+
+    for (let d = 1; d < dimension; d++) {
+      points = [];
+      for (const s of seeds) {
+        for (let o = 0; o < order; o++) {
+          const p = s.slice();
+          this.rotatePointFast(p, { o, d0: 0, d1: d });
           points.push(p);
-          console.log(d0, d1, phi, p);
         }
       }
-    }
-    console.log("--------end--------");
-
-    // rotate the shape
-    if (dimension > 1) {
-      for (const p of points) {
-        rotate(p, theta);
-      }
+      seeds = points;
     }
 
     return points;
   }
+
+  rotatePoint(p: number[], theta: { value: number; d0: number; d1: number }) {
+    const { value: phi, d0, d1 } = theta;
+    const v = [p[d0], p[d1]];
+    const R = matrix([
+      [this.f0(phi), -this.f1(phi)],
+      [this.f1(phi), this.f0(phi)]
+    ]);
+    const u = multiply(R, v).valueOf();
+    p[d0] = u[0];
+    p[d1] = u[1];
+  }
+
+  rotatePointFast(p: number[], theta: { o: number; d0: number; d1: number }) {
+    const { o, d0, d1 } = theta;
+    const v = [p[d0], p[d1]];
+    const R = matrix([
+      [this.f0s[o], -this.f1s[o]],
+      [this.f1s[o], this.f0s[o]]
+    ]);
+    const u = multiply(R, v).valueOf();
+    p[d0] = u[0];
+    p[d1] = u[1];
+  }
 }
-
-const rotate = (p, theta) => {
-  const { value: phi, d0, d1 } = theta;
-  const v = [p[d0], p[d1]];
-  const u = multiply(R(phi), v).valueOf();
-  p[d0] = u[0];
-  p[d1] = u[1];
-};
-
-const R = theta =>
-  matrix([
-    [cos(theta), -sin(theta)],
-    [sin(theta), cos(theta)]
-  ]);
