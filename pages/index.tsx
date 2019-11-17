@@ -53,12 +53,17 @@ const COORDINATE_FUNCTIONS = [
   return fs;
 }, {});
 
+const DEFAULT_DIMENSIONS = Array.from(new Array(10).keys()).map(d => d + 1);
+const DEFAULT_DIMENSION = 3;
+const DEFAULT_ORDERS = Array.from(new Array(7).keys());
+const DEFAULT_ORDER = 2;
+
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
     new BufferGeometry(),
     new PointsMaterial({
       vertexColors: VertexColors,
-      size: 0.01
+      size: 0.02
     })
   );
 
@@ -67,16 +72,18 @@ class ThreeDemo extends React.Component {
   scene?: Scene;
 
   state = {
-    dimension: 3,
-    order: 16,
-    theta: { value: DEGREES_PER_FRAME, d0: 0, d1: 2 },
+    dimension: DEFAULT_DIMENSION,
+    order: DEFAULT_ORDER,
+    counter: 0,
     f0: "cos",
     f1: "sin",
     count: 0,
     animate: true,
     nextFrame: null,
     points: null,
-    sphere: null
+    sphere: null,
+    orders: safeOrdersForDimension(DEFAULT_DIMENSION),
+    dimensions: DEFAULT_DIMENSIONS
   };
 
   constructor(props) {
@@ -93,7 +100,7 @@ class ThreeDemo extends React.Component {
   }
 
   setStateAndDraw(state) {
-    this.setState(state, () => this.draw());
+    this.setState(state, () => requestAnimationFrame(() => this.draw()));
   }
 
   newSphere() {
@@ -113,7 +120,7 @@ class ThreeDemo extends React.Component {
     const aspect = width / height;
 
     this.camera = new PerspectiveCamera(fieldOfView, aspect, near, far);
-    this.camera.position.z = 2;
+    this.camera.position.z = 3;
 
     this.scene = new Scene();
     this.scene.add(this.points);
@@ -121,11 +128,13 @@ class ThreeDemo extends React.Component {
     this.renderer = new WebGLRenderer();
     this.renderer.setSize(width, height);
 
-    if (this.animate) {
+    if (this.state.animate) {
+      console.log("starting animation");
       this.setState({
         nextFrame: requestAnimationFrame(this.animate.bind(this))
       });
     } else {
+      console.log("drawing once");
       this.draw();
     }
   }
@@ -139,9 +148,13 @@ class ThreeDemo extends React.Component {
 
   draw() {
     const geometry = this.points.geometry as BufferGeometry;
-    const { sphere, theta } = this.state;
-    const vertices = sphere.vertices;
-    const colors = sphere.colors;
+    const { sphere, count, dimension } = this.state;
+    const vertices = sphere.rotate({
+      phi: count * DEGREES_PER_FRAME,
+      d0: 0,
+      d1: dimension - 1
+    });
+    const colors = vertices.map(x => (x + 1) / 2);
 
     geometry.setAttribute(
       "position",
@@ -156,10 +169,10 @@ class ThreeDemo extends React.Component {
   }
 
   animate() {
-    const { sphere, theta } = this.state;
-    sphere.rotate(theta);
+    const { sphere, count, dimension } = this.state;
     this.draw();
     this.setState({
+      count: count + 1,
       nextFrame: this.state.animate
         ? requestAnimationFrame(this.animate.bind(this))
         : null
@@ -205,27 +218,23 @@ class ThreeDemo extends React.Component {
     return this.picker(
       "Dimension",
       this.state.dimension,
-      Array.from(new Array(10).keys()).map(d => d + 1),
+      this.state.dimensions,
       event => {
         const dimension = parseInt(event.target.value);
-        const { theta } = this.state;
-        this.setStateAndSphere({
-          dimension,
-          theta: { value: theta.value, d0: 0, d1: dimension - 1 }
+        this.setState({ dimension }, () => {
+          const orders = safeOrdersForDimension(dimension);
+          const order = Math.min(this.state.order, orders[orders.length - 1]);
+          this.setStateAndSphere({ order, orders });
         });
       }
     );
   }
 
   orderPicker() {
-    return this.picker(
-      "Order",
-      this.state.order,
-      Array.from(new Array(10).keys()).map(x => 2 ** x),
-      event => {
-        this.setStateAndSphere({ order: parseInt(event.target.value) });
-      }
-    );
+    return this.picker("Order", this.state.order, this.state.orders, event => {
+      const order = parseInt(event.target.value);
+      this.setStateAndSphere({ order });
+    });
   }
 
   f0Picker() {
@@ -248,7 +257,10 @@ class ThreeDemo extends React.Component {
 
   animationSwitch() {
     const onChange = event =>
-      this.setState({ animate: event.target.checked }, () => this.animate());
+      this.setState(
+        { animate: event.target.checked },
+        () => this.state.animate && this.animate()
+      );
 
     return (
       <div>
@@ -274,6 +286,19 @@ class ThreeDemo extends React.Component {
       </div>
     );
   }
+}
+
+function highestOrderForDimension(d: number) {
+  const orders = safeOrdersForDimension(d);
+  return orders[orders.length - 1];
+}
+
+function safeOrdersForDimension(d: number) {
+  return DEFAULT_ORDERS.filter(o => logPointCount(o, d) <= 12);
+}
+
+function logPointCount(o, d) {
+  return o * (d - 1);
 }
 
 const Index = () => <ThreeDemo />;

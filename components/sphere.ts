@@ -21,13 +21,17 @@ import {
   pi,
   tau,
   Matrix,
+  reshape,
   identity,
   matrix,
   multiply,
   abs,
+  tan,
   MathType,
+  format,
   clone,
-  flatten
+  flatten,
+  round
 } from "mathjs";
 
 export default class Sphere {
@@ -36,20 +40,17 @@ export default class Sphere {
   private readonly f1s = [];
 
   constructor(
-    readonly dimension: number,
-    readonly order: number,
+    private readonly dimension: number,
+    private readonly order: number,
     private readonly f0,
     private readonly f1
   ) {
     if (this.dimension < 0) {
       throw new Error(`invalid dimension: ${this.dimension}`);
     }
-    for (let o = 0; o < order; o++) {
-      const phi = (tau * o) / order;
-      this.f0s[o] = this.f0(phi);
-      this.f1s[o] = this.f1(phi);
-    }
+
     this.points = this.generatePoints();
+    console.log("generated points:", format(this.points));
   }
 
   get vertices() {
@@ -66,71 +67,88 @@ export default class Sphere {
   }
 
   get colors() {
-    return this.vertices.map(x => (x + 1) / 2);
+    return this.vertices.map(x => 1);
   }
 
-  rotate(theta?: { value: number; d0: number; d1: number }) {
-    const { points, dimension } = this;
+  rotate(theta: { phi: number; d0: number; d1: number }) {
+    let { points, dimension } = this;
 
-    if (dimension < 2) return;
-
-    if (theta) {
-      for (const p of points) {
-        this.rotatePoint(p, theta);
-      }
+    if (dimension > 1) {
+      points = points.map(p => {
+        const q = p.slice();
+        this.rotatePoint(q, theta);
+        return q;
+      });
     }
 
-    return points.map(p => p.slice(0, 3));
+    if (dimension < 3) {
+      points = points.map(p => [...p, ...new Array(3 - dimension).fill(0)]);
+    } else if (dimension > 3) {
+      points = points.map(p => p.slice(0, 3));
+    }
+
+    return flatten(points).valueOf() as number[];
   }
 
   generatePoints() {
-    // generates order ** (d - 1) / 2 ** (d - 2) points for d > 1
-    // 2 points for d = 1
-    const { dimension, order } = this;
-    if (dimension < 1) return [];
-    let seeds = [1, -1].map(x => {
-      const p = new Array(dimension).fill(0);
-      p[0] = x;
-      return p;
-    });
-    let points = seeds.slice();
-
-    for (let d = 1; d < dimension; d++) {
-      points = [];
-      for (const s of seeds) {
-        for (let o = 0; o < order / 2; o++) {
-          const p = s.slice();
-          this.rotatePointFast(p, { o, d0: 0, d1: d });
-          points.push(p);
-        }
-      }
-      seeds = points;
-    }
-
-    return points;
+    return this.halveAndDouble();
   }
 
-  rotatePoint(p: number[], theta: { value: number; d0: number; d1: number }) {
-    const { value: phi, d0, d1 } = theta;
+  halveAndDouble() {
+    const { dimension, order } = this;
+    const planes = [];
+    for (let d = 0; d < dimension; d++) {
+      planes.push([this.one(d)]);
+    }
+
+    if (order > 0) {
+      for (let d = 0; d < dimension; d++) {
+        const p = this.one(d);
+        p[d] = -1;
+        planes[d].push(p);
+      }
+    }
+
+    for (let o = 2; o < order; o++) {
+      const divisor = 2 ** o;
+      const angleCount = divisor / 2;
+      for (let d0 = 0; d0 < dimension; d0++) {
+        const d1 = (d0 + 1) % dimension;
+        const temp = planes[d0].slice();
+        for (const p of planes[d0]) {
+          for (let n = 0; n < angleCount; n++) {
+            const multiple = 2 * n + 1;
+            const phi = (multiple * pi) / divisor;
+            temp.push(this.rotatePoint(p.slice(), { phi, d0, d1 }));
+          }
+        }
+        planes[d0] = temp;
+      }
+    }
+
+    return planes.reduce((points, plane) => points.concat(plane), []);
+  }
+
+  one(d: number) {
+    return Sphere.one(d, this.dimension);
+  }
+
+  static one(d: number, dimension: number) {
+    const p = new Array(dimension).fill(0);
+    p[d] = 1;
+    return p;
+  }
+
+  rotatePoint(p: number[], theta: { phi: number; d0: number; d1: number }) {
+    const { phi, d0, d1 } = theta;
     const v = [p[d0], p[d1]];
     const R = matrix([
       [this.f0(phi), -this.f1(phi)],
       [this.f1(phi), this.f0(phi)]
     ]);
     const u = multiply(R, v).valueOf();
-    p[d0] = u[0];
-    p[d1] = u[1];
-  }
-
-  rotatePointFast(p: number[], theta: { o: number; d0: number; d1: number }) {
-    const { o, d0, d1 } = theta;
-    const v = [p[d0], p[d1]];
-    const R = matrix([
-      [this.f0s[o], -this.f1s[o]],
-      [this.f1s[o], this.f0s[o]]
-    ]);
-    const u = multiply(R, v).valueOf();
-    p[d0] = u[0];
-    p[d1] = u[1];
+    p[d0] = round(u[0], 5) as number;
+    p[d1] = round(u[1], 5) as number;
+    return p;
   }
 }
