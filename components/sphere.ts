@@ -26,17 +26,21 @@ import {
   multiply,
   abs,
   MathType,
-  clone
+  clone,
+  flatten
 } from "mathjs";
 
 export default class Sphere {
-  readonly points;
-  private f0s = [];
-  private f1s = [];
-  f0 = cos;
-  f1 = sin;
+  private readonly points = [];
+  private readonly f0s = [];
+  private readonly f1s = [];
 
-  constructor(readonly dimension: number, readonly order: number) {
+  constructor(
+    readonly dimension: number,
+    readonly order: number,
+    private readonly f0,
+    private readonly f1
+  ) {
     if (this.dimension < 0) {
       throw new Error(`invalid dimension: ${this.dimension}`);
     }
@@ -45,17 +49,30 @@ export default class Sphere {
       this.f0s[o] = this.f0(phi);
       this.f1s[o] = this.f1(phi);
     }
-    this.points = this.sphere(this.dimension, order);
+    this.points = this.generatePoints();
+  }
+
+  get vertices() {
+    const { dimension } = this;
+    let { points } = this;
+
+    if (dimension < 3) {
+      points = points.map(p => [...p, ...new Array(3 - dimension).fill(0)]);
+    } else if (dimension > 3) {
+      points = points.map(p => p.slice(0, 3));
+    }
+
+    return flatten(points).valueOf() as number[];
+  }
+
+  get colors() {
+    return this.vertices.map(x => (x + 1) / 2);
   }
 
   rotate(theta?: { value: number; d0: number; d1: number }) {
-    const points = clone(this.points);
+    const { points, dimension } = this;
 
-    if (this.dimension < 3) {
-      for (const p of points) {
-        p.push(...new Array(3 - this.dimension).fill(0));
-      }
-    }
+    if (dimension < 2) return;
 
     if (theta) {
       for (const p of points) {
@@ -66,7 +83,9 @@ export default class Sphere {
     return points.map(p => p.slice(0, 3));
   }
 
-  sphere(dimension: number, order: number) {
+  generatePoints() {
+    // generates 2 * 16 ** (dimension - 1) points
+    const { dimension, order } = this;
     if (dimension < 1) return [];
     let seeds = [1, -1].map(x => {
       const p = new Array(dimension).fill(0);

@@ -1,6 +1,6 @@
 import Sphere from "../components/sphere";
 import styled from "styled-components";
-import { pi, flatten, Matrix, size } from "mathjs";
+import { cos, sin, pi, flatten, Matrix, size } from "mathjs";
 import {
   BufferGeometry,
   BufferAttribute,
@@ -23,8 +23,10 @@ const PI = Math.PI;
 const fieldOfView = 100; // degrees
 const near = 0.1;
 const far = 1000;
-const DEFAULT_DIMENSION = 3;
-const DEFAULT_ORDER = 16;
+const FRAMES_PER_SECOND = 60;
+const RADIANS_PER_SECOND = PI / 180;
+const RATE = 20;
+const DEGREES_PER_FRAME = (-RATE * RADIANS_PER_SECOND) / FRAMES_PER_SECOND;
 
 const COORDINATE_FUNCTIONS = [
   "abs",
@@ -46,16 +48,10 @@ const COORDINATE_FUNCTIONS = [
   "tan",
   "tanh",
   "trunc"
-].reduce(
-  (norms, name) => {
-    norms[name] = Math[name];
-    return norms;
-  },
-  {
-    sincos: (r, phi) => r * Math.sin(phi) * Math.cos(phi),
-    sincosp: (r, phi) => r * (Math.sin(phi) + Math.cos(phi))
-  }
-);
+].reduce((fs, name) => {
+  fs[name] = Math[name];
+  return fs;
+}, {});
 
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
@@ -70,28 +66,48 @@ class ThreeDemo extends React.Component {
   renderer?: WebGLRenderer;
   scene?: Scene;
 
-  state: {
-    dimension: number;
-    order: number;
-    theta: { value: number; d0: number; d1: number };
-    count: number;
-    f0: string;
-    f1: string;
-    nextFrame?: number;
-    points?: number[][];
-    animate: boolean;
-  } = {
-    dimension: DEFAULT_DIMENSION,
-    order: DEFAULT_ORDER,
-    theta: { value: 0, d0: 0, d1: 2 },
+  state = {
+    dimension: 3,
+    order: 16,
+    theta: { value: DEGREES_PER_FRAME, d0: 0, d1: 2 },
     f0: "cos",
     f1: "sin",
     count: 0,
-    animate: true
+    animate: true,
+    nextFrame: null,
+    points: null,
+    sphere: null
   };
 
+  constructor(props) {
+    super(props);
+    this.state.sphere = this.newSphere();
+  }
+
+  setStateAndSphere(state) {
+    this.setState(state, () => this.setSphere());
+  }
+
+  setSphere() {
+    this.setStateAndDraw({ sphere: this.newSphere() });
+  }
+
+  setStateAndDraw(state) {
+    this.setState(state, () => this.draw());
+  }
+
+  newSphere() {
+    const { dimension, order, f0, f1 } = this.state;
+
+    return new Sphere(
+      dimension,
+      order,
+      COORDINATE_FUNCTIONS[f0],
+      COORDINATE_FUNCTIONS[f1]
+    );
+  }
+
   componentDidMount() {
-    // make room for control pannel
     const width = window.innerWidth;
     const height = window.innerHeight;
     const aspect = width / height;
@@ -105,9 +121,13 @@ class ThreeDemo extends React.Component {
     this.renderer = new WebGLRenderer();
     this.renderer.setSize(width, height);
 
-    this.setState({
-      nextFrame: requestAnimationFrame(this.animate.bind(this))
-    });
+    if (this.animate) {
+      this.setState({
+        nextFrame: requestAnimationFrame(this.animate.bind(this))
+      });
+    } else {
+      this.draw();
+    }
   }
 
   componentWillUnmount() {
@@ -119,14 +139,9 @@ class ThreeDemo extends React.Component {
 
   draw() {
     const geometry = this.points.geometry as BufferGeometry;
-    const { dimension, order, theta, f0, f1 } = this.state;
-
-    const sphere = new Sphere(dimension, order);
-    sphere.f0 = COORDINATE_FUNCTIONS[f0];
-    sphere.f1 = COORDINATE_FUNCTIONS[f1];
-    const points = sphere.rotate(theta).valueOf() as number[][];
-    const colors = flatten(sphere.points).valueOf() as number[];
-    const vertices = flatten(points).valueOf() as number[];
+    const { sphere, theta } = this.state;
+    const vertices = sphere.vertices;
+    const colors = sphere.colors;
 
     geometry.setAttribute(
       "position",
@@ -134,110 +149,27 @@ class ThreeDemo extends React.Component {
     );
     geometry.setAttribute(
       "color",
-      new BufferAttribute(
-        new Float32Array(colors.map((x, n) => (x + 1) / 2)),
-        3
-      )
+      new BufferAttribute(new Float32Array(colors), 3)
     );
 
     this.renderer.render(this.scene, this.camera);
-    this.setState({ points: points });
   }
 
   animate() {
-    const { theta } = this.state;
+    const { sphere, theta } = this.state;
+    sphere.rotate(theta);
     this.draw();
     this.setState({
-      theta: {
-        value: theta.value - (20 * (PI / 180)) / 60,
-        d0: theta.d0,
-        d1: theta.d1
-      },
       nextFrame: this.state.animate
         ? requestAnimationFrame(this.animate.bind(this))
         : null
     });
   }
 
-  setStateAndDraw(state) {
-    this.setState(state, () => this.draw());
-  }
-
   render() {
-    const onDimensionChange = event => {
-      const dimension = parseInt(event.target.value);
-      const { theta } = this.state;
-      this.setStateAndDraw({
-        dimension,
-        theta: { value: theta.value, d0: 0, d1: dimension < 3 ? 1 : 2 }
-      });
-    };
-    const onOrderChange = event => {
-      this.setStateAndDraw({ order: parseInt(event.target.value) });
-    };
-    const onF0Change = event =>
-      this.setStateAndDraw({ f0: event.target.value });
-    const onF1Change = event =>
-      this.setStateAndDraw({ f1: event.target.value });
-    const onAnimateChange = event =>
-      this.setState({ animate: event.target.checked }, () => this.animate());
-
-    const dimensions = Array.from(new Array(4).keys()).map(d => d + 1);
-    const orders = Array.from(new Array(10).keys()).map(x => 2 ** x);
-    const coordinateFunctions = Object.keys(COORDINATE_FUNCTIONS);
-
     return (
       <Component>
-        <div id="control-panel">
-          <div>
-            <label>Dimension</label>
-            <select value={this.state.dimension} onChange={onDimensionChange}>
-              {dimensions.map(d => (
-                <option value={d}>{d}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Order</label>
-            <select value={this.state.order} onChange={onOrderChange}>
-              {orders.map(d => (
-                <option value={d}>{d}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>
-              f<sub>0</sub>
-            </label>
-            <select value={this.state.f0} onChange={onF0Change}>
-              {coordinateFunctions.map(f => (
-                <option value={f}>{f}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>
-              f<sub>1</sub>
-            </label>
-            <select value={this.state.f1} onChange={onF1Change}>
-              {coordinateFunctions.map(f => (
-                <option value={f}>{f}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Point Count </label>
-            <span>{this.state.points && size(this.state.points)[0]}</span>
-          </div>
-          <div>
-            <label>Animate</label>
-            <input
-              type="checkbox"
-              checked={this.state.animate}
-              onChange={onAnimateChange}
-            />
-          </div>
-        </div>
+        {this.controlPanelComponent()}
         {this.chartComponent()}
       </Component>
     );
@@ -251,6 +183,96 @@ class ThreeDemo extends React.Component {
     } else {
       return <div></div>;
     }
+  }
+
+  controlPanelComponent() {
+    return (
+      <div id="control-panel">
+        {this.dimensionPicker()}
+        {this.orderPicker()}
+        {this.f0Picker()}
+        {this.f1Picker()}
+        <div>
+          <label>Point Count </label>
+          <span>{this.state.sphere && size(this.state.sphere.points)[0]}</span>
+        </div>
+        {this.animationSwitch()}
+      </div>
+    );
+  }
+
+  dimensionPicker() {
+    return this.picker(
+      "Dimension",
+      this.state.dimension,
+      Array.from(new Array(10).keys()).map(d => d + 1),
+      event => {
+        const dimension = parseInt(event.target.value);
+        const { theta } = this.state;
+        this.setStateAndSphere({
+          dimension,
+          theta: { value: theta.value, d0: 0, d1: dimension - 1 }
+        });
+      }
+    );
+  }
+
+  orderPicker() {
+    return this.picker(
+      "Order",
+      this.state.order,
+      Array.from(new Array(10).keys()).map(x => 2 ** x),
+      event => {
+        this.setStateAndSphere({ order: parseInt(event.target.value) });
+      }
+    );
+  }
+
+  f0Picker() {
+    return this.picker(
+      "f0",
+      this.state.f0,
+      Object.keys(COORDINATE_FUNCTIONS),
+      event => this.setStateAndSphere({ f0: event.target.value })
+    );
+  }
+
+  f1Picker() {
+    return this.picker(
+      "f1",
+      this.state.f1,
+      Object.keys(COORDINATE_FUNCTIONS),
+      event => this.setStateAndSphere({ f1: event.target.value })
+    );
+  }
+
+  animationSwitch() {
+    const onChange = event =>
+      this.setState({ animate: event.target.checked }, () => this.animate());
+
+    return (
+      <div>
+        <label>Animate</label>
+        <input
+          type="checkbox"
+          checked={this.state.animate}
+          onChange={onChange}
+        />
+      </div>
+    );
+  }
+
+  picker(label, defaultValue, options, onChange) {
+    return (
+      <div>
+        <label>{label}</label>
+        <select value={defaultValue} onChange={onChange}>
+          {options.map(o => (
+            <option value={o}>{o}</option>
+          ))}
+        </select>
+      </div>
+    );
   }
 }
 
