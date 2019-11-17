@@ -45,7 +45,7 @@ export default class Sphere {
       throw new Error(`invalid dimension: ${this.dimension}`);
     }
     for (let o = 0; o < order; o++) {
-      const phi = (pi * o) / order;
+      const phi = (tau * o) / order;
       this.f0s[o] = this.f0(phi);
       this.f1s[o] = this.f1(phi);
     }
@@ -84,7 +84,8 @@ export default class Sphere {
   }
 
   generatePoints() {
-    // generates 2 * 16 ** (dimension - 1) points
+    // generates order ** (d - 1) / 2 ** (d - 2) points for d > 1
+    // 2 points for d = 1
     const { dimension, order } = this;
     if (dimension < 1) return [];
     let seeds = [1, -1].map(x => {
@@ -97,7 +98,7 @@ export default class Sphere {
     for (let d = 1; d < dimension; d++) {
       points = [];
       for (const s of seeds) {
-        for (let o = 0; o < order; o++) {
+        for (let o = 0; o < order / 2; o++) {
           const p = s.slice();
           this.rotatePointFast(p, { o, d0: 0, d1: d });
           points.push(p);
