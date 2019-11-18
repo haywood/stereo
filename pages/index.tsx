@@ -56,7 +56,7 @@ const COORDINATE_FUNCTIONS = [
 const DEFAULT_DIMENSIONS = Array.from(new Array(10).keys()).map(d => d + 1);
 const DEFAULT_DIMENSION = 3;
 const DEFAULT_ORDERS = Array.from(new Array(7).keys());
-const DEFAULT_ORDER = 2;
+const DEFAULT_ORDER = 4;
 
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
@@ -149,20 +149,19 @@ class ThreeDemo extends React.Component {
   draw() {
     const geometry = this.points.geometry as BufferGeometry;
     const { sphere, count, dimension } = this.state;
-    const vertices = sphere.rotate({
-      phi: count * DEGREES_PER_FRAME,
+    sphere.rotate({
+      phi: DEGREES_PER_FRAME,
       d0: 0,
       d1: dimension - 1
     });
-    const colors = vertices.map(x => (x + 1) / 2);
 
     geometry.setAttribute(
       "position",
-      new BufferAttribute(new Float32Array(vertices), 3)
+      new BufferAttribute(new Float32Array(sphere.vertices), 3)
     );
     geometry.setAttribute(
       "color",
-      new BufferAttribute(new Float32Array(colors), 3)
+      new BufferAttribute(new Float32Array(sphere.colors), 3)
     );
 
     this.renderer.render(this.scene, this.camera);
@@ -294,11 +293,18 @@ function highestOrderForDimension(d: number) {
 }
 
 function safeOrdersForDimension(d: number) {
-  return DEFAULT_ORDERS.filter(o => logPointCount(o, d) <= 12);
+  return DEFAULT_ORDERS.filter(o => {
+    const count = pointCount(o, d);
+    console.log(`pointCount(${o}, ${d}) = ${count}`);
+    return count <= 4096;
+  });
 }
 
-function logPointCount(o, d) {
-  return o * (d - 1);
+function pointCount(o, d) {
+  if (o <= 0) {
+    return d;
+  }
+  return (1 + 2 ** (o - 1)) * pointCount(o - 1, d);
 }
 
 const Index = () => <ThreeDemo />;

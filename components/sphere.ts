@@ -33,6 +33,8 @@ import {
   flatten,
   round
 } from "mathjs";
+import GeometryHelper from "./geometry_helper";
+import Projector from "./projector";
 
 export default class Sphere {
   private readonly points = [];
@@ -54,40 +56,25 @@ export default class Sphere {
   }
 
   get vertices() {
-    const { dimension } = this;
-    let { points } = this;
-
-    if (dimension < 3) {
-      points = points.map(p => [...p, ...new Array(3 - dimension).fill(0)]);
-    } else if (dimension > 3) {
-      points = points.map(p => p.slice(0, 3));
-    }
-
-    return flatten(points).valueOf() as number[];
+    const { points, dimension } = this;
+    return GeometryHelper.vertices(
+      Projector.stereo(points, dimension, 3),
+      dimension
+    );
   }
 
   get colors() {
-    return this.vertices.map(x => 1);
+    return this.vertices;
   }
 
   rotate(theta: { phi: number; d0: number; d1: number }) {
     let { points, dimension } = this;
 
     if (dimension > 1) {
-      points = points.map(p => {
-        const q = p.slice();
-        this.rotatePoint(q, theta);
-        return q;
-      });
+      for (const p of points) {
+        this.rotatePoint(p, theta);
+      }
     }
-
-    if (dimension < 3) {
-      points = points.map(p => [...p, ...new Array(3 - dimension).fill(0)]);
-    } else if (dimension > 3) {
-      points = points.map(p => p.slice(0, 3));
-    }
-
-    return flatten(points).valueOf() as number[];
   }
 
   generatePoints() {
@@ -95,6 +82,12 @@ export default class Sphere {
   }
 
   halveAndDouble() {
+    // generates C(order) points where C(o) = (1 + 2 ** o) * C(o - 1), C(0) =
+    // dimension
+    // This is done by generating seed points and then rotating them through
+    // the first 2 ** (o-1) odd multiples of pi / 2 ** o
+    // The affect of this is to halve the angle at each step and double the
+    // number of points
     const { dimension, order } = this;
     const planes = [];
     for (let d = 0; d < dimension; d++) {
@@ -123,6 +116,25 @@ export default class Sphere {
           }
         }
         planes[d0] = temp;
+      }
+    }
+
+    // an additonal rotation of a singe plane to fill space between axes
+    if (dimension > 2) {
+      for (let o = 2; o < order; o++) {
+        const divisor = 2 ** o;
+        const angleCount = divisor / 2;
+        const d0 = 0;
+        const d1 = dimension - 1;
+        const temp = planes[1].slice();
+        for (const p of planes[1]) {
+          for (let n = 0; n < angleCount; n++) {
+            const multiple = 2 * n + 1;
+            const phi = (multiple * pi) / divisor;
+            temp.push(this.rotatePoint(p.slice(), { phi, d0, d1 }));
+          }
+        }
+        planes[1] = temp;
       }
     }
 
