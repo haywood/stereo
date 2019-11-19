@@ -1,3 +1,4 @@
+import memoize from "memoizee";
 import {
   BufferGeometry,
   BufferAttribute,
@@ -38,10 +39,8 @@ import Projector from "./projector";
 export default class HalveAndDouble {
   points = [];
   // TODO memoize f0,f1,cos,sin
-  private readonly f0s = [];
-  private readonly f1s = [];
-  private readonly cos = [];
-  private readonly sin = [];
+  private readonly cos = memoize(cos);
+  private readonly sin = memoize(sin);
 
   constructor(
     private readonly dimension: number,
@@ -52,6 +51,8 @@ export default class HalveAndDouble {
     if (this.dimension < 0) {
       throw new Error(`invalid dimension: ${this.dimension}`);
     }
+    this.f0 = memoize(this.f0);
+    this.f1 = memoize(this.f1);
   }
 
   generatePoints() {
