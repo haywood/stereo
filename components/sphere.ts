@@ -33,11 +33,10 @@ import {
   flatten,
   round
 } from "mathjs";
-import GeometryHelper from "./geometry_helper";
 import Projector from "./projector";
 
 export default class Sphere {
-  private readonly points = [];
+  points = [];
   private readonly f0s = [];
   private readonly f1s = [];
 
@@ -55,23 +54,9 @@ export default class Sphere {
     console.log("generated points:", format(this.points));
   }
 
-  get vertices() {
-    const { points, dimension } = this;
-    return GeometryHelper.vertices(
-      Projector.stereo(points, dimension, 3),
-      dimension
-    );
-  }
-
-  get colors() {
-    return this.vertices;
-  }
-
   rotate(theta: { phi: number; d0: number; d1: number }) {
-    let { points, dimension } = this;
-
-    if (dimension > 1) {
-      for (const p of points) {
+    if (this.dimension > 1) {
+      for (const p of this.points) {
         this.rotatePoint(p, theta);
       }
     }
@@ -91,13 +76,14 @@ export default class Sphere {
     const { dimension, order } = this;
     const planes = [];
     for (let d = 0; d < dimension; d++) {
-      planes.push([this.one(d)]);
+      const p = this.one(d);
+      planes.push([p]);
     }
 
-    if (order > 0) {
+    if (order > 1) {
       for (let d = 0; d < dimension; d++) {
-        const p = this.one(d);
-        p[d] = -1;
+        const p = planes[d][0].slice();
+        this.rotatePoint(p, { phi: pi, ...this.naturalPlane(d) });
         planes[d].push(p);
       }
     }
@@ -106,16 +92,10 @@ export default class Sphere {
       const divisor = 2 ** o;
       const angleCount = divisor / 2;
       for (let d0 = 0; d0 < dimension; d0++) {
-        const d1 = (d0 + 1) % dimension;
-        const temp = planes[d0].slice();
-        for (const p of planes[d0]) {
-          for (let n = 0; n < angleCount; n++) {
-            const multiple = 2 * n + 1;
-            const phi = (multiple * pi) / divisor;
-            temp.push(this.rotatePoint(p.slice(), { phi, d0, d1 }));
-          }
-        }
-        planes[d0] = temp;
+        planes[d0] = this.generatePointsFromPlane(planes[d0], {
+          o,
+          ...this.naturalPlane(d0)
+        });
       }
     }
 
@@ -126,19 +106,41 @@ export default class Sphere {
         const angleCount = divisor / 2;
         const d0 = 0;
         const d1 = dimension - 1;
-        const temp = planes[1].slice();
-        for (const p of planes[1]) {
-          for (let n = 0; n < angleCount; n++) {
-            const multiple = 2 * n + 1;
-            const phi = (multiple * pi) / divisor;
-            temp.push(this.rotatePoint(p.slice(), { phi, d0, d1 }));
-          }
-        }
-        planes[1] = temp;
+        planes[1] = this.generatePointsFromPlane(planes[1], { o, d0, d1 });
       }
     }
 
     return planes.reduce((points, plane) => points.concat(plane), []);
+  }
+
+  naturalPlane(d) {
+    return { d0: d, d1: (d + 1) % this.dimension };
+  }
+
+  generatePointsFromPlane(plane, { o, d0, d1 }) {
+    const temp = plane.slice();
+    for (const p of plane) {
+      temp.push(...this.generatePointsFromPoint(p, { o, d0, d1 }));
+    }
+    return temp;
+  }
+
+  generatePointsFromPoint(p, { o, d0, d1 }) {
+    const divisor = 2 ** o;
+    const angleCount = divisor / 2;
+    const temp = [];
+    for (let n = 0; n < angleCount; n++) {
+      const multiple = 2 * n + 1;
+      const phi = (multiple * pi) / divisor;
+      temp.push(this.generatePointFromPoint(p, { phi, d0, d1 }));
+    }
+    return temp;
+  }
+
+  generatePointFromPoint(p, { phi, d0, d1 }) {
+    const q = p.slice();
+    this.rotatePoint(q, { phi, d0, d1 });
+    return q;
   }
 
   one(d: number) {

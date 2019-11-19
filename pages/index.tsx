@@ -1,4 +1,5 @@
 import Sphere from "../components/sphere";
+import GeometryHelper from "../components/geometry_helper";
 import styled from "styled-components";
 import { cos, sin, pi, flatten, Matrix, size } from "mathjs";
 import {
@@ -56,7 +57,7 @@ const COORDINATE_FUNCTIONS = [
 const DEFAULT_DIMENSIONS = Array.from(new Array(10).keys()).map(d => d + 1);
 const DEFAULT_DIMENSION = 3;
 const DEFAULT_ORDERS = Array.from(new Array(7).keys());
-const DEFAULT_ORDER = 4;
+const DEFAULT_ORDER = 3;
 
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
@@ -151,17 +152,19 @@ class ThreeDemo extends React.Component {
     const { sphere, count, dimension } = this.state;
     sphere.rotate({
       phi: DEGREES_PER_FRAME,
-      d0: 0,
-      d1: dimension - 1
+      d0: dimension - 1,
+      d1: 0
     });
+    const vertices = GeometryHelper.vertices(sphere.points, dimension);
+    const colors = GeometryHelper.colors(vertices);
 
     geometry.setAttribute(
       "position",
-      new BufferAttribute(new Float32Array(sphere.vertices), 3)
+      new BufferAttribute(new Float32Array(vertices), 3)
     );
     geometry.setAttribute(
       "color",
-      new BufferAttribute(new Float32Array(sphere.colors), 3)
+      new BufferAttribute(new Float32Array(colors), 3)
     );
 
     this.renderer.render(this.scene, this.camera);
