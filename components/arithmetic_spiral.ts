@@ -1,7 +1,7 @@
-import { cos, sin, exp } from "mathjs";
+import { cos, sin } from "mathjs";
 
-export default class LogSpiral {
-  constructor(readonly a: number, readonly k: number, readonly phase = 0) {}
+export default class ArithmeticSpiral {
+  constructor(readonly a: number, readonly b: number, readonly phase = 0) {}
 
   sample(n, a, b) {
     const step = (b - a) / n;
@@ -26,7 +26,7 @@ export default class LogSpiral {
   }
 
   r(phi: number) {
-    const { a, k, phase } = this;
-    return a * exp(k * phi + phase);
+    const { a, b, phase } = this;
+    return a + b * (phi + phase);
   }
 }

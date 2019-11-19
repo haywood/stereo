@@ -20,7 +20,8 @@ import {
 } from "mathjs";
 import Projector from "./projector";
 import HalveAndDouble from "./halve_and_double";
-import Spiral from "./spiral";
+import LogSpiral from "./spiral";
+import ArithmeticSpiral from "./arithmetic_spiral";
 
 export default class Sphere {
   points;
@@ -33,7 +34,7 @@ export default class Sphere {
     private readonly order: number,
     private readonly f0,
     private readonly f1,
-    private readonly mode: "spiral" | "halveAndDouble"
+    private readonly mode: string
   ) {
     if (this.dimension < 0) {
       throw new Error(`invalid dimension: ${this.dimension}`);
@@ -57,22 +58,25 @@ export default class Sphere {
   generatePoints() {
     const { dimension, order, f0, f1, mode } = this;
     switch (mode) {
-      case "spiral":
-        return this.generatePointsFromSpiral();
       case "halveAndDouble":
         return new HalveAndDouble(dimension, order, f0, f1).generatePoints();
+      case "logSpiral":
+        return this.generatePointsFromSpiral(
+          phase => new LogSpiral(0.1, 1, phase)
+        );
+      case "arithmeticSpiral":
+        return this.generatePointsFromSpiral(
+          phase => new ArithmeticSpiral(0, 1, phase)
+        );
     }
   }
 
-  generatePointsFromSpiral() {
-    const { dimension, order, mode } = this;
-    // TODO configurabel point count
-    // want to use 2 ** order, but that implies a very different scale from
-    // halveAndDouble, so need to make the ui more dynamic first
-    const pointCount = 1000;
+  generatePointsFromSpiral(newSpiral) {
+    const { dimension, order } = this;
+    const pointCount = 2 ** order;
     const points = [];
     for (let phase = 0; phase < tau; phase += tau / 10) {
-      const spiral = new Spiral(0.1, 1, phase);
+      const spiral = newSpiral(phase);
       points.push(...spiral.sample(pointCount / 10, -tau, tau));
     }
     return Projector.stereo(points, 2, dimension);

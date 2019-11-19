@@ -37,8 +37,11 @@ import Projector from "./projector";
 
 export default class HalveAndDouble {
   points = [];
+  // TODO memoize f0,f1,cos,sin
   private readonly f0s = [];
   private readonly f1s = [];
+  private readonly cos = [];
+  private readonly sin = [];
 
   constructor(
     private readonly dimension: number,
@@ -124,7 +127,14 @@ export default class HalveAndDouble {
 
   generatePointFromPoint(p, { phi, d0, d1 }) {
     const q = p.slice();
-    this.rotatePoint(q, { phi, d0, d1 });
+    const v = [p[d0], p[d1]];
+    const R = matrix([
+      [cos(phi), -sin(phi)],
+      [sin(phi), cos(phi)]
+    ]);
+    const u = multiply(R, v).valueOf();
+    q[d0] = round(u[0], 5) as number;
+    q[d1] = round(u[1], 5) as number;
     return q;
   }
 

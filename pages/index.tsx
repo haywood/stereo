@@ -1,6 +1,6 @@
 import Sphere from "../components/sphere";
 import GeometryHelper from "../components/geometry_helper";
-import Spiral from "../components/spiral";
+import LogSpiral from "../components/spiral";
 import styled from "styled-components";
 import { norm, tau, cos, sin, pi, flatten, Matrix, size } from "mathjs";
 import {
@@ -56,15 +56,16 @@ const COORDINATE_FUNCTIONS = [
     return fs;
   },
   {
-    spiralX: phi => new Spiral(0.1, 1).x(phi),
-    spiralY: phi => new Spiral(0.1, 1).y(phi)
+    logSpiralX: phi => new LogSpiral(0.1, 1).x(phi),
+    logSpiralY: phi => new LogSpiral(0.1, 1).y(phi)
   }
 );
 
 const DEFAULT_DIMENSIONS = Array.from(new Array(10).keys()).map(d => d + 1);
 const DEFAULT_DIMENSION = 3;
-const DEFAULT_ORDERS = Array.from(new Array(7).keys());
+const DEFAULT_ORDERS = Array.from(new Array(20).keys());
 const DEFAULT_ORDER = 4;
+const DEFAULT_MODE = "logSpiral";
 
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
@@ -81,7 +82,7 @@ class ThreeDemo extends React.Component {
 
   state = {
     dimension: DEFAULT_DIMENSION,
-    order: DEFAULT_ORDER,
+    order: null,
     f0: "cos",
     f1: "sin",
     count: 0,
@@ -89,13 +90,17 @@ class ThreeDemo extends React.Component {
     nextFrame: null,
     points: null,
     sphere: null,
-    orders: safeOrdersForDimension(DEFAULT_DIMENSION),
+    orders: safeOrdersForDimension(DEFAULT_DIMENSION, DEFAULT_MODE),
     dimensions: DEFAULT_DIMENSIONS,
-    mode: "spiral" as "spiral" | "halveAndDouble"
+    mode: DEFAULT_MODE
   };
 
   constructor(props) {
     super(props);
+    this.state.order = highestOrderForDimension(
+      this.state.dimension,
+      this.state.mode
+    );
     this.state.sphere = this.newSphere();
   }
 
@@ -245,7 +250,8 @@ class ThreeDemo extends React.Component {
       event => {
         const dimension = parseInt(event.target.value);
         this.setState({ dimension }, () => {
-          const orders = safeOrdersForDimension(dimension);
+          const { mode } = this.state;
+          const orders = safeOrdersForDimension(dimension, mode);
           const order = Math.min(this.state.order, orders[orders.length - 1]);
           this.setStateAndSphere({ order, orders });
         });
@@ -264,8 +270,16 @@ class ThreeDemo extends React.Component {
     return this.picker(
       "mode",
       this.state.mode,
-      ["spiral", "halveAndDouble"],
-      event => this.setStateAndSphere({ mode: event.target.value })
+      ["halveAndDouble", "arithmeticSpiral", "logSpiral"],
+      event => {
+        const { dimension } = this.state;
+        const mode = event.target.value;
+        this.setStateAndSphere({
+          mode,
+          order: highestOrderForDimension(dimension, mode),
+          orders: safeOrdersForDimension(dimension, mode)
+        });
+      }
     );
   }
 
@@ -320,16 +334,16 @@ class ThreeDemo extends React.Component {
   }
 }
 
-function highestOrderForDimension(d: number) {
-  const orders = safeOrdersForDimension(d);
+function highestOrderForDimension(d: number, mode: string) {
+  const orders = safeOrdersForDimension(d, mode);
   return orders[orders.length - 1];
 }
 
-function safeOrdersForDimension(d: number) {
+function safeOrdersForDimension(d: number, mode: string) {
   return DEFAULT_ORDERS.filter(o => {
-    const count = pointCount(o, d);
+    const count = mode.endsWith("Spiral") ? 2 ** o : pointCount(o, d);
     console.log(`pointCount(${o}, ${d}) = ${count}`);
-    return count <= 4096;
+    return count <= 2048;
   });
 }
 
