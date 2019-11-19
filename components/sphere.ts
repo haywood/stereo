@@ -59,7 +59,7 @@ export default class Sphere {
     const { dimension, order, f0, f1, mode } = this;
     switch (mode) {
       case "halveAndDouble":
-        return new HalveAndDouble(dimension, order, f0, f1).generatePoints();
+        return new HalveAndDouble(dimension, order).generatePoints();
       case "logSpiral":
         return this.generatePointsFromSpiral(
           phase => new LogSpiral(0.1, 1, phase)
@@ -74,7 +74,7 @@ export default class Sphere {
   generatePointsFromSpiral(newSpiral) {
     const { dimension, order } = this;
     const pointCount = 2 ** order;
-    const points = [];
+    let points = [];
     for (let phase = 0; phase < tau; phase += tau / 10) {
       const spiral = newSpiral(phase);
       points.push(...spiral.sample(pointCount / 10, -tau, tau));

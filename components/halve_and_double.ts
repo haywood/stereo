@@ -38,21 +38,16 @@ import Projector from "./projector";
 
 export default class HalveAndDouble {
   points = [];
-  // TODO memoize f0,f1,cos,sin
   private readonly cos = memoize(cos);
   private readonly sin = memoize(sin);
 
   constructor(
     private readonly dimension: number,
-    private readonly order: number,
-    private readonly f0,
-    private readonly f1
+    private readonly order: number
   ) {
     if (this.dimension < 0) {
       throw new Error(`invalid dimension: ${this.dimension}`);
     }
-    this.f0 = memoize(this.f0);
-    this.f1 = memoize(this.f1);
   }
 
   generatePoints() {
@@ -127,16 +122,7 @@ export default class HalveAndDouble {
   }
 
   generatePointFromPoint(p, { phi, d0, d1 }) {
-    const q = p.slice();
-    const v = [p[d0], p[d1]];
-    const R = matrix([
-      [cos(phi), -sin(phi)],
-      [sin(phi), cos(phi)]
-    ]);
-    const u = multiply(R, v).valueOf();
-    q[d0] = round(u[0], 5) as number;
-    q[d1] = round(u[1], 5) as number;
-    return q;
+    return this.rotatePoint(p.slice(), { phi, d0, d1 });
   }
 
   one(d: number) {
@@ -150,8 +136,8 @@ export default class HalveAndDouble {
     const { phi, d0, d1 } = theta;
     const v = [p[d0], p[d1]];
     const R = matrix([
-      [this.f0(phi), -this.f1(phi)],
-      [this.f1(phi), this.f0(phi)]
+      [this.cos(phi), -this.sin(phi)],
+      [this.sin(phi), this.cos(phi)]
     ]);
     const u = multiply(R, v).valueOf();
     p[d0] = round(u[0], 5) as number;
