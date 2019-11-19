@@ -1,20 +1,4 @@
 import {
-  BufferGeometry,
-  BufferAttribute,
-  PointsMaterial,
-  Geometry,
-  Points,
-  VertexColors,
-  Scene,
-  Color,
-  Vector3,
-  PerspectiveCamera,
-  WebGLRenderer,
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh
-} from "three";
-import {
   cos,
   sin,
   norm,
@@ -29,14 +13,18 @@ import {
   tan,
   MathType,
   format,
+  subtract,
   clone,
   flatten,
   round
 } from "mathjs";
 import Projector from "./projector";
+import HalveAndDouble from "./halve_and_double";
+import Spiral from "./spiral";
 
 export default class Sphere {
-  points = [];
+  points;
+  basePoints;
   private readonly f0s = [];
   private readonly f1s = [];
 
@@ -44,113 +32,50 @@ export default class Sphere {
     private readonly dimension: number,
     private readonly order: number,
     private readonly f0,
-    private readonly f1
+    private readonly f1,
+    private readonly mode: "spiral" | "halveAndDouble"
   ) {
     if (this.dimension < 0) {
       throw new Error(`invalid dimension: ${this.dimension}`);
     }
 
-    this.points = this.generatePoints();
+    this.basePoints = this.generatePoints();
+    this.points = this.basePoints;
     console.log("generated points:", format(this.points));
   }
 
   rotate(theta: { phi: number; d0: number; d1: number }) {
+    const points = [];
     if (this.dimension > 1) {
-      for (const p of this.points) {
-        this.rotatePoint(p, theta);
+      for (const p of this.basePoints) {
+        points.push(this.rotatePoint(p.slice(), theta));
       }
     }
+    this.points = points;
   }
 
   generatePoints() {
-    return this.halveAndDouble();
-  }
-
-  halveAndDouble() {
-    // generates C(order) points where C(o) = (1 + 2 ** o) * C(o - 1), C(0) =
-    // dimension
-    // This is done by generating seed points and then rotating them through
-    // the first 2 ** (o-1) odd multiples of pi / 2 ** o
-    // The affect of this is to halve the angle at each step and double the
-    // number of points
-    const { dimension, order } = this;
-    const planes = [];
-    for (let d = 0; d < dimension; d++) {
-      const p = this.one(d);
-      planes.push([p]);
+    const { dimension, order, f0, f1, mode } = this;
+    switch (mode) {
+      case "spiral":
+        return this.generatePointsFromSpiral();
+      case "halveAndDouble":
+        return new HalveAndDouble(dimension, order, f0, f1).generatePoints();
     }
+  }
 
-    if (order > 1) {
-      for (let d = 0; d < dimension; d++) {
-        const p = planes[d][0].slice();
-        this.rotatePoint(p, { phi: pi, ...this.naturalPlane(d) });
-        planes[d].push(p);
-      }
+  generatePointsFromSpiral() {
+    const { dimension, order, mode } = this;
+    // TODO configurabel point count
+    // want to use 2 ** order, but that implies a very different scale from
+    // halveAndDouble, so need to make the ui more dynamic first
+    const pointCount = 1000;
+    const points = [];
+    for (let phase = 0; phase < tau; phase += tau / 10) {
+      const spiral = new Spiral(0.1, 1, phase);
+      points.push(...spiral.sample(pointCount / 10, -tau, tau));
     }
-
-    for (let o = 2; o < order; o++) {
-      const divisor = 2 ** o;
-      const angleCount = divisor / 2;
-      for (let d0 = 0; d0 < dimension; d0++) {
-        planes[d0] = this.generatePointsFromPlane(planes[d0], {
-          o,
-          ...this.naturalPlane(d0)
-        });
-      }
-    }
-
-    // an additonal rotation of a singe plane to fill space between axes
-    if (dimension > 2) {
-      for (let o = 2; o < order; o++) {
-        const divisor = 2 ** o;
-        const angleCount = divisor / 2;
-        const d0 = 0;
-        const d1 = dimension - 1;
-        planes[1] = this.generatePointsFromPlane(planes[1], { o, d0, d1 });
-      }
-    }
-
-    return planes.reduce((points, plane) => points.concat(plane), []);
-  }
-
-  naturalPlane(d) {
-    return { d0: d, d1: (d + 1) % this.dimension };
-  }
-
-  generatePointsFromPlane(plane, { o, d0, d1 }) {
-    const temp = plane.slice();
-    for (const p of plane) {
-      temp.push(...this.generatePointsFromPoint(p, { o, d0, d1 }));
-    }
-    return temp;
-  }
-
-  generatePointsFromPoint(p, { o, d0, d1 }) {
-    const divisor = 2 ** o;
-    const angleCount = divisor / 2;
-    const temp = [];
-    for (let n = 0; n < angleCount; n++) {
-      const multiple = 2 * n + 1;
-      const phi = (multiple * pi) / divisor;
-      temp.push(this.generatePointFromPoint(p, { phi, d0, d1 }));
-    }
-    return temp;
-  }
-
-  generatePointFromPoint(p, { phi, d0, d1 }) {
-    const q = p.slice();
-    this.rotatePoint(q, { phi, d0, d1 });
-    return q;
-  }
-
-  one(d: number) {
-    return Sphere.one(d, this.dimension);
-  }
-
-  static one(d: number, dimension: number) {
-    const p = new Array(dimension).fill(0);
-    p[d] = 1;
-    return p;
+    return Projector.stereo(points, 2, dimension);
   }
 
   rotatePoint(p: number[], theta: { phi: number; d0: number; d1: number }) {

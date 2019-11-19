@@ -1,7 +1,8 @@
 import Sphere from "../components/sphere";
 import GeometryHelper from "../components/geometry_helper";
+import Spiral from "../components/spiral";
 import styled from "styled-components";
-import { cos, sin, pi, flatten, Matrix, size } from "mathjs";
+import { norm, tau, cos, sin, pi, flatten, Matrix, size } from "mathjs";
 import {
   BufferGeometry,
   BufferAttribute,
@@ -26,7 +27,7 @@ const near = 0.1;
 const far = 1000;
 const FRAMES_PER_SECOND = 60;
 const RADIANS_PER_SECOND = PI / 180;
-const RATE = 20;
+const RATE = 80;
 const DEGREES_PER_FRAME = (-RATE * RADIANS_PER_SECOND) / FRAMES_PER_SECOND;
 
 const COORDINATE_FUNCTIONS = [
@@ -49,15 +50,21 @@ const COORDINATE_FUNCTIONS = [
   "tan",
   "tanh",
   "trunc"
-].reduce((fs, name) => {
-  fs[name] = Math[name];
-  return fs;
-}, {});
+].reduce(
+  (fs, name) => {
+    fs[name] = Math[name];
+    return fs;
+  },
+  {
+    spiralX: phi => new Spiral(0.1, 1).x(phi),
+    spiralY: phi => new Spiral(0.1, 1).y(phi)
+  }
+);
 
 const DEFAULT_DIMENSIONS = Array.from(new Array(10).keys()).map(d => d + 1);
 const DEFAULT_DIMENSION = 3;
 const DEFAULT_ORDERS = Array.from(new Array(7).keys());
-const DEFAULT_ORDER = 3;
+const DEFAULT_ORDER = 4;
 
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
@@ -75,7 +82,6 @@ class ThreeDemo extends React.Component {
   state = {
     dimension: DEFAULT_DIMENSION,
     order: DEFAULT_ORDER,
-    counter: 0,
     f0: "cos",
     f1: "sin",
     count: 0,
@@ -84,7 +90,8 @@ class ThreeDemo extends React.Component {
     points: null,
     sphere: null,
     orders: safeOrdersForDimension(DEFAULT_DIMENSION),
-    dimensions: DEFAULT_DIMENSIONS
+    dimensions: DEFAULT_DIMENSIONS,
+    mode: "spiral" as "spiral" | "halveAndDouble"
   };
 
   constructor(props) {
@@ -97,7 +104,7 @@ class ThreeDemo extends React.Component {
   }
 
   setSphere() {
-    this.setStateAndDraw({ sphere: this.newSphere() });
+    this.setStateAndDraw({ count: 0, sphere: this.newSphere() });
   }
 
   setStateAndDraw(state) {
@@ -105,13 +112,14 @@ class ThreeDemo extends React.Component {
   }
 
   newSphere() {
-    const { dimension, order, f0, f1 } = this.state;
+    const { dimension, order, f0, f1, mode } = this.state;
 
     return new Sphere(
       dimension,
       order,
       COORDINATE_FUNCTIONS[f0],
-      COORDINATE_FUNCTIONS[f1]
+      COORDINATE_FUNCTIONS[f1],
+      mode
     );
   }
 
@@ -121,7 +129,7 @@ class ThreeDemo extends React.Component {
     const aspect = width / height;
 
     this.camera = new PerspectiveCamera(fieldOfView, aspect, near, far);
-    this.camera.position.z = 3;
+    this.camera.position.z = 5;
 
     this.scene = new Scene();
     this.scene.add(this.points);
@@ -151,9 +159,9 @@ class ThreeDemo extends React.Component {
     const geometry = this.points.geometry as BufferGeometry;
     const { sphere, count, dimension } = this.state;
     sphere.rotate({
-      phi: DEGREES_PER_FRAME,
-      d0: dimension - 1,
-      d1: 0
+      phi: count * DEGREES_PER_FRAME,
+      d0: 0,
+      d1: dimension - 1
     });
     const vertices = GeometryHelper.vertices(sphere.points, dimension);
     const colors = GeometryHelper.colors(vertices);
@@ -174,11 +182,23 @@ class ThreeDemo extends React.Component {
     const { sphere, count, dimension } = this.state;
     this.draw();
     this.setState({
-      count: count + 1,
+      count: this.nextCount(),
       nextFrame: this.state.animate
         ? requestAnimationFrame(this.animate.bind(this))
         : null
     });
+  }
+
+  nextCount() {
+    const { sphere, count } = this.state;
+    let noneVisible = true;
+    for (const p of sphere.points) {
+      if (norm(p) < far) {
+        noneVisible = false;
+        break;
+      }
+    }
+    return noneVisible ? 0 : count + 1;
   }
 
   render() {
@@ -205,6 +225,7 @@ class ThreeDemo extends React.Component {
       <div id="control-panel">
         {this.dimensionPicker()}
         {this.orderPicker()}
+        {this.modePicker()}
         {this.f0Picker()}
         {this.f1Picker()}
         <div>
@@ -237,6 +258,15 @@ class ThreeDemo extends React.Component {
       const order = parseInt(event.target.value);
       this.setStateAndSphere({ order });
     });
+  }
+
+  modePicker() {
+    return this.picker(
+      "mode",
+      this.state.mode,
+      ["spiral", "halveAndDouble"],
+      event => this.setStateAndSphere({ mode: event.target.value })
+    );
   }
 
   f0Picker() {

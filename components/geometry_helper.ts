@@ -1,13 +1,11 @@
+import Projector from "./projector";
 import { flatten } from "mathjs";
 
 export default class GeometryHelper {
   static vertices(points, dimension: number) {
-    if (dimension < 3) {
-      points = points.map(p => [...p, ...new Array(3 - dimension).fill(0)]);
-    } else if (dimension > 3) {
-      points = points.map(p => p.slice(0, 3));
-    }
-    return flatten(points).valueOf() as number[];
+    return flatten(
+      Projector.stereo(points, dimension, 3)
+    ).valueOf() as number[];
   }
 
   static colors(vertices) {
