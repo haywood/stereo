@@ -61,7 +61,19 @@ const COORDINATE_FUNCTIONS = [
   }
 );
 
-const DEFAULT_DIMENSIONS = Array.from(new Array(10).keys()).map(d => d + 1);
+const MAX_DIMENSION = 10;
+const PLANES_OF_ROTATION = {};
+for (let d0 = 0; d0 < MAX_DIMENSION; d0++) {
+  for (let d1 = 0; d1 < MAX_DIMENSION; d1++) {
+    if (d0 === d1) continue;
+
+    PLANES_OF_ROTATION[`${d0},${d1}`] = { d0, d1 };
+  }
+}
+
+const DEFAULT_DIMENSIONS = Array.from(new Array(MAX_DIMENSION).keys()).map(
+  d => d + 1
+);
 const DEFAULT_DIMENSION = 3;
 const DEFAULT_ORDERS = Array.from(new Array(20).keys());
 const DEFAULT_ORDER = 4;
@@ -92,7 +104,8 @@ class ThreeDemo extends React.Component {
     sphere: null,
     orders: safeOrdersForDimension(DEFAULT_DIMENSION, DEFAULT_MODE),
     dimensions: DEFAULT_DIMENSIONS,
-    mode: DEFAULT_MODE
+    mode: DEFAULT_MODE,
+    planeOfRotation: `0,${DEFAULT_DIMENSION - 1}`
   };
 
   constructor(props) {
@@ -162,11 +175,12 @@ class ThreeDemo extends React.Component {
 
   draw() {
     const geometry = this.points.geometry as BufferGeometry;
-    const { sphere, count, dimension } = this.state;
+    const { sphere, count, dimension, planeOfRotation } = this.state;
+    const { d0, d1 } = PLANES_OF_ROTATION[planeOfRotation];
     sphere.rotate({
       phi: count * DEGREES_PER_FRAME,
-      d0: 0,
-      d1: dimension - 1
+      d0,
+      d1
     });
     const vertices = GeometryHelper.vertices(sphere.points, dimension);
     const colors = GeometryHelper.colors(vertices);
@@ -233,6 +247,7 @@ class ThreeDemo extends React.Component {
         {this.modePicker()}
         {this.f0Picker()}
         {this.f1Picker()}
+        {this.planeOfRotationPicker()}
         <div>
           <label>Point Count </label>
           <span>{this.state.sphere && size(this.state.sphere.points)[0]}</span>
@@ -258,8 +273,28 @@ class ThreeDemo extends React.Component {
           const { mode } = this.state;
           const orders = safeOrdersForDimension(dimension, mode);
           const order = Math.min(this.state.order, orders[orders.length - 1]);
-          this.setStateAndSphere({ order, orders });
+          const planeOfRotation = `0,${dimension - 1}`;
+          this.setStateAndSphere({ order, orders, planeOfRotation });
         });
+      }
+    );
+  }
+
+  planeOfRotationPicker() {
+    const { dimension } = this.state;
+    const options = [];
+    for (const key in PLANES_OF_ROTATION) {
+      const { d0, d1 } = PLANES_OF_ROTATION[key];
+      if (d0 < dimension && d1 < dimension) {
+        options.push(key);
+      }
+    }
+    return this.picker(
+      "Plane of Rotation",
+      this.state.planeOfRotation,
+      options,
+      event => {
+        this.setState({ planeOfRotation: event.target.value });
       }
     );
   }
