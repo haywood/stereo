@@ -30,6 +30,7 @@ const RADIANS_PER_SECOND = PI / 180;
 const RATE = 80;
 const DEGREES_PER_FRAME = (-RATE * RADIANS_PER_SECOND) / FRAMES_PER_SECOND;
 
+const spiral = new LogSpiral(0.1, 1);
 const COORDINATE_FUNCTIONS = [
   "abs",
   "cbrt",
@@ -39,10 +40,7 @@ const COORDINATE_FUNCTIONS = [
   "cosh",
   "exp",
   "floor",
-  "log",
-  "log10",
   "log1p",
-  "log2",
   "sign",
   "sin",
   "sinh",
@@ -56,8 +54,9 @@ const COORDINATE_FUNCTIONS = [
     return fs;
   },
   {
-    logSpiralX: phi => new LogSpiral(0.1, 1).x(phi),
-    logSpiralY: phi => new LogSpiral(0.1, 1).y(phi)
+    logSpiralX: phi => spiral.x(phi),
+    logSpiralY: phi => spiral.y(phi),
+    identity: phi => 1
   }
 );
 
@@ -77,7 +76,7 @@ const DEFAULT_DIMENSIONS = Array.from(new Array(MAX_DIMENSION).keys()).map(
 const DEFAULT_DIMENSION = 3;
 const DEFAULT_ORDERS = Array.from(new Array(20).keys());
 const DEFAULT_ORDER = 4;
-const DEFAULT_MODE = "logSpiral";
+const DEFAULT_MODE = "iterativeRotation";
 
 class ThreeDemo extends React.Component {
   readonly points: Points = new Points(
@@ -176,12 +175,20 @@ class ThreeDemo extends React.Component {
   draw() {
     const geometry = this.points.geometry as BufferGeometry;
     const { sphere, count, dimension, planeOfRotation } = this.state;
-    const { d0, d1 } = PLANES_OF_ROTATION[planeOfRotation];
-    sphere.rotate({
-      phi: count * DEGREES_PER_FRAME,
-      d0,
-      d1
-    });
+    if (dimension > 1) {
+      const { d0, d1 } = PLANES_OF_ROTATION[planeOfRotation];
+      sphere.rotate({
+        phi: count * DEGREES_PER_FRAME,
+        d0,
+        d1
+      });
+    } else {
+      sphere.rotate({
+        phi: count * DEGREES_PER_FRAME,
+        d0: 0,
+        d1: 0
+      });
+    }
     const vertices = GeometryHelper.vertices(sphere.points, dimension);
     const colors = GeometryHelper.colors(vertices);
 
@@ -310,7 +317,7 @@ class ThreeDemo extends React.Component {
     return this.picker(
       "mode",
       this.state.mode,
-      ["halveAndDouble", "arithmeticSpiral", "logSpiral"],
+      ["iterativeRotation", "halveAndDouble", "arithmeticSpiral", "logSpiral"],
       event => {
         const { dimension } = this.state;
         const mode = event.target.value;
@@ -388,7 +395,7 @@ function safeOrdersForDimension(d: number, mode: string) {
 }
 
 function pointCount(o, d, mode) {
-  if (mode.endsWith("Spiral")) return 2 ** o;
+  if (mode.endsWith("Spiral") || mode === "iterativeRotation") return 2 ** o;
   else if (mode === "halveAndDouble") {
     let count = d;
     for (let k = 0; k < o; k++) {
