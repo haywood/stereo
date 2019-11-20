@@ -238,6 +238,11 @@ class ThreeDemo extends React.Component {
           <span>{this.state.sphere && size(this.state.sphere.points)[0]}</span>
         </div>
         {this.animationSwitch()}
+        <div>
+          <button onClick={() => this.setStateAndDraw({ count: 0 })}>
+            Reset Animation
+          </button>
+        </div>
       </div>
     );
   }
@@ -341,17 +346,23 @@ function highestOrderForDimension(d: number, mode: string) {
 
 function safeOrdersForDimension(d: number, mode: string) {
   return DEFAULT_ORDERS.filter(o => {
-    const count = mode.endsWith("Spiral") ? 2 ** o : pointCount(o, d);
+    const count = pointCount(o, d, mode);
     console.log(`pointCount(${o}, ${d}) = ${count}`);
     return count <= 2048;
   });
 }
 
-function pointCount(o, d) {
-  if (o <= 0) {
-    return d;
+function pointCount(o, d, mode) {
+  if (mode.endsWith("Spiral")) return 2 ** o;
+  else if (mode === "halveAndDouble") {
+    let count = d;
+    for (let k = 0; k < o; k++) {
+      count *= 2 ** k + 1;
+    }
+    return count;
+  } else {
+    throw new Error(`Invalid mode ${mode}`);
   }
-  return (1 + 2 ** (o - 1)) * pointCount(o - 1, d);
 }
 
 const Index = () => <ThreeDemo />;
