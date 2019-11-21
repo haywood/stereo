@@ -1,4 +1,4 @@
-import { zeros, dot } from "mathjs";
+import { zeros, dot, equal, min } from "mathjs";
 export default class Projector {
   static stereo(points, from: number, to: number) {
     if (from < to) {
@@ -32,16 +32,16 @@ export default class Projector {
   }
 
   static stereoDown(points, from, to) {
-    from--;
-
     points = points.map(p => {
       const q = new Array(from).fill(0);
       for (let d = 0; d < from; d++) {
         q[d] = p[d] / (1 - p[0]);
       }
+      q.splice(0, 1);
       return q;
     });
 
+    from--;
     if (from <= to) {
       return points;
     } else {

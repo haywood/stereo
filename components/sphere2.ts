@@ -1,5 +1,6 @@
 import { round, matrix, multiply, cos, sin, pi, tau, nthRoot } from "mathjs";
 import memoize from "memoizee";
+import Rotator from "./rotator";
 
 export default class Sphere2 {
   cos = memoize(cos);
@@ -17,7 +18,7 @@ export default class Sphere2 {
     const p = new Array(d).fill(0);
     p[0] = r;
     for (let i = 0; i < phi.length; i++) {
-      this.rotatePoint(p, { phi: phi[i], d0: i, d1: i + 1 });
+      Rotator.rotatePoint(p, { phi: phi[i], d0: i, d1: i + 1 });
     }
     return p;
   }
@@ -43,18 +44,5 @@ export default class Sphere2 {
       points.push(...this.generatePoints(n, k + 1, phi, phi1));
     }
     return points;
-  }
-
-  rotatePoint(p: number[], theta: { phi: number; d0: number; d1: number }) {
-    const { phi, d0, d1 } = theta;
-    const v = [p[d0], p[d1]];
-    const R = matrix([
-      [this.cos(phi), -this.sin(phi)],
-      [this.sin(phi), this.cos(phi)]
-    ]);
-    const u = multiply(R, v).valueOf();
-    p[d0] = round(u[0], 5) as number;
-    p[d1] = round(u[1], 5) as number;
-    return p;
   }
 }

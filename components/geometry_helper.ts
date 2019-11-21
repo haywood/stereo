@@ -1,10 +1,9 @@
-import Projector from "./projector";
 import { flatten } from "mathjs";
 
 export default class GeometryHelper {
-  static vertices(points, dimension: number) {
+  static vertices(points) {
     return flatten(
-      Projector.stereo(points, dimension, 3)
+points      
     ).valueOf() as number[];
   }
 
