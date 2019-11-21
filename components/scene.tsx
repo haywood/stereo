@@ -28,7 +28,12 @@ export default class Scene extends React.Component {
     animate: true,
     nextFrame: null
   };
-  props: { dimension: number; points: () => number[][] };
+  props: {
+    dimension: number;
+    points: () => number[][];
+    width: number;
+    height: number;
+  };
 
   render() {
     if (this.renderer) {
@@ -48,15 +53,15 @@ export default class Scene extends React.Component {
 
   componentDidMount() {
     const { animate } = this.state;
+    const { width, height } = this.props;
 
     const fieldOfView = 100; // degrees
     const near = 0.1;
     const far = 1000;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
     const aspect = width / height;
 
     this.camera = new PerspectiveCamera(fieldOfView, aspect, near, far);
+    // TODO: configurable position
     this.camera.position.z = 6;
 
     this.renderer = new WebGLRenderer();
