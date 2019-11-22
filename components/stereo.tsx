@@ -9,9 +9,7 @@ import DimensionPicker from "./dimension_picker";
 
 // TODO add controls for
 // - animation on/off
-// - from
-// - to
-// - plane of rotation
+// - initial orientation
 export default class Stereo extends React.Component {
   points = [];
   sphere;
@@ -51,52 +49,69 @@ export default class Stereo extends React.Component {
   };
 
   render() {
+    // TODO scene.width should be 100vw - controlPanel.width
+    // TODO scene.height should be 100vh
     return (
       <Component>
         <Scene
+          id="scene"
           dimension={this.state.to}
           points={this.generatePoints}
-          width={1000}
-          height={662}
+          width={1400}
+          height={900}
         ></Scene>
         <div id="control_panel">
-          <DimensionPicker
-            label="From"
-            min={this.state.to}
-            max={10}
-            initialValue={this.state.from}
-            onChange={this.onFromChange}
-          ></DimensionPicker>
-          <DimensionPicker
-            label="To"
-            min={1}
-            max={this.state.from}
-            initialValue={this.state.to}
-            onChange={this.onToChange}
-          ></DimensionPicker>
-          <div>
-            <label>Radians/s</label>
-            <input
-              value={this.state.rotation.phi}
-              required={true}
-              // TODO delay evaluation until loss of focus
-              onChange={this.onPhiChange}
-            />
-          </div>
-          <DimensionPicker
-            label="D0"
-            min={0}
-            max={this.state.from - 1}
-            initialValue={this.state.rotation.d0}
-            onChange={this.onD0Change}
-          ></DimensionPicker>
-          <DimensionPicker
-            label="D1"
-            min={0}
-            max={this.state.from - 1}
-            initialValue={this.state.rotation.d1}
-            onChange={this.onD1Change}
-          ></DimensionPicker>
+          <fieldset>
+            <h3>Basic Settings</h3>
+            <div>
+              <label>Point Count</label>
+              <span>{this.points.length}</span>
+            </div>
+            <DimensionPicker
+              label="From"
+              min={this.state.to}
+              max={10}
+              initialValue={this.state.from}
+              onChange={this.onFromChange}
+            ></DimensionPicker>
+            <DimensionPicker
+              label="To"
+              min={1}
+              max={this.state.from}
+              initialValue={this.state.to}
+              onChange={this.onToChange}
+            ></DimensionPicker>
+          </fieldset>
+          <fieldset>
+            <h3>Rotation Settings</h3>
+            <div>
+              <label>Rate</label>
+              <input
+                value={this.state.rotation.phi}
+                required={true}
+                // TODO delay evaluation until loss of focus
+                onChange={this.onPhiChange}
+              />
+              rad/s
+            </div>
+            <DimensionPicker
+              label="D0"
+              min={0}
+              max={this.state.from - 1}
+              initialValue={this.state.rotation.d0}
+              onChange={this.onD0Change}
+            ></DimensionPicker>
+            <DimensionPicker
+              label="D1"
+              min={0}
+              max={this.state.from - 1}
+              initialValue={this.state.rotation.d1}
+              onChange={this.onD1Change}
+            ></DimensionPicker>
+          </fieldset>
+          <fieldset>
+            <h3>Orientation Settings</h3>
+          </fieldset>
         </div>
       </Component>
     );
@@ -132,13 +147,19 @@ export default class Stereo extends React.Component {
 }
 
 const Component = styled.div`
-  display: flex;
-  flex-direction: row;
-  place-content: center space-between;
-
   #control_panel {
-    display: flex;
-    flex-direction: column;
-    place-content: space-between end;
+    padding: 16px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+
+    fieldset {
+      border: none;
+    }
+
+    label {
+      padding-right: 8px;
+    }
   }
 `;

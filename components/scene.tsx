@@ -21,37 +21,42 @@ export default class Scene extends React.Component {
     })
   );
   camera?: PerspectiveCamera;
-  renderer?: WebGLRenderer;
   scene?: THREE.Scene;
 
   state = {
     animate: true,
-    nextFrame: null
+    nextFrame: null,
+    renderer: null
   };
   props: {
+    id: string;
     dimension: number;
     points: () => number[][];
     width: number;
     height: number;
   };
 
-  render() {
-    if (this.renderer) {
+  render = () => {
+    if (this.state.renderer) {
       return (
-        <Component>
-          <div ref={el => this.appendToDom(el)}></div>
-        </Component>
+        <Component
+          id={this.props.id}
+          ref={el => this.appendToDom(el)}
+        ></Component>
       );
     } else {
       return null;
     }
-  }
+  };
 
-  appendToDom(el) {
-    if (el) el.appendChild(this.renderer.domElement);
-  }
+  appendToDom = (el: Element) => {
+    const { renderer } = this.state;
+    if (el && renderer) {
+      el.appendChild(renderer.domElement);
+    }
+  };
 
-  componentDidMount() {
+  componentDidMount = () => {
     const { animate } = this.state;
     const { width, height } = this.props;
 
@@ -64,49 +69,40 @@ export default class Scene extends React.Component {
     // TODO: configurable position
     this.camera.position.z = 6;
 
-    this.renderer = new WebGLRenderer();
-    this.renderer.setSize(width, height);
+    const renderer = new WebGLRenderer();
+    renderer.setSize(width, height, true);
 
     this.scene = new THREE.Scene();
     this.scene.add(this.points);
 
-    if (animate) {
-      console.log("starting animation");
-      this.requestAnimationFrame();
-    } else {
-      console.log("drawing once");
-      this.draw();
-    }
-  }
+    this.setState({ renderer }, () => {
+      if (animate) {
+        console.log("starting animation");
+        renderer.setAnimationLoop(this.draw);
+      } else {
+        console.log("drawing once");
+        this.draw();
+      }
+    });
+  };
 
-  componentWillUnmount() {
-    const { nextFrame } = this.state;
-    if (nextFrame) {
-      cancelAnimationFrame(nextFrame);
+  componentWillUnmount = () => {
+    const { renderer } = this.state;
+    if (renderer) {
+      renderer.setAnimationLoop(null);
     }
-  }
+  };
 
-  draw() {
+  draw = () => {
     const { points, dimension } = this.props;
+    const { renderer } = this.state;
     const vertices = GeometryHelper.vertices(points());
     const colors = GeometryHelper.colors(vertices);
     const geometry = this.points.geometry as BufferGeometry;
     geometry.setAttribute("position", newBufferAttribute(vertices, dimension));
     geometry.setAttribute("color", newBufferAttribute(colors, dimension));
-    this.renderer.render(this.scene, this.camera);
-  }
-
-  animate() {
-    const { animate } = this.state;
-    this.draw();
-    if (animate) this.requestAnimationFrame();
-  }
-
-  requestAnimationFrame() {
-    this.setState({
-      nextFrame: requestAnimationFrame(() => this.animate())
-    });
-  }
+    renderer.render(this.scene, this.camera);
+  };
 }
 
 function newBufferAttribute(values, dimension) {
