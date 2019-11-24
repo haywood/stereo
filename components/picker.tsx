@@ -29,7 +29,7 @@ export default class Picker extends React.Component {
 
   onChange = event => {
     const { value } = event.target;
-    this.setState({ value }, () => this.props.onChange(parseInt(value)));
+    this.setState({ value }, () => this.props.onChange(value));
   };
 
   renderOptions() {

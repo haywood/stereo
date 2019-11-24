@@ -1,24 +1,109 @@
 import * as React from "react";
+import Picker from "./picker";
 import styled from "styled-components";
-import Sphere2 from "./sphere2";
+import SphereGenerator from "../lib/sphere_generator";
+import FancyNumberSphereGenerator from "../lib/fancy_number_sphere_generator";
+import { FancyNumber } from "../lib/fancy_number";
 import Scene from "./scene";
 import { evaluate, pi, tau, format, round } from "mathjs";
 import Projector from "./projector";
-import Rotator from "./rotator";
+import Rotator from "../lib/rotator";
 import DimensionPicker from "./dimension_picker";
 
-// TODO add controls for
-// - animation on/off
-// - initial orientation
+class Domain {
+  constructor(
+    readonly name: string,
+    readonly dimension: number,
+    readonly generatorClass,
+    readonly ranges: Range[],
+    readonly defaultRange: Range = ranges[0]
+  ) {}
+  get id() {
+    return this.name.toLowerCase().replace(/\s+/g, "_");
+  }
+
+  newGenerator() {
+    return new this.generatorClass(10000, this.dimension);
+  }
+}
+
+class Range {
+  constructor(readonly name: string, readonly dimension: number) {}
+
+  get id() {
+    return this.name.toLowerCase().replace(/\s+/g, "_");
+  }
+}
+
+const rn = d => new Range(`R${d}`, d);
+const RANGES = {
+  r1: rn(1),
+  r2: rn(2),
+  r3: rn(3),
+  r4: rn(4),
+  r5: rn(5),
+  r6: rn(6),
+  r7: rn(7),
+  r8: rn(8),
+  r9: rn(9),
+  r10: rn(10)
+};
+const rangeList = Object.values(RANGES);
+
+const DOMAINS = {
+  quaternion: new Domain(
+    "Quaternion",
+    4,
+    FancyNumberSphereGenerator,
+    rangeList.slice(0, 4).reverse(),
+    RANGES.r3
+  ),
+  quaternion_r3: new Domain(
+    "Quaternion R3",
+    3,
+    FancyNumberSphereGenerator,
+    rangeList.slice(0, 3).reverse(),
+    RANGES.r3
+  ),
+  octonion: new Domain(
+    "Octonion",
+    8,
+    FancyNumberSphereGenerator,
+    rangeList.slice(0, 8).reverse(),
+    RANGES.r4
+  ),
+  r2: new Domain(
+    "R2",
+    2,
+    SphereGenerator,
+    rangeList.slice(0, 2).reverse(),
+    RANGES.r2
+  ),
+  r3: new Domain(
+    "R3",
+    3,
+    SphereGenerator,
+    rangeList.slice(0, 3).reverse(),
+    RANGES.r3
+  ),
+  r4: new Domain(
+    "R4",
+    4,
+    SphereGenerator,
+    rangeList.slice(0, 4).reverse(),
+    RANGES.r4
+  )
+};
+
 export default class Stereo extends React.Component {
-  points = [];
-  sphere;
-  count = 0;
+  generator;
   state = {
     animate: true,
-    from: 4,
-    to: 3,
-    rotation: { phi: "pi / 150", d0: 0, d1: 3 }
+    domain: DOMAINS.quaternion.id,
+    range: DOMAINS.quaternion.defaultRange.id,
+    phi: "pi / 150",
+    d0: 0,
+    d1: 2
   };
 
   constructor(props) {
@@ -26,26 +111,28 @@ export default class Stereo extends React.Component {
     this.resetSphere();
   }
 
+  get points() {
+    const { generator } = this;
+    const { domain } = this.state;
+    return generator.points;
+  }
+
+  componentDidMount() {
+    window["stereo"] = this;
+  }
+
   resetSphere = () => {
-    const { from: d } = this.state;
-    this.sphere = new Sphere2(1, d);
-    this.points = this.sphere.sample(
-      2000,
-      new Array(d - 1).fill(0),
-      new Array(d - 1).fill(tau)
-    );
+    this.generator = DOMAINS[this.state.domain].newGenerator();
   };
 
   generatePoints = () => {
-    const { from, to, rotation } = this.state;
-    const { phi, d0, d1 } = rotation;
-    if (this.count > 0) {
-      for (const p of this.points) {
-        Rotator.rotatePoint(p, { phi: evaluate(phi), d0, d1 });
-      }
-    }
-    this.count++;
-    return Projector.stereo(this.points, from, to);
+    const { domain, range, phi, d0, d1 } = this.state;
+    this.generator.rotate({ phi: evaluate(phi), d0, d1 });
+    return Projector.stereo(
+      this.points,
+      DOMAINS[domain].dimension,
+      RANGES[range].dimension
+    );
   };
 
   render() {
@@ -55,7 +142,7 @@ export default class Stereo extends React.Component {
       <Component>
         <Scene
           id="scene"
-          dimension={this.state.to}
+          dimension={RANGES[this.state.range].dimension}
           points={this.generatePoints}
           width={1400}
           height={900}
@@ -67,27 +154,31 @@ export default class Stereo extends React.Component {
               <label>Point Count</label>
               <span>{this.points.length}</span>
             </div>
-            <DimensionPicker
-              label="From"
-              min={this.state.to}
-              max={10}
-              initialValue={this.state.from}
-              onChange={this.onFromChange}
-            ></DimensionPicker>
-            <DimensionPicker
-              label="To"
-              min={1}
-              max={this.state.from}
-              initialValue={this.state.to}
-              onChange={this.onToChange}
-            ></DimensionPicker>
+            <Picker
+              label="Domain"
+              initialValue={this.state.domain}
+              options={Object.values(DOMAINS).map(d => ({
+                value: d.id,
+                text: d.name
+              }))}
+              onChange={this.onDomainChange}
+            ></Picker>
+            <Picker
+              label="Range"
+              initialValue={this.state.range}
+              options={DOMAINS[this.state.domain].ranges.map(r => ({
+                value: r.id,
+                text: r.name
+              }))}
+              onChange={this.onRangeChange}
+            ></Picker>
           </fieldset>
           <fieldset>
             <h3>Rotation Settings</h3>
             <div>
               <label>Rate</label>
               <input
-                value={this.state.rotation.phi}
+                value={this.state.phi}
                 required={true}
                 // TODO delay evaluation until loss of focus
                 onChange={this.onPhiChange}
@@ -97,15 +188,15 @@ export default class Stereo extends React.Component {
             <DimensionPicker
               label="D0"
               min={0}
-              max={this.state.from - 1}
-              initialValue={this.state.rotation.d0}
+              max={DOMAINS[this.state.domain].dimension - 1}
+              initialValue={this.state.d0}
               onChange={this.onD0Change}
             ></DimensionPicker>
             <DimensionPicker
               label="D1"
               min={0}
-              max={this.state.from - 1}
-              initialValue={this.state.rotation.d1}
+              max={DOMAINS[this.state.domain].dimension - 1}
+              initialValue={this.state.d1}
               onChange={this.onD1Change}
             ></DimensionPicker>
           </fieldset>
@@ -117,32 +208,27 @@ export default class Stereo extends React.Component {
     );
   }
 
-  onFromChange = (from: number) => {
-    const { phi } = this.state.rotation;
+  onDomainChange = domain =>
     this.setState(
-      { from, rotation: { phi, d0: 0, d1: from - 1 } },
+      { domain, range: DOMAINS[domain].defaultRange.id },
       this.resetSphere
     );
-  };
 
-  onToChange = (to: number) => {
-    this.setState({ to }, this.resetSphere);
+  onRangeChange = range => {
+    this.setState({ range }, this.resetSphere);
   };
 
   onPhiChange = event => {
-    const { rotation } = this.state;
     const phi = event.target.value;
-    this.setState({ rotation: { ...rotation, phi } }, this.resetSphere);
+    this.setState({ phi }, this.resetSphere);
   };
 
   onD0Change = d0 => {
-    const { rotation } = this.state;
-    this.setState({ rotation: { ...rotation, d0 } }, this.resetSphere);
+    this.setState({ d0 }, this.resetSphere);
   };
 
   onD1Change = d1 => {
-    const { rotation } = this.state;
-    this.setState({ rotation: { ...rotation, d1 } }, this.resetSphere);
+    this.setState({ d1 }, this.resetSphere);
   };
 }
 

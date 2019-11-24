@@ -1,10 +1,6 @@
-import { cos, sin, exp } from "mathjs";
-import memoize from "memoizee";
+import { cos, sin, exp } from "../lib/fn";
 
 export default class LogSpiral {
-  cos = memoize(cos);
-  sin = memoize(sin);
-  exp = memoize(exp);
   constructor(readonly a: number, readonly k: number, readonly phase = 0) {}
 
   sample(n, a, b) {
@@ -22,15 +18,15 @@ export default class LogSpiral {
   }
 
   x(phi: number) {
-    return this.r(phi) * this.cos(phi);
+    return this.r(phi) * cos(phi);
   }
 
   y(phi: number) {
-    return this.r(phi) * this.sin(phi);
+    return this.r(phi) * sin(phi);
   }
 
   r(phi: number) {
     const { a, k, phase } = this;
-    return a * this.exp(k * phi + phase);
+    return a * exp(k * phi + phase);
   }
 }

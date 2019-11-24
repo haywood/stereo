@@ -16,8 +16,6 @@ import {
   Mesh
 } from "three";
 import {
-  cos,
-  sin,
   norm,
   pi,
   tau,
@@ -35,11 +33,10 @@ import {
   round
 } from "mathjs";
 import Projector from "./projector";
+import { cos, sin } from "../lib/fn";
 
 export default class HalveAndDouble {
   points = [];
-  private readonly cos = memoize(cos);
-  private readonly sin = memoize(sin);
 
   constructor(
     private readonly dimension: number,
@@ -136,8 +133,8 @@ export default class HalveAndDouble {
     const { phi, d0, d1 } = theta;
     const v = [p[d0], p[d1]];
     const R = matrix([
-      [this.cos(phi), -this.sin(phi)],
-      [this.sin(phi), this.cos(phi)]
+      [cos(phi), -sin(phi)],
+      [sin(phi), cos(phi)]
     ]);
     const u = multiply(R, v).valueOf();
     p[d0] = round(u[0], 5) as number;

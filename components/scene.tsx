@@ -17,7 +17,7 @@ export default class Scene extends React.Component {
     new BufferGeometry(),
     new PointsMaterial({
       vertexColors: VertexColors,
-      size: 0.02
+      size: 0.01
     })
   );
   camera?: PerspectiveCamera;

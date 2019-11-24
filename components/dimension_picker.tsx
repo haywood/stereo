@@ -17,23 +17,25 @@ export default class DimensionPicker extends React.Component {
     this.state = { value: props.initialValue || props.min };
   }
 
-  render() {
+  render = () => {
     return (
       <Picker
         initialValue={this.props.initialValue}
         label={this.props.label}
         options={this.options()}
-        onChange={this.props.onChange}
+        onChange={this.onChange}
       ></Picker>
     );
-  }
+  };
 
-  options() {
+  onChange = value => this.props.onChange(parseInt(value));
+
+  options = () => {
     const { min, max } = this.props;
     const options = [];
     for (let d = min; d <= max; d++) {
       options.push({ value: d, text: d.toString() });
     }
     return options;
-  }
+  };
 }

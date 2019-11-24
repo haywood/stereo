@@ -28,7 +28,6 @@ import memoize from "memoizee";
 export default class Sphere {
   points;
   basePoints;
-  cos = memoize(cos);
 
   constructor(
     private readonly dimension: number,
@@ -61,11 +60,7 @@ export default class Sphere {
     switch (mode) {
       case "iterativeRotation":
         const n = 2 ** order;
-        return new Sphere2(1, dimension).sample(
-          n,
-          new Array(dimension - 1).fill(0),
-          new Array(dimension - 1).fill(tau)
-        );
+        return new Sphere2(1, dimension).sample(n);
       case "halveAndDouble":
         return new HalveAndDouble(dimension, order).generatePoints();
       case "logSpiral":
