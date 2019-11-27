@@ -8,6 +8,9 @@ export default class GeometryHelper {
   }
 
   static colors(vertices) {
-    return vertices.map(x => x ** 2);
+    return vertices.map(this.fn);
   }
+
+  static fn = x => x ** 2;
+  //static fn = x => 1;
 }

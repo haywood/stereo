@@ -12,6 +12,7 @@ import {
   nthRoot
 } from "mathjs";
 import Rotator from "./rotator";
+import Cube from "./cube";
 
 export default class Sphere {
   constructor(readonly r: number, readonly d: number) {}
@@ -36,20 +37,10 @@ export default class Sphere {
 
   sample = (n: number) => {
     const { d } = this;
-    const phi0 = new Array(d - 1).fill(0);
-    const phi1 = new Array(d - 1).fill(tau);
-    n = Math.floor(nthRoot(n, d - 1) as number);
-    return this.generatePoints(n, 0, phi0, phi1);
-  };
-
-  generatePoints = (n: number, k: number, phi: number[], phi1: number[]) => {
-    const { d } = this;
-    if (k >= d - 1) return [this.valueAt(phi)];
+    const cube = new Cube(tau, d - 1);
     const points = [];
-    phi = phi.slice();
-    for (let i = 0; i < n; i++) {
-      phi[k] = (i * phi1[k]) / n;
-      points.push(...this.generatePoints(n, k + 1, phi, phi1));
+    for (const p of cube.iterator(n)) {
+      points.push(this.valueAt(p));
     }
     return points;
   };

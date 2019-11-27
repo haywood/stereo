@@ -34,7 +34,9 @@ export default class Picker extends React.Component {
 
   renderOptions() {
     return this.props.options.map(o => (
-      <option value={o.value}>{o.text}</option>
+      <option key={o.value} value={o.value}>
+        {o.text}
+      </option>
     ));
   }
 }

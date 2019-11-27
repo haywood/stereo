@@ -9,6 +9,8 @@ import { evaluate, pi, tau, format, round } from "mathjs";
 import Projector from "./projector";
 import Rotator from "../lib/rotator";
 import DimensionPicker from "./dimension_picker";
+import CubeGenerator from "../lib/cube_generator";
+import FancyNumberCubeGenerator from "../lib/fancy_number_cube_generator";
 
 class Domain {
   constructor(
@@ -51,6 +53,34 @@ const RANGES = {
 const rangeList = Object.values(RANGES);
 
 const DOMAINS = {
+  quaternion_cube: new Domain(
+    "Quaternion Cube",
+    4,
+    FancyNumberCubeGenerator,
+    rangeList.slice(0, 4).reverse(),
+    RANGES.r3
+  ),
+  unit_4_cube: new Domain(
+    "Unit 4 Cube",
+    4,
+    CubeGenerator,
+    rangeList.slice(0, 4).reverse(),
+    RANGES.r4
+  ),
+  unit_3_cube: new Domain(
+    "Unit 3 Cube",
+    3,
+    CubeGenerator,
+    rangeList.slice(0, 3).reverse(),
+    RANGES.r3
+  ),
+  unit_2_cube: new Domain(
+    "Unit 2 Cube",
+    2,
+    CubeGenerator,
+    rangeList.slice(0, 2).reverse(),
+    RANGES.r2
+  ),
   quaternion: new Domain(
     "Quaternion",
     4,
@@ -94,16 +124,17 @@ const DOMAINS = {
     RANGES.r4
   )
 };
+const DEFAULT_DOMAIN = DOMAINS.quaternion;
 
 export default class Stereo extends React.Component {
   generator;
   state = {
     animate: true,
-    domain: DOMAINS.quaternion.id,
-    range: DOMAINS.quaternion.defaultRange.id,
+    domain: DEFAULT_DOMAIN.id,
+    range: DEFAULT_DOMAIN.defaultRange.id,
     phi: "pi / 150",
     d0: 0,
-    d1: 2
+    d1: DEFAULT_DOMAIN.dimension - 1
   };
 
   constructor(props) {
@@ -208,11 +239,13 @@ export default class Stereo extends React.Component {
     );
   }
 
-  onDomainChange = domain =>
-    this.setState(
-      { domain, range: DOMAINS[domain].defaultRange.id },
-      this.resetSphere
-    );
+  onDomainChange = domain => {
+    const range = DOMAINS[domain].defaultRange.id;
+    const d0 = 0;
+    const d1 = DOMAINS[domain].dimension - 1;
+
+    return this.setState({ domain, range, d0, d1 }, this.resetSphere);
+  };
 
   onRangeChange = range => {
     this.setState({ range }, this.resetSphere);

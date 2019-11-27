@@ -1,12 +1,12 @@
-import Sphere from "./sphere";
+import Cube from "./cube";
 import { FancyNumber, components } from "./fancy_number";
 import { cos, sin } from "./fn";
 
-export default class FancyNumberSphereGenerator {
+export default class FancyNumberCubeGenerator {
   private _points;
 
   constructor(n: number, readonly d: number) {
-    this._points = new Sphere(1, d).sample(n).map(FancyNumber.of);
+    this._points = new Cube(1, d).sample(n).map(FancyNumber.of);
   }
 
   get points() {
@@ -18,7 +18,11 @@ export default class FancyNumberSphereGenerator {
     let q = new FancyNumber({});
     q = q.add(
       new FancyNumber({
-        [components[d0]]: cos(phi),
+        [components[d0]]: cos(phi)
+      })
+    );
+    q = q.add(
+      new FancyNumber({
         [components[d1]]: sin(phi)
       })
     );
