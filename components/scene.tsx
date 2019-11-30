@@ -24,7 +24,6 @@ export default class Scene extends React.Component {
   scene?: THREE.Scene;
 
   state = {
-    animate: true,
     nextFrame: null,
     renderer: null
   };
@@ -34,6 +33,7 @@ export default class Scene extends React.Component {
     points: () => number[][];
     width: number;
     height: number;
+    animate: boolean;
   };
 
   render = () => {
@@ -57,13 +57,13 @@ export default class Scene extends React.Component {
   };
 
   componentDidMount = () => {
-    const { animate } = this.state;
-    const { width, height } = this.props;
+    const { width, height, animate, id, dimension } = this.props;
 
     const fieldOfView = 100; // degrees
     const near = 0.1;
     const far = 1000;
     const aspect = width / height;
+    window[`scene_${id}`] = this;
 
     this.camera = new PerspectiveCamera(fieldOfView, aspect, near, far);
     // TODO: configurable position

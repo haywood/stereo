@@ -1,47 +1,32 @@
-import {
-  add,
-  divide,
-  equal,
-  round,
-  matrix,
-  multiply,
-  cos,
-  sin,
-  pi,
-  tau,
-  nthRoot
-} from "mathjs";
+import { equal } from "mathjs";
 import Rotator from "./rotator";
 import Cube from "./cube";
+import { tau } from "mathjs";
+import { Fn, components } from "./fn";
 
-export default class Sphere {
-  constructor(readonly r: number, readonly d: number) {}
+export default class Sphere implements Fn {
+  private readonly root: number[];
 
-  valueAt = (phi: number[]) => {
-    const { r, d } = this;
-    if (phi.length !== d - 1) {
-      throw new Error(
-        `Expected phi.length to be ${d - 1}, but was ${phi.length}`
-      );
+  constructor(readonly d: number, r: number) {
+    this.root = [r, ...new Array(d - 1).fill(0)];
+  }
+
+  get domain() {
+    return this.d - 1;
+  }
+
+  sample = function*(n) {
+    const cube = new Cube(this.domain, tau);
+    for (const phi of cube.sample(n)) {
+      yield this.fn(phi);
     }
-    const p = new Array(d).fill(0);
-    let start = phi.findIndex(x => !equal(x, 0));
-    if (start < 0) start = 0;
-    p[start] = r;
-    for (let offset = 0; offset < phi.length; offset++) {
-      const i = (start + offset) % phi.length;
-      Rotator.rotatePoint(p, { phi: phi[i], d0: i, d1: i + 1 });
-    }
-    return p;
   };
 
-  sample = (n: number) => {
-    const { d } = this;
-    const cube = new Cube(tau, d - 1);
-    const points = [];
-    for (const p of cube.iterator(n)) {
-      points.push(this.valueAt(p));
-    }
-    return points;
+  fn = (phi: number[]) => {
+    const { d, root } = this;
+    return components(d - 1).reduce(
+      (p, i) => new Rotator(d, phi[i], 0, i + 1).fn(p),
+      root
+    );
   };
 }

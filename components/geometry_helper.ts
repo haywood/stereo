@@ -1,5 +1,5 @@
 import { flatten } from "mathjs";
-import { pi, floor } from "mathjs";
+import { pi, floor, max, abs, min } from "mathjs";
 import { cos } from "../lib/fn";
 
 export default class GeometryHelper {
@@ -8,9 +8,6 @@ export default class GeometryHelper {
   }
 
   static colors(vertices) {
-    return vertices.map(this.fn);
+    return vertices.map(x => abs(x));
   }
-
-  static fn = x => x ** 2;
-  //static fn = x => 1;
 }
