@@ -9,22 +9,24 @@ import { tau, pi, floor, nthRoot } from "mathjs";
 import Projector from "../lib/stereo";
 import Rotator from "../lib/rotator";
 import { Fn, CompositeFn, components } from "../lib/fn";
-import StereoWorker from "./stereo.worker";
+import StereoWorker from "worker-loader?name=static/[hash].worker.js!./stereo.worker";
 
 export default class Stereo extends React.Component {
-  worker;
+  worker: Worker;
 
   state = { points: [] };
 
   componentDidMount() {
+    console.log("setting up web worker");
+
     this.worker = new StereoWorker();
-    addEventListener("message", this.onMessage);
+    this.worker.addEventListener("message", this.onMessage);
+    this.worker.postMessage({ needPoints: true });
   }
 
   componentWillUnmount() {
     const { worker } = this;
     if (worker) {
-      window.removeEventListener("message", this.onMessage);
       worker.terminate();
     }
   }
@@ -32,16 +34,15 @@ export default class Stereo extends React.Component {
   onMessage = (msg: any) => {
     const { points } = msg.data;
     if (points) {
-      this.setState({ points });
+      this.setState({ points }, () => {
+        this.worker.postMessage({ needPoints: true });
+      });
     }
   };
 
   render() {
     const { points } = this.state;
     const rangeDimension = (points[0] && points[0].length) || 0;
-    console.log(
-      `rendering scene with ${points.length} points and dimension ${rangeDimension}`
-    );
     return (
       <Scene
         id="pipes"

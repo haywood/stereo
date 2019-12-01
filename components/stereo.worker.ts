@@ -9,14 +9,7 @@ import Projector from "../lib/stereo";
 import Rotator from "../lib/rotator";
 import { Fn, CompositeFn, components } from "../lib/fn";
 
-export default () => {
-  let t = 0;
-  setInterval(() => {
-    const points = seed.map(pipeline(t++).fn);
-    const msg = { points };
-    self.postMessage(msg, window.location.origin);
-  }, 1000 / 60);
-};
+const ctx: Worker = self as any;
 
 const sphere = d => new Sphere(d, 1);
 const spiral = d => new Spiral(d, 1, new Array(d - 1).fill(1));
@@ -30,7 +23,8 @@ const rate = tau / 360;
 
 const seeder = new CompositeFn(2);
 seeder.add(sphere(3));
-seeder.add(spiral(4));
+seeder.add(spiral(seeder.d + 1));
+seeder.add(torus(seeder.d + 1));
 const seed = Array.from(seeder.sample(N));
 
 const pipeline = t => {
@@ -43,3 +37,24 @@ const pipeline = t => {
 
   return pipe;
 };
+
+let t = 0;
+let points;
+updatePoints();
+const msg = { points };
+console.log("sending first message to page", msg);
+ctx.postMessage(msg);
+
+ctx.onmessage = msg => {
+  if (msg.data.needPoints) {
+    const msg = { points };
+    ctx.postMessage(msg);
+    setImmediate(updatePoints);
+  }
+};
+
+function updatePoints() {
+  points = seed.map(pipeline(t++).fn);
+}
+
+export default () => {};
