@@ -1,7 +1,7 @@
-import { Fn, exp, components } from "./fn";
-import Cube from "./cube";
-import Sphere from "./sphere";
-import { tau, sum, multiply } from "mathjs";
+import {Fn, exp, components} from './fn';
+import Cube from './cube';
+import Sphere from './sphere';
+import {tau, sum, multiply} from 'mathjs';
 
 export default class Spiral implements Fn {
   private readonly sphere;
@@ -17,7 +17,7 @@ export default class Spiral implements Fn {
     return this.d - 1;
   }
 
-  sample = function*(n) {
+  sample = function* (this: Spiral, n) {
     const cube = new Cube(this.domain, tau);
     for (const phi of cube.sample(n)) {
       yield this.fn(phi);
@@ -26,11 +26,11 @@ export default class Spiral implements Fn {
 
   fn = (phi: number[]) => {
     const r = this.r(phi);
-    return this.sphere.fn(phi).map(p => p * r);
+    return this.sphere.fn(phi).map((p) => p * r);
   };
 
   r = (phi: number[]): number => {
-    const { a, k } = this;
+    const {a, k} = this;
     const x = sum(multiply(phi, k));
     return a * exp(x);
   };

@@ -1,5 +1,6 @@
-import { zeros, dot, equal, min } from "mathjs";
-import { Fn } from "./fn";
+import {dot, equal, min} from 'mathjs';
+import {Fn} from './fn';
+import Cube from './cube';
 
 export default class Stereo implements Fn {
   constructor(private readonly from: number, private readonly to: number) {}
@@ -12,8 +13,15 @@ export default class Stereo implements Fn {
     return this.to;
   }
 
+  sample = function* (this: Stereo, n: number) {
+    const cube = new Cube(this.domain, 2);
+    for (const phi of cube.sample(n)) {
+      yield this.fn(phi);
+    }
+  };
+
   fn = (x: number[]) => {
-    const { from, to } = this;
+    const {from, to} = this;
     if (from < to) {
       return Stereo.up(x, to);
     } else if (from > to) {

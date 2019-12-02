@@ -44,6 +44,20 @@ describe("Sphere", () => {
     it("generates a sphere with 9 points", () => {
       const points = sphere(3, 1, 9);
 
+
+      for (const p of points) {
+        expect(norm(p)).toBeCloseTo(1, 10);
+      }
+      expect(points).toMatchSnapshot();
+    });
+
+    it("generates a sphere with 100 points", () => {
+      const points = sphere(3, 1, 100);
+
+
+      for (const p of points) {
+        expect(norm(p)).toBeCloseTo(1, 10);
+      }
       expect(points).toMatchSnapshot();
     });
   });
