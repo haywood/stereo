@@ -14,13 +14,17 @@
     "memoizee": "^0.4.14",
     "nblas": "^2.1.7",
     "rxjs": "^6.5.3",
-    "three": "^0.111.0"
+    "three": "^0.111.0",
+    "ws": "^7.2.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.23",
     "@types/koa": "^2.11.0",
+    "@types/koa-compress": "^2.0.9",
+    "@types/koa-logger": "^3.1.1",
     "@types/mathjs": "^6.0.2",
     "@types/node": "^12.12.14",
+    "@types/ws": "^6.0.4",
     "@typescript-eslint/eslint-plugin": "^2.9.0",
     "@typescript-eslint/parser": "^2.9.0",
     "eslint": "^6.7.2",
