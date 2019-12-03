@@ -2,14 +2,15 @@ import Cube from './cube';
 import Sphere from './sphere';
 import {Fn} from './fn';
 import {tau} from 'mathjs';
+import Rotator from './rotator';
 
 export default class Torus implements Fn {
-  private readonly sphere: Sphere;
-  private readonly circle: Sphere;
+  private readonly cross: Sphere;
+  private readonly main: Sphere;
 
   constructor(readonly d: number, readonly r: number, readonly t: number) {
-    this.sphere = new Sphere(d, t);
-    this.circle = new Sphere(2, r);
+    this.cross = new Sphere(this.d - 1, t);
+    this.main = new Sphere(2, r);
   }
 
   get domain() {
@@ -24,11 +25,23 @@ export default class Torus implements Fn {
   };
 
   fn = (phi: number[]): number[] => {
-    const {d, r, sphere, circle} = this;
-    const p = sphere.fn(phi);
-    const q = circle.fn([phi[d - 2]]);
+    const {d, main, cross} = this;
+    const phiCross = phi.slice(0, d - 2);
+    const phiMain = phi[d - 2];
+    const rotator = new Rotator(
+      d, [{phi: phiMain, d0: 0, d1: d - 1}]);
+
+    let p = cross.fn(phiCross);
+    p.push(0);
+
+    p = rotator.fn(p);
+    
+    // use the circle to translate the point
+    // outward, creating a donut shape
+    const q = main.fn([phiMain]);
     p[0] += q[0];
     p[d - 1] += q[1];
+    
     return p;
   };
 }

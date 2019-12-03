@@ -15,14 +15,21 @@ export class Pipeline {
 
     // good ones
     // 2 -> sphere -> spiral
-    // 2 -> sphere -> spiral -> torus
+    // 2 -> sphere -> spiral -> (fucked_up_)?torus
     // 3 -> sphere
-    // 3 -> torus (interesting)
+    // 3 -> (fucked_up_)?torus (interesting)
     // 3 -> spiral (really good)
+    // 3 -> sphere -> sphere
+    // 2 -> 3 * sphere
 
     const seeder = new CompositeFn(2);
     // seeder.add(new Sphere(seeder.d + 1, 1));
+    // seeder.add(new Sphere(seeder.d + 1, 1));
+    // seeder.add(new Sphere(seeder.d + 1, 1));
+    // seeder.add(new Sphere(seeder.d + 1, 1));
     // seeder.add(new Torus(seeder.d + 1, 1, 0.25));
+    seeder.add(new Spiral(seeder.d + 1, 1, ones(seeder.d).valueOf() as number[]));
+    seeder.add(new Spiral(seeder.d + 1, 1, ones(seeder.d).valueOf() as number[]));
     seeder.add(new Spiral(seeder.d + 1, 1, ones(seeder.d).valueOf() as number[]));
     this.seed = Array.from(seeder.sample(n));
   }
