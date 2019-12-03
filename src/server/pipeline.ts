@@ -20,7 +20,7 @@ export class Pipeline {
     // 3 -> torus (interesting)
     // 3 -> spiral (really good)
 
-    const seeder = new CompositeFn(3);
+    const seeder = new CompositeFn(2);
     // seeder.add(new Sphere(seeder.d + 1, 1));
     // seeder.add(new Torus(seeder.d + 1, 1, 0.25));
     seeder.add(new Spiral(seeder.d + 1, 1, ones(seeder.d).valueOf() as number[]));
