@@ -18,7 +18,7 @@ export default class Spiral implements Fn {
   }
 
   sample = function* (this: Spiral, n) {
-    const cube = new Cube(this.domain, tau);
+    const cube = new Cube(this.domain, 2 * tau);
     for (const phi of cube.sample(n)) {
       yield this.fn(phi);
     }
