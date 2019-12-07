@@ -8,7 +8,7 @@ import { tau } from 'mathjs';
 // changed the way that the points of the sphere are
 // distributed, making the translation step behave incorrectly
 // Still makes a cool shape though, so keeping it
-export default class Torus implements Fn {
+export default class FuckedUpTorus implements Fn {
     private readonly sphere: Sphere;
     private readonly circle: Sphere;
 
@@ -21,7 +21,7 @@ export default class Torus implements Fn {
         return this.d - 1;
     }
 
-    sample = function* (this: Torus, n: number) {
+    sample = function* (n: number) {
         const cube = new Cube(this.domain, tau);
         for (const phi of cube.sample(n)) {
             yield this.fn(phi);

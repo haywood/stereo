@@ -1,51 +1,47 @@
 import { webSocket } from "rxjs/webSocket";
-import {Observable, Subscriber} from 'rxjs';
-import {ajax} from 'rxjs/ajax';
-import {concatMap, map, catchError, repeat, retry} from 'rxjs/operators';
-import {t} from './t';
-import {n, rate, animate} from './query';
+import { Observable, timer } from 'rxjs';
+import { retryWhen, delayWhen } from 'rxjs/operators';
+import { t } from './t';
+import * as q from './query';
 
-function getData() {
-  return fetch(`/data?n=${n}&t=${t()}&rate=${rate}`)
-    .then(r => r.json())
-    .catch(err => {
-      console.error(err);
-      throw err;
-    });
-}
+const second = 1000;
+const fps = second / 60;
+let retryCount = 0;
 
-export interface Data {
-  data: number[][];
+export type Data = {
   position: number[];
+  d: number;
 }
 
-// todo: backoff for retries; rxjs does not provide :(
-const pipe = (o) => animate ? o.pipe(retry(), repeat()) : o;
-const fps = 1000 / 60;
+export const streamData = (): Observable<Data> =>
+  Observable.create((subscriber) => {
+    const url = "wss://localhost:8000";
+    console.info(`opening data stream WebSocket to ${url}`);
+    const subject = webSocket(url);
+    const requestData = () => subject.next({ n: q.n, t: t(), rate: q.rate, f0: q.f0, f1: q.f1, seed: q.seed });
 
-export const streamData2 = () =>
-  pipe(Observable.create((subscriber) => {
-    const subject = webSocket("wss://localhost:8000");
-  
-    subject.next({n, t: t(), rate})
+    requestData();
     let tr = t();
     subject.subscribe(
-       msg => {
-         subscriber.next(msg);
-         // request a bit more frequently than desired fps
-         // to mitigate stuttering
-         const delay = 0.8 * fps - t() - tr;
-         setTimeout(() => subject.next({n, t: t(), rate}), delay);
-       },
-       err => console.error(err),
-       () => console.log('data stream closed'));
-  }));
-
-
-export const streamData = () =>
-  pipe(Observable.create((subscriber) => {
-    getData().then(data => {
-      subscriber.next(data);
-      subscriber.complete();
-    });
-  }));
+      msg => {
+        subscriber.next(msg);
+        retryCount = 0; // reset retries after a successful receipt
+        if (q.animate) {
+          // request a bit more frequently than desired fps
+          // to mitigate stuttering
+          const delay = 0.8 * fps - t() - tr;
+          setTimeout(requestData, delay);
+        } else {
+          subject.complete();
+        }
+      },
+      err => subscriber.error(err),
+      () => console.warn('data stream closed'));
+  }).pipe(retryWhen(errors => errors.pipe(
+    delayWhen((err) => {
+      const delay = second * 2 ** retryCount++;
+      console.error('data stream emmitted error', err);
+      console.error(`waiting ${delay}ms to retry after error # ${retryCount}`);
+      return timer(delay);
+    })
+  )));

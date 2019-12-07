@@ -6,9 +6,12 @@ import {
   PointsMaterial,
   WebGLRenderer,
   VertexColors,
-  Scene
+  Scene,
+  Vector3
 } from 'three';
-import {n, color} from './query';
+import { n, color } from './query';
+import { Data } from './data';
+import * as q from './query';
 
 export class Renderer {
   private renderer: WebGLRenderer;
@@ -17,13 +20,13 @@ export class Renderer {
   private points: Points;
   private dimension: number;
   private color: number[];
+  private c = new Vector3();
+  private delta = 0;
 
   constructor() {
     this.renderer = new WebGLRenderer();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-
-    this.camera = new PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.01, 1000);
-    this.camera.position.z = 5;
+    this.setSize();
+    window.onresize = this.setSize;
 
     this.points = new Points(
       new BufferGeometry(),
@@ -39,6 +42,18 @@ export class Renderer {
     this.renderer.setAnimationLoop(this.render);
   }
 
+  private setSize = () => {
+    const near = 0.01, far = 1000;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const aspect = width / height;
+    const fov = 100;
+
+    this.renderer.setSize(width, height);
+    this.camera = new PerspectiveCamera(fov, aspect, near, far);
+    this.camera.position.z = 5;
+  }
+
   get domElement() {
     return this.renderer.domElement;
   }
@@ -47,22 +62,33 @@ export class Renderer {
     this.renderer.render(this.scene, this.camera)
   }
 
-  update = ({position, d}) => {
-    const {points} = this;
+  updatePoints = ({ position, d }: Data) => {
+    const { points } = this;
     if (position.length) {
       const geometry = points.geometry as BufferGeometry;
 
       if (d !== this.dimension) {
         this.dimension = d;
-        this.color = position.map((x, i) => color.evaluate({x, i}));
+        this.color = position.map((x, i) => color.evaluate({ x, i }));
       }
 
       geometry.setAttribute('position', this.newBufferAttribute(position));
       geometry.setAttribute('color', this.newBufferAttribute(this.color));
+      geometry.computeBoundingSphere();
+      const r = geometry.boundingSphere.radius;
+      const c = geometry.boundingSphere.center;
+
+      let delta = c.distanceTo(this.c);
+      let ratio = this.delta / delta;
+      if (ratio && isFinite(ratio)) {
+        q.setRate(ratio * q.rate);
+      }
+      this.delta = delta;
+      this.c = c;
     }
   }
 
-  newBufferAttribute(value: number[]) {
+  newBufferAttribute = (value: number[]) => {
     return new BufferAttribute(new Float32Array(value), this.dimension);
   }
 }

@@ -10,9 +10,8 @@ const server = https.createServer({
 });
 
 const wss = new WebSocket.Server({ server });
-wss.on('connection', (ws) => {
-  console.log('received client connection. starting worker thread.');
 
+const startWorker = (ws: WebSocket) => {
   const worker = new Worker(path.resolve(__dirname, 'worker.js'));
   worker.on('message', (value) => ws.send(JSON.stringify(value)));
 
@@ -26,14 +25,22 @@ wss.on('connection', (ws) => {
     ws.close();
   });
 
+  return worker;
+};
+
+wss.on('connection', (ws) => {
+  console.log('received client connection. starting worker thread.');
+
+  const worker = startWorker(ws);
+
   ws.on('message', (msg) => {
     worker.postMessage(JSON.parse(msg as string));
   });
 
-  ws.on('conclude', () => {
+  ws.on('close', () => {
     console.log('disconneted from client. stopping worker thread');
-    worker.terminate();
-  })
-})
+    worker.postMessage('exit');
+  });
+});
 
 server.listen(8000);
