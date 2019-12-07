@@ -1,5 +1,5 @@
 {
-  "name": "stereo-server",
+  "name": "Stereo",
   "version": "1.0.0",
   "description": "",
   "main": ".js-bin/server/index.js",
