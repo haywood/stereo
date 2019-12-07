@@ -9,7 +9,6 @@ import {
   Scene,
   Vector3
 } from 'three';
-import { n, color } from './query';
 import { Data } from './data';
 import * as q from './query';
 
@@ -19,7 +18,6 @@ export class Renderer {
   private camera: PerspectiveCamera;
   private points: Points;
   private dimension: number;
-  private color: number[];
   private c = new Vector3();
   private delta = 0;
 
@@ -62,18 +60,14 @@ export class Renderer {
     this.renderer.render(this.scene, this.camera)
   }
 
-  updatePoints = ({ position, d }: Data) => {
+  updatePoints = ({ position, d, color }: Data) => {
     const { points } = this;
     if (position.length) {
       const geometry = points.geometry as BufferGeometry;
-
-      if (d !== this.dimension) {
-        this.dimension = d;
-        this.color = position.map((x, i) => color.evaluate({ x, i }));
-      }
+      this.dimension = d;
 
       geometry.setAttribute('position', this.newBufferAttribute(position));
-      geometry.setAttribute('color', this.newBufferAttribute(this.color));
+      geometry.setAttribute('color', this.newBufferAttribute(color));
       geometry.computeBoundingSphere();
       const r = geometry.boundingSphere.radius;
       const c = geometry.boundingSphere.center;

@@ -17,10 +17,9 @@ const f = (expr: string): (x: number) => number => {
 
 export class Pipeline {
   private readonly seeds: number[][];
+  private readonly n: number;
 
-  constructor(readonly n: number, readonly seedSpec: string) {
-    if (n < 1) throw new Error("can't run an empty pipeline");
-
+  constructor(readonly nSpec: string, readonly seedSpec: string) {
     // good ones
     // 2 -> sphere -> spiral
     // 2 -> sphere -> spiral -> (fucked_up_)?torus
@@ -51,10 +50,12 @@ export class Pipeline {
         seeder.add(new FuckedUpTorus(seeder.d + 1, r, t));
       }
     }
+    this.n = math.evaluate(nSpec);
+    if (this.n < 1) throw new Error("can't run an empty pipeline");
 
     console.info(`creating seeds from seeder`, seeder);
     const start = Date.now();
-    this.seeds = Array.from(seeder.sample(n));
+    this.seeds = Array.from(seeder.sample(this.n));
     console.info(`generated ${this.seeds.length} seed points in ${Date.now() - start}ms`);
   }
 
@@ -62,12 +63,17 @@ export class Pipeline {
     return this.seeds[0].length;
   }
 
-  run = (t: number, rate: number, f0S: string, f1S: string) => {
+  run = (t: number, rate: number, f0Spec: string, f1Spec: string, colorSpec: { r: string, g: string, b: string }) => {
+    console.info('generating data from parameters', { t, rate, f0Spec, f1Spec, colorSpec });
+
     const { seeds: seed } = this;
     const pipe = new CompositeFn(this.d);
     const seconds = t / 1000;
-    const f0 = f(f0S);
-    const f1 = f(f1S);
+    const f0 = f(f0Spec);
+    const f1 = f(f1Spec);
+    const rFn = math.compile(colorSpec.r);
+    const gFn = math.compile(colorSpec.g);
+    const bFn = math.compile(colorSpec.b);
 
     pipe.add(
       new Rotator(
@@ -80,8 +86,15 @@ export class Pipeline {
     );
     pipe.add(new Projector(pipe.d, 3));
 
-    const position = flatten(seed.map(pipe.fn));
+    const points = seed.map(pipe.fn);
+    const pointColors = points.map((p, i) => [
+      rFn.evaluate({ t: seconds, p, i, x: p[0] }),
+      gFn.evaluate({ t: seconds, p, i, x: p[1] }),
+      bFn.evaluate({ t: seconds, p, i, x: p[2] })
+    ]);
+    const position = flatten(points);
+    const color = flatten(pointColors);
     const d = pipe.d;
-    return { position, d };
+    return { position, d, color };
   };
 }

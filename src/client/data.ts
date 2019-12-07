@@ -11,6 +11,7 @@ let retryCount = 0;
 export type Data = {
   position: number[];
   d: number;
+  color: number[];
 }
 
 export const streamData = (): Observable<Data> =>
@@ -18,7 +19,7 @@ export const streamData = (): Observable<Data> =>
     const url = "wss://localhost:8000";
     console.info(`opening data stream WebSocket to ${url}`);
     const subject = webSocket(url);
-    const requestData = () => subject.next({ n: q.n, t: t(), rate: q.rate, f0: q.f0, f1: q.f1, seed: q.seed });
+    const requestData = () => subject.next({ t: t(), ...q });
 
     requestData();
     let tr = t();
