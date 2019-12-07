@@ -9,6 +9,7 @@ import { CompositeFn, components } from './fn';
 import * as math from 'mathjs';
 import * as grammar from './composite_fn';
 import { Parser, Grammar } from 'nearley';
+import { Color } from 'three';
 
 const f = (expr: string): (x: number) => number => {
   const fnc = math.compile(expr);
@@ -63,17 +64,16 @@ export class Pipeline {
     return this.seeds[0].length;
   }
 
-  run = (t: number, rate: number, f0Spec: string, f1Spec: string, colorSpec: { r: string, g: string, b: string }) => {
-    console.info('generating data from parameters', { t, rate, f0Spec, f1Spec, colorSpec });
+  run = (t: number, rate: number, f0Spec: string, f1Spec: string, hueSpec: string, lightnessSpec: string) => {
+    console.info('generating data from parameters', { t, rate, f0Spec, f1Spec, hueSpec, lightnessSpec });
 
-    const { seeds: seed } = this;
+    const { seeds, n } = this;
     const pipe = new CompositeFn(this.d);
     const seconds = t / 1000;
     const f0 = f(f0Spec);
     const f1 = f(f1Spec);
-    const rFn = math.compile(colorSpec.r);
-    const gFn = math.compile(colorSpec.g);
-    const bFn = math.compile(colorSpec.b);
+    const hueFn = math.compile(`360 * (${hueSpec})`);
+    const lightnessFn = math.compile(`100 * (${lightnessSpec})`);
 
     pipe.add(
       new Rotator(
@@ -86,15 +86,17 @@ export class Pipeline {
     );
     pipe.add(new Projector(pipe.d, 3));
 
-    const points = seed.map(pipe.fn);
-    const pointColors = points.map((p, i) => [
-      rFn.evaluate({ t: seconds, p, i, x: p[0] }),
-      gFn.evaluate({ t: seconds, p, i, x: p[1] }),
-      bFn.evaluate({ t: seconds, p, i, x: p[2] })
-    ]);
+    const points = seeds.map(pipe.fn);
+    const pointColors = points.map((p, i) => {
+      const hue = hueFn.evaluate({ t: seconds, p, i, n });
+      const lightness = math.round(lightnessFn.evaluate({ t: seconds, p, i, n }), 0);
+      const color = new Color(`hsl(${hue}, 100%, ${lightness}%)`);
+      return [color.r, color.g, color.b];
+    });
+
     const position = flatten(points);
     const color = flatten(pointColors);
     const d = pipe.d;
-    return { position, d, color };
+    return { position, color, d };
   };
 }

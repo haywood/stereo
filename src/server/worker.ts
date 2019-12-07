@@ -11,9 +11,8 @@ type Params = {
     f1: string;
     seed: string;
     color: string;
-    r: string;
-    g: string;
-    b: string;
+    h: string;
+    l: string;
 }
 
 let pipeline: Pipeline;
@@ -29,17 +28,15 @@ const runPipeline = async (params: Params) => {
     const f0 = params.f0 || 'cos(phi)';
     const f1 = params.f1 || 'cos(phi)';
     const seedSpec = params.seed || '2->sphere(1)->spiral(1, 1)->torus(1, 0.25)';
-    const alpha = 1_000_000
-    const r = params.r || `tanh(${alpha} * i) * abs(sin(t))`;
-    const g = params.g || `tanh(${alpha} * i + pi/4) * abs(sin(t + pi/4))`;
-    const b = params.b || `tanh(${alpha} * i + pi/2) * abs(sin(t + pi/2))`;
+    const hueSpec = params.h || 'abs(sin(t))*i/n';
+    const lightnessSpec = params.l || '(1 + abs(sin(tau * t / 60))) / 2';
 
     if (needNewPipeline(nSpec, seedSpec)) {
         console.info('creating new pipeline for params', params);
         pipeline = new Pipeline(nSpec, seedSpec);
     }
 
-    return pipeline.run(t, rate, f0, f1, { r, g, b });
+    return pipeline.run(t, rate, f0, f1, hueSpec, lightnessSpec);
 };
 
 parentPort.on('message', async (msg) => {

@@ -9,10 +9,9 @@ export let rate: number =
 export const setRate = (r: number) => rate = r;
 
 export const n: string = params.get('n');
-export const r: string = params.get('r');
-export const g: string = params.get('g');
-export const b: string = params.get('b');
 export const animate: boolean = !!(parseInt(params.get('a')) || 1);
 export const f0: string = params.get('f0');
 export const f1: string = params.get('f1');
 export const seed: string = params.get('seed');
+export const h: string = params.get('h');
+export const l: string = params.get('l');
