@@ -13,5 +13,6 @@ export const animate: boolean = !!(parseInt(params.get('a')) || 1);
 export const f0: string = params.get('f0');
 export const f1: string = params.get('f1');
 export const seed: string = params.get('seed');
+export const pipe: string = params.get('pipe');
 export const h: string = params.get('h');
 export const l: string = params.get('l');

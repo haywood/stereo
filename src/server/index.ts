@@ -3,6 +3,9 @@ import https from 'https';
 import fs from 'fs';
 import WebSocket from 'ws';
 import { Worker } from 'worker_threads';
+import { Logger, getLogger, setLevel } from 'loglevel';
+
+const logger = getLogger('Server');
 
 const server = https.createServer({
   key: fs.readFileSync('localhost-privkey.pem'),
@@ -16,12 +19,12 @@ const startWorker = (ws: WebSocket) => {
   worker.on('message', (value) => ws.send(JSON.stringify(value)));
 
   worker.on('error', (err) => {
-    console.error('worker thread encountered error');
-    console.error(err);
+    logger.error('worker thread encountered error');
+    logger.error(err);
   });
 
   worker.on('exit', (code) => {
-    console.warn(`worker thread exited with code ${code}. disconnecting from client`);
+    logger.warn(`worker thread exited with code ${code}. disconnecting from client`);
     ws.close();
   });
 
@@ -29,7 +32,7 @@ const startWorker = (ws: WebSocket) => {
 };
 
 wss.on('connection', (ws) => {
-  console.log('received client connection. starting worker thread.');
+  logger.info('received client connection. starting worker thread.');
 
   const worker = startWorker(ws);
 
@@ -38,7 +41,7 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    console.log('disconneted from client. stopping worker thread');
+    logger.info('disconneted from client. stopping worker thread');
     worker.postMessage('exit');
   });
 });

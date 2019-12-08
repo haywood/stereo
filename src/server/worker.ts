@@ -1,7 +1,8 @@
 import { Pipeline } from './pipeline';
 import { parentPort } from 'worker_threads';
-import * as math from 'mathjs';
-import * as fn from './fn';
+import { Logger, getLogger } from 'loglevel';
+
+const logger = getLogger('Worker');
 
 type Params = {
     n: string;
@@ -13,6 +14,7 @@ type Params = {
     color: string;
     h: string;
     l: string;
+    pipe: string;
 }
 
 let pipeline: Pipeline;
@@ -28,15 +30,16 @@ const runPipeline = async (params: Params) => {
     const f0 = params.f0 || 'cos(phi)';
     const f1 = params.f1 || 'cos(phi)';
     const seedSpec = params.seed || '2->sphere(1)->spiral(1, 1)->torus(1, 0.25)';
+    const pipeSpec = params.pipe || 'R(rate * t, 0, 1)->R(rate * t, 0, 2)->R(rate * t, 0, 3)->stereo(3)'
     const hueSpec = params.h || 'abs(sin(t))*i/n';
-    const lightnessSpec = params.l || '(1 + abs(sin(tau * t / 60))) / 2';
+    const lightnessSpec = params.l || '0.2 + 0.6 * (1 + abs(sin(tau * t / 60))) / 2';
 
     if (needNewPipeline(nSpec, seedSpec)) {
-        console.info('creating new pipeline for params', params);
+        logger.info('creating new pipeline for params', params);
         pipeline = new Pipeline(nSpec, seedSpec);
     }
 
-    return pipeline.run(t, rate, f0, f1, hueSpec, lightnessSpec);
+    return pipeline.run(t, rate, f0, f1, hueSpec, lightnessSpec, pipeSpec);
 };
 
 parentPort.on('message', async (msg) => {
@@ -47,7 +50,7 @@ parentPort.on('message', async (msg) => {
         try {
             data = await runPipeline(msg);
         } catch (err) {
-            console.error(`error running pipeline on message ${JSON.stringify(msg, null, 2)}`, err);
+            logger.error(`error running pipeline on message ${JSON.stringify(msg, null, 2)}\n`, err);
             data = { err };
         }
         parentPort.postMessage(data);
