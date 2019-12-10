@@ -1,9 +1,7 @@
-import memoize from 'memoizee';
-
-export const cos = memoize(Math.cos);
-export const sin = memoize(Math.sin);
-export const tan = memoize(Math.tan);
-export const tanh = memoize(Math.tanh);
+export const cos = Math.cos;
+export const sin = Math.sin;
+export const tan = Math.tan;
+export const tanh = Math.tanh;
 export const exp = Math.exp;
 
 export const components = (d) => Array.from(new Array(d).keys());
