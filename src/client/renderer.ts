@@ -10,7 +10,6 @@ import {
   Vector3
 } from 'three';
 import { Data } from './data';
-import * as q from './query';
 
 export class Renderer {
   private renderer: WebGLRenderer;
@@ -18,8 +17,6 @@ export class Renderer {
   private camera: PerspectiveCamera;
   private points: Points;
   private dimension: number;
-  private c = new Vector3();
-  private delta = 0;
 
   constructor() {
     this.renderer = new WebGLRenderer();
@@ -69,16 +66,6 @@ export class Renderer {
       geometry.setAttribute('position', this.newBufferAttribute(position));
       geometry.setAttribute('color', this.newBufferAttribute(color));
       geometry.computeBoundingSphere();
-      const r = geometry.boundingSphere.radius;
-      const c = geometry.boundingSphere.center;
-
-      let delta = c.distanceTo(this.c);
-      let ratio = this.delta / delta;
-      if (ratio && isFinite(ratio)) {
-        q.setRate(ratio * q.rate);
-      }
-      this.delta = delta;
-      this.c = c;
     }
   }
 

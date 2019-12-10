@@ -1,5 +1,5 @@
 import path from 'path';
-import https from 'https';
+import http from 'http';
 import fs from 'fs';
 import WebSocket from 'ws';
 import { Worker } from 'worker_threads';
@@ -7,10 +7,7 @@ import { Logger, getLogger, setLevel } from 'loglevel';
 
 const logger = getLogger('Server');
 
-const server = https.createServer({
-  key: fs.readFileSync('localhost-privkey.pem'),
-  cert: fs.readFileSync('localhost-cert.pem'),
-});
+const server = http.createServer();
 
 const wss = new WebSocket.Server({ server });
 

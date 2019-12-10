@@ -133,7 +133,7 @@ export class Pipeline {
     const f1 = f(f1Spec);
     const hueFn = math.compile(`360 * (${hueSpec})`);
     const lightnessFn = math.compile(`100 * (${lightnessSpec})`);
-    const pipe = newPipe(pipeSpec, { rate, t: seconds }, this.d);
+    const pipe = newPipe(pipeSpec, { rate, t: seconds, f0, f1 }, this.d);
 
     const points = seeds.map(pipe.fn);
     const pointColors = points.map((p, i) => {

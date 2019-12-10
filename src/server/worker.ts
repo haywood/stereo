@@ -28,7 +28,7 @@ const runPipeline = async (params: Params) => {
     const t = parseFloat(params.t) || 0;
     const rate = parseFloat(params.rate) || Math.PI / 180;
     const f0 = params.f0 || 'cos(phi)';
-    const f1 = params.f1 || 'cos(phi)';
+    const f1 = params.f1 || 'sin(phi)';
     const seedSpec = params.seed || '2->sphere(1)->spiral(1, 1)->torus(1, 0.25)';
     const pipeSpec = params.pipe || 'R(rate * t, 0, 1)->R(rate * t, 0, 2)->R(rate * t, 0, 3)->stereo(3)'
     const hueSpec = params.h || 'abs(sin(t))*i/n';

@@ -2,7 +2,7 @@ import { webSocket } from "rxjs/webSocket";
 import { Observable, timer } from 'rxjs';
 import { retryWhen, delayWhen } from 'rxjs/operators';
 import { t } from './t';
-import * as q from './query';
+import { q } from './query';
 
 const second = 1000;
 const fps = second / 60;
@@ -16,7 +16,7 @@ export type Data = {
 
 export const streamData = (): Observable<Data> =>
   Observable.create((subscriber) => {
-    const url = "wss://localhost:8000";
+    const url = "ws://localhost:8000";
     console.info(`opening data stream WebSocket to ${url}`);
     const subject = webSocket(url);
     const requestData = () => subject.next({ t: t(), ...q });
