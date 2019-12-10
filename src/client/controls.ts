@@ -14,7 +14,8 @@ export class Controls {
         this.domElement.style.alignItems = 'flex-end';
 
         for (const name in q) {
-            const input = new Input(name, 'text', q[name], value => value);
+            const type = typeof q[name] === 'boolean' ? 'checkbox' : 'text';
+            const input = new Input(name, type);
             this.domElement.appendChild(input.domElement);
         }
     }
@@ -24,17 +25,27 @@ export class Controls {
     }
 }
 
-class Input<T> {
+class Input {
     readonly domElement = document.createElement('span');
 
-    constructor(readonly name: string, readonly type: string, public value: string, parse: (value: string) => T) {
-        const input = document.createElement('input');
+    constructor(readonly name: string, readonly type: string) {
+        const input: HTMLInputElement = document.createElement('input');
+        const value = q[name];
+
         input.name = name;
         input.type = type;
-        input.value = value;
+        if (type === 'checkbox') {
+            input.checked = value;
+        } else {
+            input.value = value;
+        }
         input.size = 50;
         input.onchange = () => {
-            q[name] = parse(input.value);
+            if (type === 'checkbox') {
+                q[name] = input.checked;
+            } else {
+                q[name] = input.value;
+            }
         };
         const label = document.createElement('label');
         label.innerText = name;
@@ -43,7 +54,12 @@ class Input<T> {
         this.domElement.appendChild(input);
 
         streams[name].subscribe(({ event, value }) => {
-            if (!!event) input.value = value.toString();
+            if (event) return;
+            if (type === 'checkbox') {
+                input.checked = value;
+            } else {
+                input.value = value.toString();
+            }
         })
     }
 }

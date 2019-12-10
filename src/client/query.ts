@@ -1,8 +1,8 @@
 import { Observable, Subscriber } from 'rxjs';
 
-let query = {
+const query = {
     n: '4096',
-    animate: 1,
+    animate: true,
     f0: 'cos(phi)',
     f1: 'sin(phi)',
     seed: '2->sphere(1)->spiral(1, 1)->torus(1, 0.25)',
@@ -17,20 +17,21 @@ export type Q = typeof query;
 Object.assign(query, JSON.parse(localStorage.getItem('q') || '{}'));
 
 const subscribers: { [P in keyof Q]?: Subscriber<Q[P]> } = {};
+const emit = (key, value) => subscribers[key].next({ value, event: window.event });
+
 export const streams: { [P in keyof Q]?: Observable<Q[P]> } = {};
 for (const key in query) {
     streams[key] = Observable.create((subscriber) => {
         subscribers[key] = subscriber;
-        subscriber.next(query[key])
+        emit(key, query[key]);
     });
 }
 
 export const q = new Proxy(query, {
     set(target, property, value) {
-        const event = window.event;
-        subscribers[property].next({ value, event });
         const success = Reflect.set(target, property, value);
         localStorage.setItem('q', JSON.stringify(target));
+        emit(property, value);
         return success;
     }
 });
