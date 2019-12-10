@@ -27,7 +27,7 @@ const needNewPipeline = (nSpec: string, seedSpec: string) => {
 const runPipeline = (params: Params) => {
     const nSpec: string = params.n || '4096';
     const t = parseFloat(params.t) || 0;
-    const rate = parseFloat(params.rate) || Math.PI / 180;
+    const rateSpec = params.rate;
     const f0 = params.f0 || 'cos(phi)';
     const f1 = params.f1 || 'sin(phi)';
     const seedSpec = params.seed || '2->sphere(1)->spiral(1, 1)->torus(1, 0.25)';
@@ -40,7 +40,7 @@ const runPipeline = (params: Params) => {
         pipeline = new Pipeline(nSpec, seedSpec);
     }
 
-    return pipeline.run(t, rate, f0, f1, hueSpec, lightnessSpec, pipeSpec);
+    return pipeline.run(t, rateSpec, f0, f1, hueSpec, lightnessSpec, pipeSpec);
 };
 
 export default worker(runPipeline, { poolSize: 2 });

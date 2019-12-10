@@ -118,15 +118,16 @@ export class Pipeline {
 
   run = (
     t: number,
-    rate: number,
+    rateSpec: string,
     f0Spec: string,
     f1Spec: string,
     hueSpec: string,
     lightnessSpec: string,
     pipeSpec: string,
   ) => {
-    this.logger.debug('generating data from parameters', { t, rate, f0Spec, f1Spec, hueSpec, lightnessSpec, pipeSpec });
+    this.logger.debug('generating data from parameters', { t, rateSpec, f0Spec, f1Spec, hueSpec, lightnessSpec, pipeSpec });
 
+    const rate = math.evaluate(rateSpec);
     const { seeds, n } = this;
     const seconds = t / 1000;
     const f0 = f(f0Spec);
