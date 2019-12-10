@@ -1,7 +1,8 @@
 import { Pipeline } from './pipeline';
-import { parentPort } from 'worker_threads';
-import { Logger, getLogger } from 'loglevel';
+import { getLogger, setDefaultLevel } from 'loglevel';
+import { worker } from '@arrows/worker';
 
+setDefaultLevel('info');
 const logger = getLogger('Worker');
 
 type Params = {
@@ -23,7 +24,7 @@ const needNewPipeline = (nSpec: string, seedSpec: string) => {
     return pipeline == null || pipeline.nSpec !== nSpec || pipeline.seedSpec !== seedSpec
 };
 
-const runPipeline = async (params: Params) => {
+const runPipeline = (params: Params) => {
     const nSpec: string = params.n || '4096';
     const t = parseFloat(params.t) || 0;
     const rate = parseFloat(params.rate) || Math.PI / 180;
@@ -42,17 +43,4 @@ const runPipeline = async (params: Params) => {
     return pipeline.run(t, rate, f0, f1, hueSpec, lightnessSpec, pipeSpec);
 };
 
-parentPort.on('message', async (msg) => {
-    if (msg === 'exit') {
-        process.exit(0);
-    } else {
-        let data;
-        try {
-            data = await runPipeline(msg);
-        } catch (err) {
-            logger.error(`error running pipeline on message ${JSON.stringify(msg, null, 2)}\n`, err);
-            data = { err };
-        }
-        parentPort.postMessage(data);
-    }
-});
+export default worker(runPipeline, { poolSize: 2 });

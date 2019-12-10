@@ -2,7 +2,7 @@
 import http from 'http';
 import WebSocket from 'ws';
 import { getLogger, setDefaultLevel } from 'loglevel';
-import worker from './worker2';
+import worker from './worker';
 
 setDefaultLevel('info');
 const logger = getLogger('Server');
