@@ -16,10 +16,15 @@ export type Q = typeof query;
 // TODO: also support override from window.location.hash
 Object.assign(query, JSON.parse(localStorage.getItem('q') || '{}'));
 
-const subscribers: { [P in keyof Q]?: Subscriber<Q[P]> } = {};
-const emit = (key, value) => subscribers[key].next({ value, event: window.event });
+type Change<T> = {
+    newValue: T,
+    oldValue?: T,
+    event?: Event
+};
+const subscribers: { [P in keyof Q]?: Subscriber<Change<Q[P]>> } = {};
+const emit = (key, newValue, oldValue?) => subscribers[key].next({ newValue, event: window.event, oldValue });
 
-export const streams: { [P in keyof Q]?: Observable<Q[P]> } = {};
+export const streams: { [P in keyof Q]?: Observable<Change<Q[P]>> } = {};
 for (const key in query) {
     streams[key] = Observable.create((subscriber) => {
         subscribers[key] = subscriber;
@@ -29,9 +34,10 @@ for (const key in query) {
 
 export const q = new Proxy(query, {
     set(target, property, value) {
+        const oldValue = target[property];
         const success = Reflect.set(target, property, value);
         localStorage.setItem('q', JSON.stringify(target));
-        emit(property, value);
+        emit(property, value, oldValue);
         return success;
     }
 });
