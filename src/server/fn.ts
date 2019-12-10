@@ -1,4 +1,3 @@
-import {zeros, size} from 'mathjs';
 import memoize from 'memoizee';
 
 export const cos = memoize(Math.cos);
@@ -19,7 +18,7 @@ export interface Fn {
 export class CompositeFn implements Fn {
   private readonly fns: Fn[] = [];
 
-  constructor(readonly domain: number) {}
+  constructor(readonly domain: number) { }
 
   get last() {
     return this.fns[this.fns.length - 1];
@@ -31,17 +30,17 @@ export class CompositeFn implements Fn {
   }
 
   add = (fn: Fn) => {
-    const {fns} = this;
+    const { fns } = this;
     if (fns.length && fn.domain !== this.d) {
       throw new Error(
-          `Cannot add ${fn} to pipeline, because its domain is not ${this.d}`,
+        `Cannot add ${fn} to pipeline, because its domain is not ${this.d}`,
       );
     }
     fns.push(fn);
   };
 
   sample = function* (this: CompositeFn, n: number) {
-    const {fns} = this;
+    const { fns } = this;
     if (fns.length == 0) return [];
 
     for (const p of fns[0].sample(n)) {
@@ -50,11 +49,11 @@ export class CompositeFn implements Fn {
   };
 
   fn = (x: number[]): number[] => {
-    const {fns} = this;
+    const { fns } = this;
 
     if (x.length !== this.domain) {
       throw new Error(
-          `Input vector ${x} invalid for composite with domain ${this.domain}`,
+        `Input vector ${x} invalid for composite with domain ${this.domain}`,
       );
     }
 

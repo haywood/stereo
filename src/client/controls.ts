@@ -47,6 +47,7 @@ class Input {
                 q[name] = input.value;
             }
         };
+
         const label = document.createElement('label');
         label.innerText = name;
         label.style.paddingRight = '8px';
