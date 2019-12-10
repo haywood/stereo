@@ -17,6 +17,7 @@ export class Renderer {
   private camera: PerspectiveCamera;
   private points: Points;
   private dimension: number;
+  private z = 5;
 
   constructor() {
     this.renderer = new WebGLRenderer();
@@ -46,7 +47,7 @@ export class Renderer {
 
     this.renderer.setSize(width, height);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
-    this.camera.position.z = 5;
+    this.camera.position.z = this.z;
   }
 
   get domElement() {
@@ -66,6 +67,8 @@ export class Renderer {
       geometry.setAttribute('position', this.newBufferAttribute(position));
       geometry.setAttribute('color', this.newBufferAttribute(color));
       geometry.computeBoundingSphere();
+      const s = geometry.boundingSphere;
+      this.camera.position.z = this.z = Math.min(5, s.center.z + s.radius);
     }
   }
 
