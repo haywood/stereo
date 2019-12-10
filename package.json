@@ -4,6 +4,7 @@
   "description": "",
   "main": ".js-bin/server/index.js",
   "dependencies": {
+    "@arrows/worker": "^1.2.0",
     "loglevel": "^1.6.6",
     "mathjs": "^6.2.5",
     "memoizee": "^0.4.14",

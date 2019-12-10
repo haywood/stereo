@@ -1,45 +1,28 @@
-import path from 'path';
-import http from 'http';
-import fs from 'fs';
-import WebSocket from 'ws';
-import { Worker } from 'worker_threads';
-import { Logger, getLogger, setLevel } from 'loglevel';
 
+import http from 'http';
+import WebSocket from 'ws';
+import { getLogger, setDefaultLevel } from 'loglevel';
+import worker from './worker2';
+
+setDefaultLevel('info');
 const logger = getLogger('Server');
 
 const server = http.createServer();
 
 const wss = new WebSocket.Server({ server });
 
-const startWorker = (ws: WebSocket) => {
-  const worker = new Worker(path.resolve(__dirname, 'worker.js'));
-  worker.on('message', (value) => ws.send(JSON.stringify(value)));
-
-  worker.on('error', (err) => {
-    logger.error('worker thread encountered error');
-    logger.error(err);
-  });
-
-  worker.on('exit', (code) => {
-    logger.warn(`worker thread exited with code ${code}. disconnecting from client`);
-    ws.close();
-  });
-
-  return worker;
-};
-
 wss.on('connection', (ws) => {
   logger.info('received client connection. starting worker thread.');
 
-  const worker = startWorker(ws);
-
   ws.on('message', (msg) => {
-    worker.postMessage(JSON.parse(msg as string));
+    const params = JSON.parse(msg as string);
+    worker(params).then((data) => ws.send(JSON.stringify(data))).catch((err) => {
+      logger.error(`error handling msg ${msg}`, err);
+    });
   });
 
   ws.on('close', () => {
     logger.info('disconneted from client. stopping worker thread');
-    worker.postMessage('exit');
   });
 });
 
