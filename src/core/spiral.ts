@@ -1,15 +1,12 @@
-import {Fn, exp, components} from './fn';
+import { Fn, exp, components } from './fn';
 import Cube from './cube';
 import Sphere from './sphere';
-import {tau, sum, multiply} from 'mathjs';
+import { tau, sum, multiply } from 'mathjs';
 
 export default class Spiral implements Fn {
   private readonly sphere;
 
-  constructor(readonly d: number, readonly a: number, readonly k: number[]) {
-    if (k.length !== d - 1) {
-      throw new Error(`Invalid k ${k} for dimension ${d}`);
-    }
+  constructor(readonly d: number, readonly a: number[], readonly k: number[]) {
     this.sphere = new Sphere(d, 1);
   }
 
@@ -25,13 +22,16 @@ export default class Spiral implements Fn {
   };
 
   fn = (phi: number[]) => {
-    const r = this.r(phi);
-    return this.sphere.fn(phi).map((p) => p * r);
+    const { r } = this;
+    return this
+      .sphere
+      .fn(phi)
+      .map((x: number, i: number) => x * r(phi, i));
   };
 
-  r = (phi: number[]): number => {
-    const {a, k} = this;
-    const x = sum(multiply(phi, k));
-    return a * exp(x);
+  r = (phi: number[], i: number): number => {
+    const { a, k } = this;
+    const x = sum(multiply(k, phi));
+    return a[i] * exp(x);
   };
 }

@@ -142,13 +142,15 @@ const newPipe = (
   let cursor = iter.next();
   while (!cursor.done) {
     const { fn, ...params } = cursor.value;
+    const d = pipe.d + 1;
 
     if (fn === 'sphere') {
       const { r } = params;
       pipe.add(new Sphere(pipe.d + 1, r));
     } else if (fn === 'spiral') {
-      const { a, k } = params;
-      pipe.add(new Spiral(pipe.d + 1, a, new Array(pipe.d).fill(k)));
+      const a = new Array(d).fill(params.a);
+      const k = new Array(d - 1).fill(params.k);
+      pipe.add(new Spiral(d, a, k));
     } else if (fn === 'torus') {
       const { r, t } = params;
       pipe.add(new Torus(pipe.d + 1, r, t));
