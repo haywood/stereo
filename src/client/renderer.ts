@@ -7,7 +7,6 @@ import {
   WebGLRenderer,
   VertexColors,
   Scene,
-  Vector3
 } from 'three';
 import { Data } from './data';
 
