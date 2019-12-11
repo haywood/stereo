@@ -45,7 +45,7 @@
     "test": "jest",
     "linit": "eslint .",
     "web": "webpack-dev-server --open",
-    "grammar": "nearleyc src/server/composite_fn.ne -o .js-bin/server/composite_fn.js"
+    "grammar": "nearleyc src/core/composite_fn.ne -o src/core/composite_fn.grammar.js"
   },
   "repository": {
     "type": "git",

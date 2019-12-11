@@ -12,6 +12,7 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "tsBuildInfoFile": ".tsbuildinfo",
+        "allowJs": true,
         "lib": [
             "dom",
             "es6"

@@ -2,3 +2,4 @@ node_modules/
 .js-bin/
 *.tsbuildinfo
 .DS_Store
+*.grammar.js
