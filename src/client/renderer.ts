@@ -28,7 +28,7 @@ export class Renderer {
       new BufferGeometry(),
       new PointsMaterial({
         vertexColors: VertexColors,
-        size: 0.01,
+        size: 0.001,
       })
     );
 
