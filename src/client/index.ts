@@ -1,7 +1,10 @@
 import { Renderer } from './renderer';
-import { streamData } from './data';
+import { stream } from './data';
 import { Controls } from './controls';
-import { streams } from './query';
+import { streams, q } from './query';
+import { take } from 'rxjs/operators';
+import { Subscriber, Subscription } from 'rxjs';
+import { Data } from '../core/data';
 
 document.onreadystatechange = (): void => {
   if (document.readyState === 'complete') {
@@ -11,10 +14,6 @@ document.onreadystatechange = (): void => {
     document.body.appendChild(renderer.domElement);
     document.body.appendChild(controls.domElement);
 
-    streams.animate.subscribe(({ newValue, oldValue }) => {
-      if (newValue && !oldValue) {
-        streamData().subscribe(data => renderer.updatePoints(data));
-      }
-    });
+    stream.subscribe(renderer.updatePoints);
   }
 };

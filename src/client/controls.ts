@@ -51,15 +51,14 @@ class Input {
         const label = document.createElement('label');
         label.innerText = name;
         label.style.paddingRight = '8px';
-        this.domElement.appendChild(label);
-        this.domElement.appendChild(input);
+        this.domElement.appendChild(label).appendChild(input);
 
-        streams[name].subscribe(({ event, value }) => {
+        streams[name].subscribe(({ event, newValue }) => {
             if (event) return;
             if (type === 'checkbox') {
-                input.checked = value;
+                input.checked = newValue;
             } else {
-                input.value = value.toString();
+                input.value = newValue.toString();
             }
         })
     }

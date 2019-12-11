@@ -19,11 +19,15 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: '/node_modules/',
+      },
+      {
+        test: /\.worker\.js$/,
+        use: { loader: 'worker-loader' }
       }
     ]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
+    extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [
     new CleanWebpackPlugin(),

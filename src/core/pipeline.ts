@@ -9,9 +9,11 @@ import * as math from 'mathjs';
 import * as grammar from '../core/composite_fn.grammar';
 import { Parser, Grammar } from 'nearley';
 import { Color } from 'three';
-import { getLogger, Logger } from 'loglevel';
+import { getLogger, Logger, setDefaultLevel } from 'loglevel';
 import Stereo from './stereo';
+import { Data } from './data';
 
+setDefaultLevel('info');
 const logger = getLogger('Pipeline');
 
 const f = (expr: string): (x: number) => number => {
@@ -21,7 +23,7 @@ const f = (expr: string): (x: number) => number => {
 
 export type Params = {
   n?: string;
-  t?: string;
+  t?: number;
   rate?: string;
   f0?: string;
   f1?: string;
@@ -32,6 +34,22 @@ export type Params = {
   pipe?: string;
 }
 
+const cache = new Map<string, Pipeline>();
+
+export const runPipeline = (params: Params) =>
+  getPipeline(params).run(params);
+
+export const getPipeline = (params: Params): Pipeline => {
+  const key = JSON.stringify({ n: params.n, seed: params.seed });
+  logger.debug(`pipeline cache has the following keys`, [...cache.keys()])
+  if (!cache.has(key)) {
+    logger.warn(`key ${key} not found. creating new pipeline from params
+${JSON.stringify(params, null, 2)}`)
+    cache.set(key, Pipeline.create(params));
+  }
+  return cache.get(key);
+}
+
 export class Pipeline {
   private readonly seeds: number[][];
   private readonly n: number;
@@ -40,7 +58,6 @@ export class Pipeline {
   static create = (params: Params) => {
     const nSpec: string = params.n || '4096';
     const seedSpec = params.seed || '3->sphere(1)';
-    logger.info('creating new pipeline for params', params);
     return new Pipeline(nSpec, seedSpec);
   };
 
@@ -59,7 +76,9 @@ export class Pipeline {
     this.n = math.evaluate(nSpec);
     if (this.n < 1) throw new Error("can't run an empty pipeline");
 
-    this.logger.info(`creating seeds from seeder`, seeder);
+    this.logger.info(`creating seeds from seeder
+${JSON.stringify(seeder, null, 2)}`);
+
     const start = Date.now();
     this.seeds = Array.from(seeder.sample(this.n));
     this.logger.info(`generated ${this.seeds.length} seed points in ${Date.now() - start}ms`);
@@ -69,37 +88,17 @@ export class Pipeline {
     return this.seeds[0].length;
   }
 
-  run = (params: Params) => {
-    const t = parseFloat(params.t) || 0;
-    const rateSpec = params.rate;
-    const f0 = params.f0 || 'cos(phi)';
-    const f1 = params.f1 || 'sin(phi)';
-    const pipeSpec = params.pipe || 'stereo(3)'
-    const hueSpec = params.h || 'abs(sin(t))*i/n';
-    const lightnessSpec = params.l || '0.2 + 0.6 * (1 + abs(sin(tau * t / 60))) / 2';
-    logger.info('creating new pipeline for params', params);
-    return this.runInternal(t, rateSpec, f0, f1, hueSpec, lightnessSpec, pipeSpec);
-  };
+  run = (params: Params): Data => {
+    this.logger.debug('generating data from parameters', params);
 
-  private runInternal = (
-    t: number,
-    rateSpec: string,
-    f0Spec: string,
-    f1Spec: string,
-    hueSpec: string,
-    lightnessSpec: string,
-    pipeSpec: string,
-  ) => {
-    this.logger.debug('generating data from parameters', { t, rateSpec, f0Spec, f1Spec, hueSpec, lightnessSpec, pipeSpec });
-
-    const rate = math.evaluate(rateSpec);
+    const rate = math.evaluate(params.rate);
     const { seeds, n } = this;
-    const seconds = t / 1000;
-    const f0 = f(f0Spec);
-    const f1 = f(f1Spec);
-    const hueFn = math.compile(`360 * (${hueSpec})`);
-    const lightnessFn = math.compile(`100 * (${lightnessSpec})`);
-    const pipe = newPipe(pipeSpec, { rate, t: seconds, f0, f1 }, this.d);
+    const seconds = rate * params.t / 1000;
+    const f0 = f(params.f0);
+    const f1 = f(params.f1);
+    const hueFn = math.compile(`360 * (${params.h})`);
+    const lightnessFn = math.compile(`100 * (${params.l})`);
+    const pipe = newPipe(params.pipe, { t: seconds, f0, f1 }, this.d);
 
     const points = seeds.map(pipe.fn);
     const pointColors = points.map((p, i) => {
@@ -109,8 +108,8 @@ export class Pipeline {
       return [color.r, color.g, color.b];
     });
 
-    const position = flatten(points);
-    const color = flatten(pointColors);
+    const position = flatten(points) as number[];
+    const color = flatten(pointColors) as number[];
     const d = pipe.d;
     return { position, color, d };
   };
@@ -119,7 +118,6 @@ export class Pipeline {
 const newPipe = (
   spec: string,
   scope: {
-    rate?: number,
     t?: number,
     f0?: (x: number) => number,
     f1?: (x: number) => number
@@ -177,7 +175,8 @@ const newPipe = (
     cursor = iter.next();
   }
 
-  logger.debug(`initialized pipe:\n${JSON.stringify(pipe, null, 2)}`);
+  logger.debug(`initialized pipe:
+${JSON.stringify(pipe, null, 2)}`);
 
   return pipe;
 };

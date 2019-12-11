@@ -8,7 +8,7 @@ import {
   VertexColors,
   Scene,
 } from 'three';
-import { Data } from './data';
+import { Data } from '../core/data';
 
 export class Renderer {
   private renderer: WebGLRenderer;

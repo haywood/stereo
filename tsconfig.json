@@ -13,6 +13,7 @@
         "sourceMap": true,
         "tsBuildInfoFile": ".tsbuildinfo",
         "allowJs": true,
+        "experimentalDecorators": true,
         "lib": [
             "dom",
             "es6"

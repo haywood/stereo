@@ -2,13 +2,12 @@
 import http from 'http';
 import WebSocket from 'ws';
 import { getLogger, setDefaultLevel } from 'loglevel';
-import worker from './worker';
+import worker from './pipeline.worker';
 
 setDefaultLevel('info');
 const logger = getLogger('Server');
 
 const server = http.createServer();
-
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
