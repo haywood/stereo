@@ -8,6 +8,10 @@ module.exports = {
   mode: 'development',
   entry: ['./src/client/index.ts'],
   devtool: 'inline-source-map',
+  watchOptions: {
+    aggregateTimeout: 1500,
+    ignored: ['node_modules']
+  },
   devServer: {
     contentBase: '.dist',
   },
@@ -33,5 +37,5 @@ module.exports = {
       title: 'Stereo',
     }),
     new ThreadsPlugin({ globalObject: 'self' }),
-  ]
+  ],
 };

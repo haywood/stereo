@@ -5,3 +5,8 @@ declare module 'worker-loader!*' {
 
     export default PipelineWorker;
 }
+
+declare module 'pegjs-loader!*' {
+    export function parse(spec: string);
+    export interface SyntaxError extends Error { }
+}

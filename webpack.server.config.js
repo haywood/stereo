@@ -5,6 +5,11 @@ const ThreadsPlugin = require('threads-plugin');
 module.exports = {
   target: 'node',
   mode: 'development',
+  devtool: 'inline-source-map',
+  watchOptions: {
+    aggregateTimeout: 1500,
+    ignored: ['node_modules']
+  },
   entry: ['./src/server/index.ts'],
   output: {
     path: path.resolve(__dirname, '.server_dist'),
@@ -17,10 +22,6 @@ module.exports = {
         use: 'ts-loader',
         exclude: '/node_modules/',
       },
-      {
-        test: /\.worker\.js$/,
-        use: { loader: 'worker-loader' }
-      }
     ]
   },
   resolve: {

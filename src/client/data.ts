@@ -83,7 +83,7 @@ const startStream = async () => {
       retryWhen(errors =>
         errors.pipe(
           delayWhen((err) => {
-            const delay = second * 2 ** retryCount++;
+            const delay = Math.min(10_000, second * 2 ** retryCount++);
             console.error('data stream emmitted error', err);
             console.error(`waiting ${delay}ms to retry after error # ${retryCount}`);
             return timer(delay);

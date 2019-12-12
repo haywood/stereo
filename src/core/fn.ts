@@ -14,28 +14,23 @@ export interface Fn {
 }
 
 export class CompositeFn implements Fn {
-  private readonly fns: Fn[] = [];
+  constructor(private readonly fns: Fn[]) { }
 
-  constructor(readonly domain: number) { }
+  get first() {
+    return this.fns[0];
+  }
 
   get last() {
     return this.fns[this.fns.length - 1];
   }
 
-  get d() {
-    const fn = this.last;
-    return (fn && fn.d) || this.domain;
+  get domain() {
+    return this.first.domain;
   }
 
-  add = (fn: Fn) => {
-    const { fns } = this;
-    if (fns.length && fn.domain !== this.d) {
-      throw new Error(
-        `Cannot add ${fn} to pipeline, because its domain is not ${this.d}`,
-      );
-    }
-    fns.push(fn);
-  };
+  get d() {
+    return this.last.d;
+  }
 
   sample = function* (this: CompositeFn, n: number) {
     const { fns } = this;
@@ -57,4 +52,30 @@ export class CompositeFn implements Fn {
 
     return fns.reduce((y, fn) => fn.fn(y), x);
   };
+
+  static Builder = class {
+    private readonly fns: Fn[] = []
+
+    get d() {
+      return this.last.d;
+    }
+
+    get last() {
+      return this.fns[this.fns.length - 1];
+    }
+
+    add = (fn: Fn) => {
+      const { fns, last } = this;
+      if (last && fn.domain !== last.d) {
+        throw new Error(
+          `Cannot add ${fn} to composite, because its domain is not ${last.d}`,
+        );
+      }
+      fns.push(fn);
+    }
+
+    build = () => {
+      return new CompositeFn(this.fns);
+    }
+  }
 }

@@ -4,8 +4,7 @@ const query = {
     n: '4096',
     f0: 'cos(phi)',
     f1: 'sin(phi)',
-    seed: '2->sphere(1)->spiral(1, 1)->torus(1, 0.25)',
-    pipe: 'R(rate * t, 0, 1)->R(rate * t, 0, 2)->R(rate * t, 0, 3)->stereo(3)',
+    pipe: '3->sphere(1)->R(t, 0, 1)->stereo(3)',
     h: 'abs(sin(t))*i/n',
     l: '0.2 + 0.6 * (1 + abs(sin(tau * t / 60))) / 2',
     rate: 'pi / 40',
@@ -15,7 +14,11 @@ const query = {
 export type Q = typeof query;
 
 // TODO: also support override from window.location.hash
-Object.assign(query, JSON.parse(localStorage.getItem('q') || '{}'));
+const savedQuery = JSON.parse(localStorage.getItem('q') || '{}');
+for (const key in savedQuery) {
+    if (!(key in query)) delete savedQuery[key];
+}
+Object.assign(query, savedQuery);
 
 type Change<T> = {
     newValue: T,
