@@ -1,43 +1,49 @@
 import http from 'http';
 import WebSocket from 'ws';
 import { getLogger, setDefaultLevel } from 'loglevel';
-import { spawn, Thread, Worker } from "threads"
-import { Params } from '../core/pipeline';
+import { spawn, Thread, Worker, Pool } from "threads"
+import { Params, runPipeline } from '../core/pipeline';
 
 setDefaultLevel('info');
 const logger = getLogger('Server');
 
-spawn(new Worker('../core/pipeline.worker')).then(runPipeline => {
-  process.on('SIGINT', () => {
-    try {
-      Thread.terminate(runPipeline);
-    } catch (err) {
-      logger.error('error terminating worker thread', err);
-      process.exit(1);
-    }
-    process.exit(0);
-  });
+logger.info('starting worker pool');
+const pool = Pool(() => spawn(new Worker('../core/pipeline.worker')), 2);
+const stopPool = () => pool.completed().then(() => pool.terminate());
 
-  Thread.errors(runPipeline)
-    .subscribe(error => logger.error('error in worker thread', error));
+pool.events().subscribe((event: any) => {
+  if (event.error) {
+    logger.error('received error event from worker pool', event);
+  }
+})
 
-  const server = http.createServer();
-  const wss = new WebSocket.Server({ server });
-  wss.on('connection', (ws) => {
-    logger.info('received client connection.');
-
-    ws.on('message', (msg) => {
-      const params: Params = JSON.parse(msg as string);
-      runPipeline(params)
-        .then((data) => ws.send(JSON.stringify(data)))
-        .catch((err) => logger.error(`error handling msg ${msg}`, err));
-    });
-
-    ws.on('close', () => {
-      logger.info('disconneted from client. stopping worker thread');
-      Thread.terminate(runPipeline);
-    });
-  });
-
-  server.listen(8000);
+process.on('SIGINT', async () => {
+  logger.info('caught signit. terminating worker pool.');
+  try {
+    await stopPool();
+  } catch (err) {
+    logger.error('error terminating worker pool', err);
+    process.exit(1);
+  }
+  process.exit(0);
 });
+
+const server = http.createServer();
+const wss = new WebSocket.Server({ server });
+wss.on('connection', (ws) => {
+  logger.info('received client connection.');
+
+  ws.on('message', (msg) => {
+    pool.queue(async runPipeline =>
+      runPipeline(JSON.parse(msg as string) as Params)
+        .then((data) => ws.send(JSON.stringify(data)))
+        .catch((err) => logger.error(`error handling msg ${msg}`, err)));
+  });
+
+  ws.on('close', () => {
+    logger.info('disconneted from client. stopping worker pool');
+    stopPool();
+  });
+});
+
+server.listen(8000);
