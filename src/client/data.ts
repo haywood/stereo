@@ -1,18 +1,16 @@
 import { Observable, timer, Subject, interval, EMPTY } from 'rxjs';
 import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
-import { t } from './t';
 import { q, streams } from './query';
 import { Params } from "../core/pipeline/pipeline";
 import { startPool, stopPool, runPipeline } from '../core/pipeline/pool';
-import { spawn, Thread, Worker } from "threads"
 
 const second = 1000;
 let retryCount = 0;
 
 
 const params: Observable<Params> = Observable.create((s) => {
-  s.next({ t: t(), ...q });
+  s.next({ t: performance.now(), ...q });
   s.complete();
 });
 
@@ -64,7 +62,7 @@ const webWorkerSource = async (): Promise<Source> => {
   return { subject, requestData, close };
 }
 
-let source;
+let source: Source;
 const startStream = async () => {
   source = await (q.remote ? webSocketSource() : webWorkerSource());
   const { subject, requestData } = source;
