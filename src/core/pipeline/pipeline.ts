@@ -1,17 +1,17 @@
-import Sphere from './sphere';
-import Spiral from './spiral';
-import Torus from './torus';
-import FuckedUpTorus from './fucked_up_torus'
+import Sphere from '../sphere';
+import Spiral from '../spiral';
+import Torus from '../torus';
+import FuckedUpTorus from '../fucked_up_torus'
 import { flatten } from 'mathjs';
-import Rotator from './rotator';
-import { CompositeFn } from './fn';
+import Rotator from '../rotator';
+import { CompositeFn } from '../fn';
 import * as math from 'mathjs';
-import * as grammar from '../core/composite_fn.grammar';
+import * as grammar from '../composite_fn.grammar';
 import { Parser, Grammar } from 'nearley';
 import { Color } from 'three';
 import { getLogger, Logger, setDefaultLevel } from 'loglevel';
-import Stereo from './stereo';
-import { Data } from './data';
+import Stereo from '../stereo';
+import { Data } from '../data';
 
 setDefaultLevel('info');
 const logger = getLogger('Pipeline');
@@ -38,6 +38,8 @@ const cache = new Map<string, Pipeline>();
 
 export const runPipeline = (params: Params) =>
   getPipeline(params).run(params);
+
+export type PipelineRunner = typeof runPipeline;
 
 export const getPipeline = (params: Params): Pipeline => {
   const key = JSON.stringify({ n: params.n, seed: params.seed });

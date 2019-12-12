@@ -2,19 +2,13 @@ import http from 'http';
 import WebSocket from 'ws';
 import { getLogger, setDefaultLevel } from 'loglevel';
 import { spawn, Thread, Worker, Pool } from "threads"
-import { Params, runPipeline } from '../core/pipeline';
+import { Params, runPipeline } from '../core/pipeline/pipeline';
+import { createPool } from '../core/pipeline/pool';
 
 setDefaultLevel('info');
 const logger = getLogger('Server');
 
-logger.info('starting worker pool');
-const pool = Pool(() => spawn(new Worker('../core/pipeline.worker')), 2);
-
-pool.events().subscribe((event: any) => {
-  if (event.error) {
-    logger.error('received error event from worker pool', event);
-  }
-});
+const pool = createPool(2);
 
 process.on('SIGINT', async () => {
   logger.info('caught signit. terminating worker pool.');

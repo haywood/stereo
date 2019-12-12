@@ -3,7 +3,8 @@ import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
 import { t } from './t';
 import { q, streams } from './query';
-import { Params } from "../core/pipeline";
+import { Params, runPipeline, PipelineRunner } from "../core/pipeline/pipeline";
+import { createPool } from '../core/pipeline/pool';
 import { spawn, Thread, Worker } from "threads"
 
 const second = 1000;
@@ -50,15 +51,17 @@ const webSocketSource = async (): Promise<Source> => {
 
 const webWorkerSource = async (): Promise<Source> => {
   console.info('starting web worker data source');
-  const runPipeline = await spawn(new Worker('../core/pipeline.worker'));
   const subject = new Subject<Data>();
+  const pool = createPool(2);
 
   const requestData = (params: Params) =>
-    runPipeline(params)
-      .then(data => subject.next(data))
-      .catch(err => subject.error(err));
+    pool.queue(async runPipeline => {
+      runPipeline(params)
+        .then(data => subject.next(data))
+        .catch(err => subject.error(err))
+    });
 
-  const close = () => Thread.terminate(runPipeline);
+  const close = () => pool.terminate();
 
   return { subject, requestData, close };
 }
@@ -90,7 +93,7 @@ const startStream = async () => {
             return timer(delay);
           })
         )))
-    .subscribe(data => outer.next(data));
+    .subscribe((data: Data) => outer.next(data));
 }
 
 startStream();
