@@ -3,22 +3,17 @@ import WebSocket from 'ws';
 import { getLogger, setDefaultLevel } from 'loglevel';
 import { spawn, Thread, Worker, Pool } from "threads"
 import { Params, runPipeline } from '../core/pipeline/pipeline';
-import { createPool } from '../core/pipeline/pool';
+import { startPool, runPipeline, stopPool } from '../core/pipeline/pool';
 
 setDefaultLevel('info');
 const logger = getLogger('Server');
 
-const pool = createPool(2);
-
+startPool(2);
 process.on('SIGINT', async () => {
   logger.info('caught signit. terminating worker pool.');
-  try {
-    await pool.terminate();
-  } catch (err) {
-    logger.error('error terminating worker pool', err);
-    process.exit(1);
-  }
-  process.exit(0);
+  const success = await stopPool();
+  if (success) process.exit(0);
+  else process.exit(1);
 });
 
 const server = http.createServer();

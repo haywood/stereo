@@ -39,8 +39,6 @@ const cache = new Map<string, Pipeline>();
 export const runPipeline = (params: Params) =>
   getPipeline(params).run(params);
 
-export type PipelineRunner = typeof runPipeline;
-
 export const getPipeline = (params: Params): Pipeline => {
   const key = JSON.stringify({ n: params.n, seed: params.seed });
   logger.debug(`pipeline cache has the following keys`, [...cache.keys()])
