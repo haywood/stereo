@@ -9,7 +9,6 @@ const logger = getLogger('Server');
 
 logger.info('starting worker pool');
 const pool = Pool(() => spawn(new Worker('../core/pipeline.worker')), 2);
-const stopPool = () => pool.completed().then(() => pool.terminate());
 
 pool.events().subscribe((event: any) => {
   if (event.error) {
@@ -20,7 +19,7 @@ pool.events().subscribe((event: any) => {
 process.on('SIGINT', async () => {
   logger.info('caught signit. terminating worker pool.');
   try {
-    await stopPool();
+    await pool.terminate();
   } catch (err) {
     logger.error('error terminating worker pool', err);
     process.exit(1);
@@ -30,6 +29,10 @@ process.on('SIGINT', async () => {
 
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
+const port = 8000;
+
+wss.on('listening', () => console.info(`server is listening for connections at port ${port}`))
+
 wss.on('connection', (ws) => {
   logger.info('received client connection.');
 
@@ -39,11 +42,6 @@ wss.on('connection', (ws) => {
         .then((data) => ws.send(JSON.stringify(data)))
         .catch((err) => logger.error(`error handling msg ${msg}`, err)));
   });
-
-  ws.on('close', () => {
-    logger.info('disconneted from client. stopping worker pool');
-    stopPool();
-  });
 });
 
-server.listen(8000);
+server.listen(port);
