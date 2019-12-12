@@ -5,6 +5,7 @@ import { t } from './t';
 import { q, streams } from './query';
 import PipelineWorker from 'worker-loader!./pipeline.worker';
 import { Params } from "../core/pipeline";
+import { spawn, Thread, Worker } from "threads"
 
 const second = 1000;
 let retryCount = 0;
@@ -35,22 +36,24 @@ const webSocketSource = (): Source => {
   return { subject, requestData, close };
 }
 
-const webWorkerSource = (): Source => {
+const webWorkerSource = async (): Promise<Source> => {
   console.info('starting web worker data source');
-  const requestData = (params: Params) => worker.postMessage(params);
-  const worker = new PipelineWorker();
+  const runPipeline = await spawn(new Worker('../core/pipeline.worker'));
   const subject = new Subject<Data>();
-  const close = () => worker.terminate();
 
-  worker.onmessage = (ev: MessageEvent) => subject.next(ev.data as Data);
-  worker.onerror = (ev: ErrorEvent) => subject.error(ev.error);
+  const requestData = (params: Params) =>
+    runPipeline(params)
+      .then(data => subject.next(data))
+      .catch(err => subject.error(err));
+
+  const close = () => Thread.terminate(runPipeline);
 
   return { subject, requestData, close };
 }
 
 let source;
-const startStream = () => {
-  source = q.remote ? webSocketSource() : webWorkerSource();
+const startStream = async () => {
+  source = q.remote ? webSocketSource() : await webWorkerSource();
   const { subject, requestData } = source;
   const pacer = interval(second / 60);
 
@@ -61,7 +64,7 @@ const startStream = () => {
     )
     .subscribe(requestData);
 
-  return subject
+  subject
     .pipe(
       tap(() => {
         retryCount = 0; // reset retries after a successful receipt

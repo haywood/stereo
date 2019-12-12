@@ -4,13 +4,12 @@
   "description": "",
   "main": ".js-bin/server/index.js",
   "dependencies": {
-    "@arrows/worker": "^1.2.0",
     "loglevel": "^1.6.6",
     "mathjs": "^6.2.5",
     "nearley": "^2.19.0",
     "rxjs": "^6.5.3",
+    "threads": "^1.0.0-beta.8",
     "three": "^0.111.0",
-    "worker-loader": "^2.0.0",
     "ws": "^7.2.0"
   },
   "devDependencies": {
@@ -32,8 +31,10 @@
     "jest": "^24.9.0",
     "koa-webpack": "^5.2.4",
     "nodemon": "^2.0.1",
+    "threads-plugin": "^1.2.0",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
+    "ts-node": "^8.5.4",
     "typescript": "^3.7.3",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
@@ -45,7 +46,7 @@
     "dev": "nodemon .",
     "test": "jest",
     "linit": "eslint .",
-    "web": "webpack-dev-server --open",
+    "web": "webpack-dev-server",
     "grammar": "nearleyc src/core/composite_fn.ne -o src/core/composite_fn.grammar.js"
   },
   "repository": {
