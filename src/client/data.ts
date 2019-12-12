@@ -1,5 +1,5 @@
-import { Observable, timer, Subject, empty } from 'rxjs';
-import { retryWhen, delayWhen, repeatWhen, tap, delay } from 'rxjs/operators';
+import { Observable, timer, Subject, interval, EMPTY } from 'rxjs';
+import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
 import { t } from './t';
 import { q, streams } from './query';
@@ -7,7 +7,6 @@ import PipelineWorker from 'worker-loader!./pipeline.worker';
 import { Params } from "../core/pipeline";
 
 const second = 1000;
-const fps = second / 60;
 let retryCount = 0;
 
 
@@ -53,11 +52,12 @@ let source;
 const startStream = () => {
   source = q.remote ? webSocketSource() : webWorkerSource();
   const { subject, requestData } = source;
+  const pacer = interval(second / 60);
 
   params
     .pipe(
-      repeatWhen(() => q.animate ? subject : empty()),
-      delay(fps)
+      repeatWhen(() => q.animate ? subject : EMPTY),
+      delayWhen(() => pacer)
     )
     .subscribe(requestData);
 
