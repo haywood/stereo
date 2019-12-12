@@ -14,7 +14,7 @@ pool.events().subscribe((event: any) => {
   if (event.error) {
     logger.error('received error event from worker pool', event);
   }
-})
+});
 
 process.on('SIGINT', async () => {
   logger.info('caught signit. terminating worker pool.');

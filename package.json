@@ -2,7 +2,6 @@
   "name": "Stereo",
   "version": "1.0.0",
   "description": "",
-  "main": ".server_dist/server.js",
   "dependencies": {
     "loglevel": "^1.6.6",
     "mathjs": "^6.2.5",
@@ -41,8 +40,6 @@
     "webpack-dev-server": "^3.9.0"
   },
   "scripts": {
-    "client": "./client.sh",
-    "server": "./server.sh",
     "test": "jest",
     "lint": "eslint .",
     "grammar": "nearleyc src/core/composite_fn.ne -o src/core/composite_fn.grammar.js"
