@@ -1,19 +1,14 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
 
 module.exports = {
-  target: 'web',
+  target: 'node',
   mode: 'development',
-  entry: ['./src/client/index.ts'],
-  devtool: 'inline-source-map',
-  devServer: {
-    contentBase: '.dist',
-  },
+  entry: ['./src/server/index.ts'],
   output: {
-    path: path.resolve(__dirname, '.client_dist'),
-    filename: 'client.js',
+    path: path.resolve(__dirname, '.server_dist'),
+    filename: 'server.js',
   },
   module: {
     rules: [
@@ -22,6 +17,10 @@ module.exports = {
         use: 'ts-loader',
         exclude: '/node_modules/',
       },
+      {
+        test: /\.worker\.js$/,
+        use: { loader: 'worker-loader' }
+      }
     ]
   },
   resolve: {
@@ -29,9 +28,6 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      title: 'Stereo',
-    }),
     new ThreadsPlugin({ globalObject: 'self' }),
   ]
-};
+}

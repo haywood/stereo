@@ -3,7 +3,6 @@ import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
 import { t } from './t';
 import { q, streams } from './query';
-import PipelineWorker from 'worker-loader!./pipeline.worker';
 import { Params } from "../core/pipeline";
 import { spawn, Thread, Worker } from "threads"
 
@@ -22,18 +21,31 @@ type Source = {
   close(): void;
 }
 
-const webSocketSource = (): Source => {
-  console.info('starting web socket data source');
-  const requestData = (params: Params) => socket.send(JSON.stringify(params));
+const webSocketSource = async (): Promise<Source> => {
   const socket = new WebSocket("ws://localhost:8000");
-  const subject = new Subject<Data>();
-  const close = () => socket.close();
+  return new Promise((resolve, reject) => {
+    socket.onerror = (ev: ErrorEvent) => reject(ev.error);
+    socket.onclose = (event) => reject(event);
 
-  socket.onmessage = (ev: MessageEvent) => subject.next(JSON.parse(ev.data) as Data);
-  socket.onerror = (ev: ErrorEvent) => subject.error(ev.error);
-  socket.onclose = () => subject.complete();
+    socket.onopen = () => {
+      console.info('starting web socket data source');
+      const requestData =
+        (params: Params) => socket.send(JSON.stringify(params));
+      const subject = new Subject<Data>();
+      const close = () => socket.close();
 
-  return { subject, requestData, close };
+      socket.onmessage =
+        (ev: MessageEvent) => subject.next(JSON.parse(ev.data) as Data);
+
+      socket.onerror = (ev: ErrorEvent) => subject.error(ev);
+
+      socket.onclose =
+        (ev: CloseEvent) =>
+          ev.wasClean ? subject.complete() : subject.error(ev);
+
+      resolve({ subject, requestData, close });
+    }
+  });
 }
 
 const webWorkerSource = async (): Promise<Source> => {
@@ -53,7 +65,7 @@ const webWorkerSource = async (): Promise<Source> => {
 
 let source;
 const startStream = async () => {
-  source = q.remote ? webSocketSource() : await webWorkerSource();
+  source = await (q.remote ? webSocketSource() : webWorkerSource());
   const { subject, requestData } = source;
   const pacer = interval(second / 60);
 

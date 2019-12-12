@@ -4,16 +4,17 @@ import { getLogger, setDefaultLevel } from 'loglevel';
 import { spawn, Thread, Worker } from "threads"
 import { Params } from '../core/pipeline';
 
-export default () => {
-  setDefaultLevel('info');
-  const logger = getLogger('Server');
+setDefaultLevel('info');
+const logger = getLogger('Server');
+
+spawn(new Worker('../core/pipeline.worker')).then(runPipeline => {
+  Thread.errors(runPipeline)
+    .subscribe(error => logger.error('error in worker thread', error));
 
   const server = http.createServer();
   const wss = new WebSocket.Server({ server });
-
-  wss.on('connection', async (ws) => {
-    logger.info('received client connection. starting worker thread.');
-    const runPipeline = await spawn(new Worker('../core/pipeline.worker'));
+  wss.on('connection', (ws) => {
+    logger.info('received client connection.');
 
     ws.on('message', (msg) => {
       const params: Params = JSON.parse(msg as string);
@@ -29,4 +30,4 @@ export default () => {
   });
 
   server.listen(8000);
-};
+});

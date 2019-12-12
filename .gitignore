@@ -4,3 +4,4 @@ node_modules/
 .DS_Store
 *.grammar.js
 report.*.json
+.*_dist
