@@ -8,6 +8,16 @@ setDefaultLevel('info');
 const logger = getLogger('Server');
 
 spawn(new Worker('../core/pipeline.worker')).then(runPipeline => {
+  process.on('SIGINT', () => {
+    try {
+      Thread.terminate(runPipeline);
+    } catch (err) {
+      logger.error('error terminating worker thread', err);
+      process.exit(1);
+    }
+    process.exit(0);
+  });
+
   Thread.errors(runPipeline)
     .subscribe(error => logger.error('error in worker thread', error));
 
