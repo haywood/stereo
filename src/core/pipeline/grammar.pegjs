@@ -1,4 +1,4 @@
-pipe = chain:chain { return {chain}; }
+pipe = n:uint '->' chain:chain { return {n: parseInt(n), chain}; }
 
 chain =
  f:function '->' rest:chain { return [f, ...rest]; }

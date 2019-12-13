@@ -14,15 +14,13 @@ const f = (expr: string): (x: number) => number => {
 };
 
 export type Params = {
-  n?: string;
-  t?: number;
+  pipe?: string;
   rate?: string;
   f0?: string;
   f1?: string;
-  color?: string;
   h?: string;
   l?: string;
-  pipe?: string;
+  t?: number;
 }
 
 const cache = new Map<string, Pipeline>();
@@ -32,7 +30,7 @@ export const runPipeline = (params: Params) =>
 
 export const getPipeline = (params: Params): Pipeline => {
   // TODO: use only static portion of pipeline for cache key
-  const key = JSON.stringify({ n: params.n, pipe: params.pipe });
+  const key = JSON.stringify({ pipe: params.pipe });
   logger.debug(`pipeline cache has the following keys`, [...cache.keys()])
   if (!cache.has(key)) {
     logger.warn(`key ${key} not found. creating new pipeline from params
@@ -57,10 +55,10 @@ export class Pipeline {
     // 3 -> sphere -> sphere
     // 2 -> 3 * sphere
 
-    this.logger = getLogger(`${Pipeline}(${params.n}, ${params.pipe}})`);
+    this.logger = getLogger(`${Pipeline}(${params.pipe}})`);
 
-    this.n = math.evaluate(params.n || '4096');
-    const { init } = this.getPipes(params);
+    const { n, init } = this.getPipes(params);
+    this.n = n;
     if (this.n < 1) throw new Error("can't run an empty pipeline");
 
     this.logger.info(`creating seeds from seeder

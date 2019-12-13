@@ -9,7 +9,6 @@ import Rotator from '../rotator';
 import Stereo from '../stereo';
 import { getLogger } from 'loglevel';
 import Cube from '../cube';
-import { tau } from 'mathjs';
 import { Identity } from '../identity';
 
 const logger = getLogger('Pipe');
@@ -17,14 +16,16 @@ logger.setLevel('info');
 const pp = (a: any, p: number = 2) => JSON.stringify(a, null, p);
 
 export class Pipe {
-    static parse = (spec: string, scope: Scope): { init: CompositeFn, iter: CompositeFn } => {
+    constructor(readonly n: number, readonly init: CompositeFn, readonly iter: CompositeFn) { }
+
+    static parse = (spec: string, scope: Scope): { n: number, init: CompositeFn, iter: CompositeFn } => {
         const ast: AST = parseAndEvaluateScalars(spec, scope);
         const init = createInit(ast, scope);
         const iter = createIter(init, ast, scope);
 
         logger.debug(`processed ast into composites ${pp({ init, iter }, 2)}`);
 
-        return { init, iter };
+        return new Pipe(ast.n, init, iter);
     }
 }
 
@@ -107,7 +108,7 @@ type Scope = {
 };
 
 type AST = {
-    domain?: number;
+    n: number;
     chain: Function[]
 };
 

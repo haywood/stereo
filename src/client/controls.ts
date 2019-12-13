@@ -25,6 +25,20 @@ export class Controls {
     }
 }
 
+type DisplayNames = {
+    [P in keyof Q]: string;
+}
+const displayNames: DisplayNames = {
+    pipe: 'Pipe Spec',
+    rate: 'Rate',
+    f0: 'Rotation Basis 1',
+    f1: 'Rotation Basis 2',
+    h: 'Hue',
+    l: 'Lightness',
+    animate: 'Animate',
+    remote: 'Remote',
+}
+
 class Input {
     readonly domElement = document.createElement('span');
 
@@ -49,7 +63,7 @@ class Input {
         };
 
         const label = document.createElement('label');
-        label.innerText = name;
+        label.innerText = displayNames[name];
         label.style.paddingRight = '8px';
         this.domElement.appendChild(label).appendChild(input);
 

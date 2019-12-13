@@ -1,13 +1,12 @@
 import { Observable, Subscriber, Subject, Subscription } from 'rxjs';
 
 const query = {
-    n: '4096',
+    pipe: '3->sphere(1)->R(t, 0, 1)->stereo(3)',
+    rate: 'pi / 40',
     f0: 'cos(phi)',
     f1: 'sin(phi)',
-    pipe: '3->sphere(1)->R(t, 0, 1)->stereo(3)',
     h: 'abs(sin(t))*i/n',
     l: '0.2 + 0.6 * (1 + abs(sin(tau * t / 60))) / 2',
-    rate: 'pi / 40',
     animate: true,
     remote: true,
 };
