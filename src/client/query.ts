@@ -1,7 +1,15 @@
-import { Observable, Subscriber, Subject, Subscription } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 const query = {
-    pipe: '3->sphere(1)->R(t, 0, 1)->stereo(3)',
+    // good ones
+    // 1000 -> cube(2, tau) -> sphere -> spiral
+    // 1000 -> cube(2, tau) -> sphere -> spiral -> (fucked_up_)?torus
+    // 1000 -> cube(3, tau) -> sphere
+    // 1000 -> cube(3, tau) -> (fucked_up_)?torus (interesting)
+    // 1000 -> cube(3, tau) -> spiral (really good)
+    // 1000 -> cube(3, tau) -> sphere -> sphere
+    // 1000 -> cube(2, tau) -> 3 * sphere
+    pipe: '1000->cube(3, tau)->sphere(1)->R(t, 0, 1)->stereo(3)',
     rate: 'pi / 40',
     f0: 'cos(phi)',
     f1: 'sin(phi)',
@@ -22,7 +30,7 @@ Object.assign(query, savedQuery);
 type Change<T> = {
     newValue: T,
     oldValue?: T,
-    event?: Event
+    event?: Event;
 };
 const subjects: { [P in keyof Q]?: Subject<Change<Q[P]>> } = {};
 

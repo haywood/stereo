@@ -9,12 +9,12 @@ export const components = (d) => Array.from(new Array(d).keys());
 export interface Fn {
   readonly d: number;
   readonly domain: number;
-  fn(x: number[]): number[];
-  sample(n: number): Generator<number[]>;
+  fn(x: ArrayLike<number>): ArrayLike<number>;
+  sample(n: number): Generator<ArrayLike<number>>;
 }
 
 export class CompositeFn implements Fn {
-  constructor(private readonly fns: Fn[]) { }
+  constructor(readonly fns: Fn[]) { }
 
   get first() {
     return this.fns[0];
@@ -41,7 +41,7 @@ export class CompositeFn implements Fn {
     }
   };
 
-  fn = (x: number[]): number[] => {
+  fn = (x: ArrayLike<number>) => {
     const { fns } = this;
 
     if (x.length !== this.domain) {
@@ -54,7 +54,7 @@ export class CompositeFn implements Fn {
   };
 
   static Builder = class {
-    private readonly fns: Fn[] = []
+    private readonly fns: Fn[] = [];
 
     get d() {
       return this.last.d;
@@ -72,10 +72,10 @@ export class CompositeFn implements Fn {
         );
       }
       fns.push(fn);
-    }
+    };
 
     build = () => {
       return new CompositeFn(this.fns);
-    }
-  }
+    };
+  };
 }

@@ -2,7 +2,7 @@ import { Observable, timer, Subject, interval, EMPTY } from 'rxjs';
 import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
 import { q, streams } from './query';
-import { Params } from "../core/pipeline/pipeline";
+import { Params } from "../core/pipeline/pipe";
 import { startPool, stopPool, runPipeline } from '../core/pipeline/pool';
 
 const second = 1000;
@@ -18,7 +18,7 @@ type Source = {
   subject: Subject<Data>;
   requestData(params: Params): void;
   close(): void;
-}
+};
 
 const webSocketSource = async (): Promise<Source> => {
   const socket = new WebSocket("ws://localhost:8000");
@@ -33,8 +33,15 @@ const webSocketSource = async (): Promise<Source> => {
       const subject = new Subject<Data>();
       const close = () => socket.close();
 
-      socket.onmessage =
-        (ev: MessageEvent) => subject.next(JSON.parse(ev.data) as Data);
+      socket.onmessage = (ev: MessageEvent) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const data = Data.fromBuffer(reader.result as ArrayBuffer);
+          subject.next(data);
+        };
+        reader.onerror = (ev: ProgressEvent) => subject.error(ev);
+        reader.readAsArrayBuffer(ev.data);
+      };
 
       socket.onerror = (ev: ErrorEvent) => subject.error(ev);
 
@@ -43,9 +50,9 @@ const webSocketSource = async (): Promise<Source> => {
           ev.wasClean ? subject.complete() : subject.error(ev);
 
       resolve({ subject, requestData, close });
-    }
+    };
   });
-}
+};
 
 const webWorkerSource = async (): Promise<Source> => {
   console.info('starting web worker data source');
@@ -54,13 +61,14 @@ const webWorkerSource = async (): Promise<Source> => {
 
   const requestData = (params: Params) =>
     runPipeline(params)
+      .then(Data.fromBuffer)
       .then(data => subject.next(data))
       .catch(err => subject.error(err));
 
   const close = stopPool;
 
   return { subject, requestData, close };
-}
+};
 
 let source: Source;
 const startStream = async () => {
@@ -90,7 +98,7 @@ const startStream = async () => {
           })
         )))
     .subscribe((data: Data) => outer.next(data));
-}
+};
 
 startStream();
 

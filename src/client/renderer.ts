@@ -47,31 +47,27 @@ export class Renderer {
     this.renderer.setSize(width, height);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
     this.camera.position.z = this.z;
-  }
+  };
 
   get domElement() {
     return this.renderer.domElement;
   }
 
   render = () => {
-    this.renderer.render(this.scene, this.camera)
-  }
+    this.renderer.render(this.scene, this.camera);
+  };
 
-  updatePoints = ({ position, d, color }: Data) => {
+  updatePoints = ({ d, position, color }: Data) => {
     const { points } = this;
     if (position.length) {
       const geometry = points.geometry as BufferGeometry;
       this.dimension = d;
 
-      geometry.setAttribute('position', this.newBufferAttribute(position));
-      geometry.setAttribute('color', this.newBufferAttribute(color));
+      geometry.setAttribute('position', new BufferAttribute(position, d));
+      geometry.setAttribute('color', new BufferAttribute(color, 3));
       geometry.computeBoundingSphere();
       const s = geometry.boundingSphere;
-      this.camera.position.z = this.z = Math.min(5, s.center.z + s.radius);
+      this.camera.position.z = this.z = Math.min(5, s.center.z + s.radius + 1);
     }
-  }
-
-  newBufferAttribute = (value: number[]) => {
-    return new BufferAttribute(new Float32Array(value), this.dimension);
-  }
+  };
 }

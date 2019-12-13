@@ -1,7 +1,8 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 
 module.exports = {
   target: 'web',
@@ -37,5 +38,6 @@ module.exports = {
       title: 'Stereo',
     }),
     new ThreadsPlugin({ globalObject: 'self' }),
+    new FaviconsWebpackPlugin('logo.svg'),
   ],
 };

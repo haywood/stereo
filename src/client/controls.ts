@@ -20,14 +20,14 @@ export class Controls {
         }
     }
 
-    append(...children: { domElement: Element }[]) {
+    append(...children: { domElement: Element; }[]) {
         children.forEach(c => this.domElement.appendChild(c.domElement));
     }
 }
 
 type DisplayNames = {
     [P in keyof Q]: string;
-}
+};
 const displayNames: DisplayNames = {
     pipe: 'Pipe Spec',
     rate: 'Rate',
@@ -37,7 +37,7 @@ const displayNames: DisplayNames = {
     l: 'Lightness',
     animate: 'Animate',
     remote: 'Remote',
-}
+};
 
 class Input {
     readonly domElement = document.createElement('span');
@@ -74,6 +74,6 @@ class Input {
             } else {
                 input.value = newValue.toString();
             }
-        })
+        });
     }
 }

@@ -1,12 +1,17 @@
-import { runPipeline, Params } from './pipeline';
+import { Pipe, Params } from './pipe';
 import { getLogger } from 'loglevel';
-import { expose } from "threads/worker"
+import { expose, Transfer } from "threads/worker";
 
 const logger = getLogger('PipelineWorker');
 
 logger.debug('new worker started');
 
-expose((params: Params) => {
-    logger.debug('received message', params);
-    return runPipeline(params);
-});
+const worker = {
+    runPipeline: (params: Params, buffer: ArrayBuffer) => {
+        logger.debug('received message', params);
+        Pipe.run(params, buffer);
+        return Transfer(buffer);
+    },
+};
+
+expose(worker);

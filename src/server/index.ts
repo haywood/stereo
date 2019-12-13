@@ -1,7 +1,7 @@
 import http from 'http';
 import WebSocket from 'ws';
 import { getLogger, setDefaultLevel } from 'loglevel';
-import { Params } from '../core/pipeline/pipeline';
+import { Params } from '../core/pipeline/pipe';
 import { startPool, runPipeline, stopPool } from '../core/pipeline/pool';
 
 setDefaultLevel('info');
@@ -19,14 +19,14 @@ const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 const port = 8000;
 
-wss.on('listening', () => console.info(`server is listening for connections at port ${port}`))
+wss.on('listening', () => console.info(`server is listening for connections at port ${port}`));
 
 wss.on('connection', (ws) => {
   logger.info('received client connection.');
 
   ws.on('message', (msg) => {
     runPipeline(JSON.parse(msg as string) as Params)
-      .then((data) => ws.send(JSON.stringify(data)))
+      .then((data) => ws.send(data))
       .catch((err) => logger.error(`error handling msg ${msg}`, err));
   });
 });
