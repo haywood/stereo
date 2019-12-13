@@ -19,37 +19,45 @@ const pp = (a: any, p: number = 2) => JSON.stringify(a, null, p);
 export class Pipe {
     static parse = (spec: string, scope: Scope): { init: CompositeFn, iter: CompositeFn } => {
         const ast: AST = parseAndEvaluateScalars(spec, scope);
-        const { chain } = ast;
-        const init = new CompositeFn.Builder();
-        let isDynamic = false;
-        let iter: typeof init;
-
-        init.add(evaluateFirstFunction(chain.shift(), scope));
-
-        for (let { op, args } of chain) {
-            isDynamic = isDynamic || args.some(a => a.id == 't');
-            if (isDynamic && !iter) {
-                iter = new CompositeFn.Builder();
-                iter.add(new Identity(init.d));
-            }
-
-            if (isDynamic) {
-                const d = ranges[op](iter.d);
-                logger.debug(`adding new ${op} of dimension ${d} to composite`);
-                const fn = evaluateFunction(d, { op, args }, scope);
-                iter.add(fn);
-            } else {
-                const d = ranges[op](init.d);
-                logger.debug(`adding new ${op} of dimension ${d} to composite`);
-                const fn = evaluateFunction(d, { op, args }, scope);
-                init.add(fn);
-            }
-        }
+        const init = createInit(ast, scope);
+        const iter = createIter(init, ast, scope);
 
         logger.debug(`processed ast into composites ${pp({ init, iter }, 2)}`);
-        return { init: init.build(), iter: iter.build() };
+
+        return { init, iter };
     }
 }
+
+const createInit = ({ chain }: AST, scope: Scope) => {
+    const init = new CompositeFn.Builder();
+    init.add(evaluateFirstFunction(chain.shift(), scope));
+
+    while (chain.length && isStatic(chain[0])) {
+        const { op, args } = chain.shift();
+        const d = ranges[op](init.d);
+        logger.debug(`adding new ${op} of dimension ${d} to composite`);
+        const fn = evaluateFunction(d, { op, args }, scope);
+        init.add(fn);
+    }
+
+    return init.build();
+}
+
+const createIter = (init: CompositeFn, { chain }: AST, scope: Scope) => {
+    const iter = new CompositeFn.Builder();
+    iter.add(new Identity(init.d));
+
+    for (let { op, args } of chain) {
+        const d = ranges[op](iter.d);
+        logger.debug(`adding new ${op} of dimension ${d} to composite`);
+        const fn = evaluateFunction(d, { op, args }, scope);
+        iter.add(fn);
+    }
+
+    return iter.build();
+}
+
+const isStatic = ({ args }: Function) => args.every(a => a.id !== 't');
 
 const parseAndEvaluateScalars = (spec: string, scope: Scope) => {
     const ast: AST = parse(spec);
