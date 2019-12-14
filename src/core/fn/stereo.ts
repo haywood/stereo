@@ -27,6 +27,7 @@ export default class Stereo implements Fn {
     assert.equal(x.length, from);
     assert.equal(y.length, to);
     let temp;
+    // TODO: make up and down work with output param
     if (from < to) {
       temp = Stereo.up(x, to);
     } else if (from > to) {
@@ -34,10 +35,7 @@ export default class Stereo implements Fn {
     } else {
       temp = x;
     }
-    // TODO: use set once everything is Float32Array
-    for (let i = 0; i < to; i++) {
-      y[i] = temp[i];
-    }
+    y.set(temp);
     return y;
   };
 
