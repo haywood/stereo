@@ -4,6 +4,7 @@ import Cube from './cube';
 import { tau, zeros } from 'mathjs';
 import { Fn, components } from './fn';
 import { TypedArray } from 'three';
+import { Vector } from './data';
 
 export default class Sphere implements Fn {
   private readonly root: number[];
@@ -24,9 +25,11 @@ export default class Sphere implements Fn {
     }
   };
 
-  fn = (phi: number[] | TypedArray) => {
+  fn = (phi: number[] | TypedArray, y?: Vector) => {
     const { d, root } = this;
+    y = y || root.slice();
     const r = new Rotator(d, components(d - 1).map((i) => ({ phi: phi[i], d0: 0, d1: i + 1 })));
-    return r.fn(root);
+    r.fn(root, y);
+    return y;
   };
 }

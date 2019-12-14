@@ -33,7 +33,10 @@ export default class Rotator implements Fn {
   fn = (x: Vector, y?: Vector) => {
     const { f0, f1, d, rotations } = this;
     assert.equal(x.length, d);
-    y = y || x.slice();
+    y = y || new Array(d);
+    for (let i = 0; i < d; i++) {
+      y[i] = x[i];
+    }
     for (const { phi, d0, d1 } of rotations) {
       const a = y[d0], b = y[d1];
       const r0 = f0(phi);
