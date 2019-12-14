@@ -1,9 +1,11 @@
-import {dot, equal, min} from 'mathjs';
-import {Fn} from './fn';
+import { dot, equal, min } from 'mathjs';
+import { Fn } from './fn';
 import Cube from './cube';
+import { Vector } from './data';
+import assert from 'assert';
 
 export default class Stereo implements Fn {
-  constructor(private readonly from: number, private readonly to: number) {}
+  constructor(private readonly from: number, private readonly to: number) { }
 
   get domain() {
     return this.from;
@@ -20,8 +22,10 @@ export default class Stereo implements Fn {
     }
   };
 
-  fn = (x: number[]) => {
-    const {from, to} = this;
+  fn = (x: Vector, y: Vector = new Array(Math.max(this.from, this.to))) => {
+    const { from, to } = this;
+    assert.equal(x.length, from);
+    assert.equal(y.length, Math.max(from, to));
     if (from < to) {
       return Stereo.up(x, to);
     } else if (from > to) {
