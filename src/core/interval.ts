@@ -20,7 +20,7 @@ export default class Interval implements Fn {
    * @param x A vector of length this.domain contained in the interval [0, 1].
    * @returns A mapping of the vector into this interval.
    */
-  fn = (x: Vector, y: Vector = new Array(this.d)) => {
+  fn = (x: Float32Array, y: Vector = new Float32Array(this.d)) => {
     const { a, b, d } = this;
     assert.equal(x.length, d);
     assert.equal(y.length, d);

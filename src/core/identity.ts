@@ -10,7 +10,7 @@ export class Identity implements Fn {
         this.domain = d;
     }
 
-    fn = (x: Vector, y: Vector = new Array(this.d)) => {
+    fn = (x: Vector, y: Vector = new Float32Array(this.d)) => {
         const { d } = this;
         assert.equal(x.length, d);
         assert.equal(y.length, d);

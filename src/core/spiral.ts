@@ -2,8 +2,8 @@ import { Fn, exp, components } from './fn';
 import Cube from './cube';
 import Sphere from './sphere';
 import { tau, sum, multiply } from 'mathjs';
-import { Vector } from './data';
 import assert from 'assert';
+import { Vector } from './data';
 
 export default class Spiral implements Fn {
   private readonly sphere: Sphere;
@@ -23,7 +23,7 @@ export default class Spiral implements Fn {
     }
   };
 
-  fn = (phi: number[], y: Float32Array = new Float32Array(this.d)) => {
+  fn = (phi: Float32Array, y: Vector = new Float32Array(this.d)) => {
     const { a, k, domain, d } = this;
     assert.equal(phi.length, d - 1);
     assert.equal(y.length, d);

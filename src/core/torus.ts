@@ -26,11 +26,11 @@ export default class Torus implements Fn {
     }
   };
 
-  fn = (phi: Vector, y: Vector = new Array(this.d)) => {
+  fn = (phi: Vector, y: Vector = new Float32Array(this.d)) => {
     const { d, main, cross } = this;
-    const phiCross = phi.slice(0, d - 2);
-    const phiMain = phi[d - 2];
-    const rotator = new Rotator(d, phiMain, 0, d - 1);
+    const phiCross = phi.subarray(0, d - 2);
+    const phiMain = phi.subarray(d - 2);
+    const rotator = new Rotator(d, phiMain[0], 0, d - 1);
 
     // TODO: get rid of p when everything is TypedArray's
     let p: Vector = new Float32Array(d);
@@ -39,7 +39,7 @@ export default class Torus implements Fn {
 
     // use the circle to translate the point
     // outward, creating a donut shape
-    const q = main.fn([phiMain]);
+    const q = main.fn(phiMain);
     p[0] += q[0];
     p[d - 1] += q[1];
 

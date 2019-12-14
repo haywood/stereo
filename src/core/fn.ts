@@ -18,7 +18,13 @@ export interface Fn {
 }
 
 export class CompositeFn implements Fn {
-  constructor(readonly fns: Fn[]) { }
+  private x: Vector;
+  private y: Vector;
+  constructor(readonly fns: Fn[]) {
+    this.x = new Float32Array(this.domainMax);
+    this.y = new Float32Array(this.dMax);
+
+  }
 
   get first() {
     return this.fns[0];
@@ -36,16 +42,38 @@ export class CompositeFn implements Fn {
     return this.last.d;
   }
 
+  get domainMax() {
+    return this.fns.reduce((max, f) => Math.max(f.domain, max), 0);
+  }
+
+  get dMax() {
+    return this.fns.reduce((max, f) => Math.max(f.d, max), 0);
+  }
+
   sample = function* (this: CompositeFn, n: number) {
     const { fns } = this;
     if (fns.length == 0) return [];
 
-    for (const p of fns[0].sample(n)) {
-      yield fns.slice(1).reduce((p, fn) => fn.fn(p), p);
+    const composite = new CompositeFn(fns.slice(1));
+    for (const x of fns[0].sample(n)) {
+      yield composite.fn(x);
     }
   };
 
-  fn = (x: Vector, y: Float32Array = new Float32Array(this.d)) => {
+  sampleInto = (n: number, data: Float32Array) => {
+    const { d, fns } = this;
+    assert.equal(data.length, n * d);
+    if (fns.length == 0) return [];
+
+    const composite = new CompositeFn(fns.slice(1));
+    let offset = 0;
+    for (const x of fns[0].sample(n)) {
+      composite.fn(x, data.subarray(offset, offset + d));
+      offset += d;
+    }
+  };
+
+  fn = (x: Vector, y: Vector = new Float32Array(this.d)) => {
     const { fns, domain, d } = this;
     assert.equal(x.length, domain);
     assert.equal(y.length, d);
@@ -56,18 +84,13 @@ export class CompositeFn implements Fn {
       );
     }
 
-    const domainMax = fns.reduce((max, f) => Math.max(f.domain, max), 0);
-    const dMax = fns.reduce((max, f) => Math.max(f.d, max), 0);
-    const xTemp = new Float32Array(domainMax);
-    const yTemp = new Float32Array(dMax);
-    xTemp.set(x);
-
+    this.x.set(x);
     for (const f of fns) {
-      f.fn(xTemp.subarray(0, f.domain), yTemp.subarray(0, f.d));
-      xTemp.fill(0);
-      xTemp.set(yTemp.subarray(0, domainMax));
+      f.fn(this.x.subarray(0, f.domain), this.y.subarray(0, f.d));
+      this.x.fill(0);
+      this.x.set(this.y.subarray(0, this.domainMax));
     }
-    y.set(yTemp.subarray(0, d));
+    y.set(this.y.subarray(0, d));
     return y;
   };
 

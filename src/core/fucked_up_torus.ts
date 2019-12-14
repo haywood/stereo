@@ -3,6 +3,7 @@ import Sphere from './sphere';
 import { Fn } from './fn';
 import { tau } from 'mathjs';
 import { Vector } from './data';
+import assert from 'assert';
 
 // This shape does not implement a torus. It used to,
 // but then I changed the way Rotator works, which
@@ -29,10 +30,12 @@ export default class FuckedUpTorus implements Fn {
         }
     };
 
-    fn = (phi: Vector, y: Float32Array = new Float32Array(this.d)) => {
-        const { d, sphere, circle } = this;
+    fn = (phi: Vector, y: Vector = new Float32Array(this.d)) => {
+        const { domain, d, sphere, circle } = this;
+        assert.equal(phi.length, domain);
+        assert.equal(y.length, d);
         sphere.fn(phi, y);
-        const q = circle.fn([phi[d - 2]]);
+        const q = circle.fn(phi.subarray(d - 2));
         y[0] += q[0];
         y[d - 1] += q[1];
         return y;

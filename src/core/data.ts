@@ -1,4 +1,4 @@
-export type Vector = number[] | Float32Array;
+export type Vector = Float32Array;
 
 export class Data {
     constructor(

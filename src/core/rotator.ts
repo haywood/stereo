@@ -24,16 +24,12 @@ export default class Rotator implements Fn {
     }
   };
 
-  fn = (x: Vector, y: Vector = new Array(this.d)) => {
+  fn = (x: Vector, y: Vector = new Float32Array(this.d)) => {
     const { d, phi, d0, d1, f0, f1 } = this;
     assert.equal(x.length, d);
     assert.equal(y.length, d);
 
-    for (let i = 0; i < d; i++) {
-      y[i] = x[i];
-    }
-
-    const a = y[d0], b = y[d1];
+    const a = x[d0], b = x[d1];
     const r0 = f0(phi);
     const r1 = f1(phi);
     y[d0] = a * r0 - b * r1;

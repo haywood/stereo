@@ -77,9 +77,7 @@ export class Pipe {
         logger.debug(`initializing input using ${n}, ${pp(init)}`);
         const input = Data.input(data);
         let i = 0;
-        for (const p of init.sample(n)) {
-            set(input, p, i++, init.d);
-        }
+        init.sampleInto(n, input);
         logger.info(`initialization completed in ${Date.now() - start}ms`);
     };
 
@@ -125,7 +123,7 @@ const get = (arr: Float32Array, i: number, stride: number) => {
     return arr.subarray(offset, offset + stride);
 };
 
-const set = (arr: Float32Array, value: Vector, i: number, stride: number) => {
+const set = (arr: Float32Array, value: ArrayLike<number>, i: number, stride: number) => {
     assert(value.length <= stride);
     const offset = i * stride;
     logger.debug(`setting arr[${i}, stride=${stride}] to ${value}`);

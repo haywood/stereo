@@ -8,10 +8,10 @@ import { Vector } from './data';
 import assert from 'assert';
 
 export default class Sphere implements Fn {
-  private readonly root: number[];
+  private readonly root: Float32Array;
 
   constructor(readonly d: number, r: number) {
-    this.root = zeros(d).valueOf() as number[];
+    this.root = new Float32Array(d);
     this.root[0] = r;
   }
 
@@ -26,7 +26,7 @@ export default class Sphere implements Fn {
     }
   };
 
-  fn = (phi: Vector, y: Float32Array = new Float32Array(this.d)) => {
+  fn = (phi: Vector, y: Vector = new Float32Array(this.d)) => {
     const { d, root } = this;
     assert.equal(phi.length, d - 1);
     assert.equal(y.length, d);
