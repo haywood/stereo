@@ -1,5 +1,6 @@
 import { TypedArray } from "three";
 import { Vector } from "./data";
+import assert from 'assert';
 
 export const cos = Math.cos;
 export const sin = Math.sin;
@@ -44,8 +45,10 @@ export class CompositeFn implements Fn {
     }
   };
 
-  fn = (x: Vector) => {
-    const { fns } = this;
+  fn = (x: Vector, y: Float32Array = new Float32Array(this.d)) => {
+    const { fns, domain, d } = this;
+    assert.equal(x.length, domain);
+    assert.equal(y.length, d);
 
     if (x.length !== this.domain) {
       throw new Error(
@@ -53,7 +56,19 @@ export class CompositeFn implements Fn {
       );
     }
 
-    return fns.reduce((y, fn) => fn.fn(y), x);
+    const domainMax = fns.reduce((max, f) => Math.max(f.domain, max), 0);
+    const dMax = fns.reduce((max, f) => Math.max(f.d, max), 0);
+    const xTemp = new Float32Array(domainMax);
+    const yTemp = new Float32Array(dMax);
+    xTemp.set(x);
+
+    for (const f of fns) {
+      f.fn(xTemp.subarray(0, f.domain), yTemp.subarray(0, f.d));
+      xTemp.fill(0);
+      xTemp.set(yTemp.subarray(0, domainMax));
+    }
+    y.set(yTemp.subarray(0, d));
+    return y;
   };
 
   static Builder = class {

@@ -15,24 +15,30 @@ export default class Stereo implements Fn {
     return this.to;
   }
 
-  sample = function* (this: Stereo, n: number) {
+  sample = function* (n: number) {
     const cube = new Cube(this.domain, 2);
     for (const phi of cube.sample(n)) {
       yield this.fn(phi);
     }
   };
 
-  fn = (x: Vector, y: Vector = new Array(Math.max(this.from, this.to))) => {
+  fn = (x: Vector, y: Vector = new Float32Array(this.to)) => {
     const { from, to } = this;
     assert.equal(x.length, from);
-    assert.equal(y.length, Math.max(from, to));
+    assert.equal(y.length, to);
+    let temp;
     if (from < to) {
-      return Stereo.up(x, to);
+      temp = Stereo.up(x, to);
     } else if (from > to) {
-      return Stereo.down(x, to);
+      temp = Stereo.down(x, to);
     } else {
-      return x;
+      temp = x;
     }
+    // TODO: use set once everything is Float32Array
+    for (let i = 0; i < to; i++) {
+      y[i] = temp[i];
+    }
+    return y;
   };
 
   static up = (p, to) => {
