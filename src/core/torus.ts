@@ -1,8 +1,9 @@
 import Cube from './cube';
 import Sphere from './sphere';
-import {Fn} from './fn';
-import {tau} from 'mathjs';
+import { Fn } from './fn';
+import { tau } from 'mathjs';
 import Rotator from './rotator';
+import { TypedArray } from 'three';
 
 export default class Torus implements Fn {
   private readonly cross: Sphere;
@@ -24,24 +25,23 @@ export default class Torus implements Fn {
     }
   };
 
-  fn = (phi: number[]): number[] => {
-    const {d, main, cross} = this;
+  fn = (phi: number[] | TypedArray) => {
+    const { d, main, cross } = this;
     const phiCross = phi.slice(0, d - 2);
     const phiMain = phi[d - 2];
     const rotator = new Rotator(
-      d, [{phi: phiMain, d0: 0, d1: d - 1}]);
+      d, [{ phi: phiMain, d0: 0, d1: d - 1 }]);
 
-    let p = cross.fn(phiCross);
-    p.push(0);
-
+    let p: number[] | TypedArray = new Float32Array(d);
+    p.set(cross.fn(phiCross));
     p = rotator.fn(p);
-    
+
     // use the circle to translate the point
     // outward, creating a donut shape
     const q = main.fn([phiMain]);
     p[0] += q[0];
     p[d - 1] += q[1];
-    
+
     return p;
   };
 }

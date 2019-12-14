@@ -1,8 +1,9 @@
-import {equal} from 'mathjs';
+import { equal } from 'mathjs';
 import Rotator from './rotator';
 import Cube from './cube';
-import {tau, zeros} from 'mathjs';
-import {Fn, components} from './fn';
+import { tau, zeros } from 'mathjs';
+import { Fn, components } from './fn';
+import { TypedArray } from 'three';
 
 export default class Sphere implements Fn {
   private readonly root: number[];
@@ -23,9 +24,9 @@ export default class Sphere implements Fn {
     }
   };
 
-  fn = (phi: number[]) => {
-    const {d, root} = this;
-    const r = new Rotator(d, components(d - 1).map((i) => ({phi: phi[i], d0: 0, d1: i + 1})));
+  fn = (phi: number[] | TypedArray) => {
+    const { d, root } = this;
+    const r = new Rotator(d, components(d - 1).map((i) => ({ phi: phi[i], d0: 0, d1: i + 1 })));
     return r.fn(root);
   };
 }
