@@ -1,4 +1,3 @@
-import { multiply, identity, format, index, Matrix } from 'mathjs';
 import { Fn, cos, sin } from './fn';
 import Cube from './cube';
 import { Vector } from './data';
