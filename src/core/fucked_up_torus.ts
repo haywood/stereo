@@ -2,7 +2,7 @@ import Cube from './cube';
 import Sphere from './sphere';
 import { Fn } from './fn';
 import { tau } from 'mathjs';
-import { TypedArray } from 'three';
+import { Vector } from './data';
 
 // This shape does not implement a torus. It used to,
 // but then I changed the way Rotator works, which
@@ -29,12 +29,12 @@ export default class FuckedUpTorus implements Fn {
         }
     };
 
-    fn = (phi: number[] | TypedArray) => {
+    fn = (phi: Vector, y: Vector = new Array(this.d)) => {
         const { d, sphere, circle } = this;
-        const p = sphere.fn(phi);
+        sphere.fn(phi, y);
         const q = circle.fn([phi[d - 2]]);
-        p[0] += q[0];
-        p[d - 1] += q[1];
-        return p;
+        y[0] += q[0];
+        y[d - 1] += q[1];
+        return y;
     };
 }

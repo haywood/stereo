@@ -26,14 +26,15 @@ export default class Torus implements Fn {
     }
   };
 
-  fn = (phi: Vector) => {
+  fn = (phi: Vector, y: Vector = new Array(this.d)) => {
     const { d, main, cross } = this;
     const phiCross = phi.slice(0, d - 2);
     const phiMain = phi[d - 2];
     const rotator = new Rotator(d, phiMain, 0, d - 1);
 
+    // TODO: get rid of p when everything is TypedArray's
     let p: Vector = new Float32Array(d);
-    p.set(cross.fn(phiCross));
+    cross.fn(phiCross, p.subarray(0, d - 1));
     p = rotator.fn(p);
 
     // use the circle to translate the point
@@ -42,6 +43,9 @@ export default class Torus implements Fn {
     p[0] += q[0];
     p[d - 1] += q[1];
 
-    return p;
+    for (let i = 0; i < d; i++) {
+      y[i] = p[i];
+    }
+    return y;
   };
 }
