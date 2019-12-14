@@ -1,3 +1,5 @@
+import { TypedArray } from "three";
+
 export const cos = Math.cos;
 export const sin = Math.sin;
 export const tan = Math.tan;
@@ -9,7 +11,7 @@ export const components = (d) => Array.from(new Array(d).keys());
 export interface Fn {
   readonly d: number;
   readonly domain: number;
-  fn(x: ArrayLike<number>): ArrayLike<number>;
+  fn(x: ArrayLike<number>, y?: ArrayLike<number>): ArrayLike<number>;
   sample(n: number): Generator<ArrayLike<number>>;
 }
 
