@@ -7,7 +7,7 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 module.exports = {
   target: 'web',
   mode: 'development',
-  entry: ['./src/client/index.ts'],
+  entry: './src/client/index.ts',
   devtool: 'inline-source-map',
   watchOptions: {
     aggregateTimeout: 1500,

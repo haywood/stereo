@@ -3,6 +3,7 @@ import { Fn, cos, sin } from './fn';
 import Cube from './cube';
 import { TypedArray } from 'three';
 import { Vector } from './data';
+import assert from 'assert';
 
 interface Rotation {
   readonly phi: number;
@@ -29,15 +30,17 @@ export default class Rotator implements Fn {
     }
   };
 
-  fn = (p: Vector) => {
-    const { f0, f1 } = this;
-    return this.rotations.reduce((q, { phi, d0, d1 }) => {
-      const a = q[d0], b = q[d1];
+  fn = (x: Vector, y?: Vector) => {
+    const { f0, f1, d, rotations } = this;
+    assert.equal(x.length, d);
+    y = y || x.slice();
+    for (const { phi, d0, d1 } of rotations) {
+      const a = y[d0], b = y[d1];
       const r0 = f0(phi);
       const r1 = f1(phi);
-      q[d0] = a * r0 - b * r1;
-      q[d1] = a * r1 + b * r0;
-      return q;
-    }, p.slice());
+      y[d0] = a * r0 - b * r1;
+      y[d1] = a * r1 + b * r0;
+    }
+    return y;
   };
 }
