@@ -1,5 +1,5 @@
 import { TypedArray } from "three";
-import { Vector } from "./data";
+import { Vector } from "../data";
 import assert from 'assert';
 
 export const cos = Math.cos;

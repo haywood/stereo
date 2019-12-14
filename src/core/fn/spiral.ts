@@ -3,7 +3,7 @@ import Cube from './cube';
 import Sphere from './sphere';
 import { tau, sum, multiply } from 'mathjs';
 import assert from 'assert';
-import { Vector } from './data';
+import { Vector } from '../data';
 
 export default class Spiral implements Fn {
   private readonly sphere: Sphere;

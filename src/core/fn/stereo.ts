@@ -1,7 +1,7 @@
 import { dot, equal, min } from 'mathjs';
 import { Fn } from './fn';
 import Cube from './cube';
-import { Vector } from './data';
+import { Vector } from '../data';
 import assert from 'assert';
 
 export default class Stereo implements Fn {

@@ -1,4 +1,4 @@
-import Cube from "./cube";
+import Cube from "./fn/cube";
 import { tau, equal } from "mathjs";
 
 describe("Cube", () => {

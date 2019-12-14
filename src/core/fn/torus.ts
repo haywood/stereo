@@ -4,7 +4,7 @@ import { Fn } from './fn';
 import { tau } from 'mathjs';
 import Rotator from './rotator';
 import { TypedArray } from 'three';
-import { Vector } from './data';
+import { Vector } from '../data';
 
 export default class Torus implements Fn {
   private readonly cross: Sphere;

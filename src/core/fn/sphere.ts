@@ -4,7 +4,7 @@ import Cube from './cube';
 import { tau, zeros } from 'mathjs';
 import { Fn, components, CompositeFn } from './fn';
 import { TypedArray } from 'three';
-import { Vector } from './data';
+import { Vector } from '../data';
 import assert from 'assert';
 
 export default class Sphere implements Fn {
