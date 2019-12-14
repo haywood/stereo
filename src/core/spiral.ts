@@ -3,6 +3,7 @@ import Cube from './cube';
 import Sphere from './sphere';
 import { tau, sum, multiply } from 'mathjs';
 import { Vector } from './data';
+import assert from 'assert';
 
 export default class Spiral implements Fn {
   private readonly sphere: Sphere;
@@ -24,6 +25,9 @@ export default class Spiral implements Fn {
 
   fn = (phi: number[], y: Vector = new Array(this.d)) => {
     const { a, k, d } = this;
+    assert.equal(phi.length, d - 1);
+    assert.equal(y.length, d);
+
     this.sphere.fn(phi, y);
     const x = sum(multiply(k, phi));
     const r = exp(x);

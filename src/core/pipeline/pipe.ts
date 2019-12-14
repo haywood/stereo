@@ -231,7 +231,7 @@ type Scalar = {
 };
 
 const rotate = (d, phi: number, d0: number, d1: number, { f0, f1 }: Scope) =>
-    new Rotator(d, [{ phi, d0, d1 }], f0, f1);
+    new Rotator(d, phi, d0, d1, f0, f1);
 
 const fns = {
     cube: (d, l) => new Cube(d, l),

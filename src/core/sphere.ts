@@ -5,6 +5,7 @@ import { tau, zeros } from 'mathjs';
 import { Fn, components } from './fn';
 import { TypedArray } from 'three';
 import { Vector } from './data';
+import assert from 'assert';
 
 export default class Sphere implements Fn {
   private readonly root: number[];
@@ -27,12 +28,14 @@ export default class Sphere implements Fn {
 
   fn = (phi: number[] | TypedArray, y: Vector = new Array(this.d)) => {
     const { d, root } = this;
-    for (let i = 0; i < d; i++) {
-      y[i] = root[i];
+    assert.equal(phi.length, d - 1);
+    assert.equal(y.length, d);
+
+    const temp = new Float32Array(root);
+    for (const r of components(d - 1).map((i) => new Rotator(d, phi[i], 0, i + 1))) {
+      r.fn(temp, y);
+      temp.set(y);
     }
-    const rotations = components(d - 1).map((i) => ({ phi: phi[i], d0: 0, d1: i + 1 }));
-    const r = new Rotator(d, rotations);
-    r.fn(root, y);
     return y;
   };
 }

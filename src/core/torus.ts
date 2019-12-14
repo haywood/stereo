@@ -30,8 +30,7 @@ export default class Torus implements Fn {
     const { d, main, cross } = this;
     const phiCross = phi.slice(0, d - 2);
     const phiMain = phi[d - 2];
-    const rotator = new Rotator(
-      d, [{ phi: phiMain, d0: 0, d1: d - 1 }]);
+    const rotator = new Rotator(d, phiMain, 0, d - 1);
 
     let p: Vector = new Float32Array(d);
     p.set(cross.fn(phiCross));
