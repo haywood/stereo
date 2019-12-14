@@ -2,9 +2,10 @@ import { Fn, exp, components } from './fn';
 import Cube from './cube';
 import Sphere from './sphere';
 import { tau, sum, multiply } from 'mathjs';
+import { Vector } from './data';
 
 export default class Spiral implements Fn {
-  private readonly sphere;
+  private readonly sphere: Sphere;
 
   constructor(readonly d: number, readonly a: number[], readonly k: number[]) {
     this.sphere = new Sphere(d, 1);
@@ -21,17 +22,14 @@ export default class Spiral implements Fn {
     }
   };
 
-  fn = (phi: number[]) => {
-    const { r } = this;
-    return this
-      .sphere
-      .fn(phi)
-      .map((x: number, i: number) => x * r(phi, i));
-  };
-
-  r = (phi: number[], i: number): number => {
-    const { a, k } = this;
+  fn = (phi: number[], y: Vector = new Array(this.d)) => {
+    const { a, k, d } = this;
+    this.sphere.fn(phi, y);
     const x = sum(multiply(k, phi));
-    return a[i] * exp(x);
+    const r = exp(x);
+    for (let i = 0; i < d; i++) {
+      y[i] = y[i] * a[i] * r;
+    }
+    return y;
   };
 }

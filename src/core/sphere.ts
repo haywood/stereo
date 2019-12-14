@@ -25,10 +25,13 @@ export default class Sphere implements Fn {
     }
   };
 
-  fn = (phi: number[] | TypedArray, y?: Vector) => {
+  fn = (phi: number[] | TypedArray, y: Vector = new Array(this.d)) => {
     const { d, root } = this;
-    y = y || root.slice();
-    const r = new Rotator(d, components(d - 1).map((i) => ({ phi: phi[i], d0: 0, d1: i + 1 })));
+    for (let i = 0; i < d; i++) {
+      y[i] = root[i];
+    }
+    const rotations = components(d - 1).map((i) => ({ phi: phi[i], d0: 0, d1: i + 1 }));
+    const r = new Rotator(d, rotations);
     r.fn(root, y);
     return y;
   };
