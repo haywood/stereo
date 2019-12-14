@@ -4,12 +4,6 @@ import Cube from './cube';
 import { Vector } from './data';
 import assert from 'assert';
 
-interface Rotation {
-  readonly phi: number;
-  readonly d0: number;
-  readonly d1: number;
-}
-
 export default class Rotator implements Fn {
   constructor(
     readonly d: number,
