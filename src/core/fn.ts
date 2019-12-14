@@ -1,4 +1,5 @@
 import { TypedArray } from "three";
+import { Vector } from "./data";
 
 export const cos = Math.cos;
 export const sin = Math.sin;
@@ -11,8 +12,8 @@ export const components = (d) => Array.from(new Array(d).keys());
 export interface Fn {
   readonly d: number;
   readonly domain: number;
-  fn(x: ArrayLike<number>, y?: ArrayLike<number>): ArrayLike<number>;
-  sample(n: number): Generator<ArrayLike<number>>;
+  fn(x: Vector, y?: Vector): Vector;
+  sample(n: number): Generator<Vector>;
 }
 
 export class CompositeFn implements Fn {
@@ -43,7 +44,7 @@ export class CompositeFn implements Fn {
     }
   };
 
-  fn = (x: ArrayLike<number>) => {
+  fn = (x: Vector) => {
     const { fns } = this;
 
     if (x.length !== this.domain) {

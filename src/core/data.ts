@@ -1,3 +1,5 @@
+export type Vector = number[] | Float32Array;
+
 export class Data {
     constructor(
         readonly n: number,

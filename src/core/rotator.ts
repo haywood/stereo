@@ -2,6 +2,7 @@ import { multiply, identity, format, index, Matrix } from 'mathjs';
 import { Fn, cos, sin } from './fn';
 import Cube from './cube';
 import { TypedArray } from 'three';
+import { Vector } from './data';
 
 interface Rotation {
   readonly phi: number;
@@ -28,7 +29,7 @@ export default class Rotator implements Fn {
     }
   };
 
-  fn = (p: number[] | TypedArray) => {
+  fn = (p: Vector) => {
     const { f0, f1 } = this;
     return this.rotations.reduce((q, { phi, d0, d1 }) => {
       const a = q[d0], b = q[d1];

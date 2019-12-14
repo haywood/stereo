@@ -11,7 +11,7 @@ import { getLogger } from 'loglevel';
 import Cube from '../cube';
 import { Identity } from '../identity';
 import Interval from '../interval';
-import { Data } from '../data';
+import { Data, Vector } from '../data';
 import { Color, TypedArray } from 'three';
 import assert from 'assert';
 
@@ -120,12 +120,12 @@ export class Pipe {
     };
 }
 
-const get = (arr: TypedArray, i: number, stride: number) => {
+const get = (arr: Float32Array, i: number, stride: number) => {
     const offset = i * stride;
     return arr.subarray(offset, offset + stride);
 };
 
-const set = (arr: TypedArray, value: ArrayLike<number>, i: number, stride: number) => {
+const set = (arr: Float32Array, value: Vector, i: number, stride: number) => {
     assert(value.length <= stride);
     const offset = i * stride;
     logger.debug(`setting arr[${i}, stride=${stride}] to ${value}`);
