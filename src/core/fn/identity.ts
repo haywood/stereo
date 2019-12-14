@@ -14,9 +14,7 @@ export class Identity implements Fn {
         const { d } = this;
         assert.equal(x.length, d);
         assert.equal(y.length, d);
-        for (let i = 0; i < d; i++) {
-            y[i] = x[i];
-        }
+        y.set(x);
         return y;
     };
 
