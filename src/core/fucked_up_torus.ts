@@ -29,7 +29,7 @@ export default class FuckedUpTorus implements Fn {
         }
     };
 
-    fn = (phi: Vector, y: Vector = new Array(this.d)) => {
+    fn = (phi: Vector, y: Float32Array = new Float32Array(this.d)) => {
         const { d, sphere, circle } = this;
         sphere.fn(phi, y);
         const q = circle.fn([phi[d - 2]]);

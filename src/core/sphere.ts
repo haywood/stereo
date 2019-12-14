@@ -2,7 +2,7 @@ import { equal } from 'mathjs';
 import Rotator from './rotator';
 import Cube from './cube';
 import { tau, zeros } from 'mathjs';
-import { Fn, components } from './fn';
+import { Fn, components, CompositeFn } from './fn';
 import { TypedArray } from 'three';
 import { Vector } from './data';
 import assert from 'assert';
@@ -26,16 +26,13 @@ export default class Sphere implements Fn {
     }
   };
 
-  fn = (phi: number[] | TypedArray, y: Vector = new Array(this.d)) => {
+  fn = (phi: Vector, y: Float32Array = new Float32Array(this.d)) => {
     const { d, root } = this;
     assert.equal(phi.length, d - 1);
     assert.equal(y.length, d);
 
-    const temp = new Float32Array(root);
-    for (const r of components(d - 1).map((i) => new Rotator(d, phi[i], 0, i + 1))) {
-      r.fn(temp, y);
-      temp.set(y);
-    }
+    const r = new CompositeFn(components(d - 1).map((i) => new Rotator(d, phi[i], 0, i + 1)));
+    r.fn(root, y);
     return y;
   };
 }

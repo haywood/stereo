@@ -23,13 +23,16 @@ export default class Spiral implements Fn {
     }
   };
 
-  fn = (phi: number[], y: Vector = new Array(this.d)) => {
-    const { a, k, d } = this;
+  fn = (phi: number[], y: Float32Array = new Float32Array(this.d)) => {
+    const { a, k, domain, d } = this;
     assert.equal(phi.length, d - 1);
     assert.equal(y.length, d);
 
     this.sphere.fn(phi, y);
-    const x = sum(multiply(k, phi));
+    let x = 0;
+    for (let i = 0; i < domain; i++) {
+      x += k[i] * phi[i];
+    };
     const r = exp(x);
     for (let i = 0; i < d; i++) {
       y[i] = y[i] * a[i] * r;
