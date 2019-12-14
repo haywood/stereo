@@ -116,7 +116,7 @@ export class Pipe {
             set(color, [c.r, c.g, c.b], i, 3);
         }
 
-        logger.info(`iteration complete in ${Date.now() - start}ms`);
+        logger.debug(`iteration complete in ${Date.now() - start}ms`);
     };
 }
 
