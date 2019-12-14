@@ -65,9 +65,13 @@ export class Renderer {
 
       geometry.setAttribute('position', new BufferAttribute(position, d));
       geometry.setAttribute('color', new BufferAttribute(color, 3));
-      geometry.computeBoundingSphere();
-      const s = geometry.boundingSphere;
-      this.camera.position.z = this.z = Math.min(5, s.center.z + s.radius + 1);
+      let z = 5;
+      if (d > 2) {
+        geometry.computeBoundingSphere();
+        const s = geometry.boundingSphere;
+        z = Math.min(5, s.center.z + s.radius + 1);
+      }
+      this.camera.position.z = this.z = z;
     }
   };
 }

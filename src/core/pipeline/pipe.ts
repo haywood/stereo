@@ -243,7 +243,7 @@ const fns = {
         new FuckedUpTorus(d, r, t),
     rotate,
     R: rotate,
-    stereo: (d) => new Stereo(d, 3),
+    stereo: (d, to) => new Stereo(d, to),
 };
 
 type Fns = typeof fns;
