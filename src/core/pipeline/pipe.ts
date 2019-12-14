@@ -95,8 +95,8 @@ export class Pipe {
         logger.debug(`iterating using ${pp(params)}, ${pp(iter)}`);
         for (let i = 0; i < n; i++) {
             const x = get(input, i, init.d);
-            const y = iter.fn(x);
-            set(position, y, i, iter.d);
+            const offset = i * iter.d;
+            iter.fn(x, position.subarray(offset, offset + iter.d));
         }
 
         const lightnessFn = math.compile(`100 * (${params.l})`);
