@@ -1,7 +1,6 @@
 import { multiply, identity, format, index, Matrix } from 'mathjs';
 import { Fn, cos, sin } from './fn';
 import Cube from './cube';
-import { TypedArray } from 'three';
 import { Vector } from './data';
 import assert from 'assert';
 
