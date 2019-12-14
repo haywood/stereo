@@ -1,6 +1,7 @@
 import { floor, nthRoot } from 'mathjs';
 import { Fn } from './fn';
 import assert from 'assert';
+import { Vector } from './data';
 
 export default class Interval implements Fn {
   readonly domain: number;
@@ -19,11 +20,10 @@ export default class Interval implements Fn {
    * @param x A vector of length this.domain contained in the interval [0, 1].
    * @returns A mapping of the vector into this interval.
    */
-  fn = (x: number[]) => {
+  fn = (x: Vector, y: Vector = new Array(this.d)) => {
     const { a, b, d } = this;
     assert.equal(x.length, d);
-
-    const y = new Array(d);
+    assert.equal(y.length, d);
     for (let i = 0; i < d; i++) {
       y[i] = a[i] + x[i] * (b[i] - a[i]);
     }

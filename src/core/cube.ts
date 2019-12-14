@@ -1,5 +1,6 @@
 import Interval from "./interval";
 import { Fn } from "./fn";
+import { Vector } from "./data";
 
 export default class Cube implements Fn {
   private readonly interval: Interval;
@@ -16,7 +17,7 @@ export default class Cube implements Fn {
     return this.d;
   }
 
-  fn = x => this.interval.fn(x);
+  fn = (x: Vector, y?: Vector) => this.interval.fn(x, y);
 
   sample = n => this.interval.sample(n);
 }
