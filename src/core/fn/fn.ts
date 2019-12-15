@@ -78,12 +78,6 @@ export class CompositeFn implements Fn {
     assert.equal(x.length, domain);
     assert.equal(y.length, d);
 
-    if (x.length !== this.domain) {
-      throw new Error(
-        `Input vector ${x} invalid for composite with domain ${this.domain}`,
-      );
-    }
-
     this.x.set(x);
     for (const f of fns) {
       f.fn(this.x.subarray(0, f.domain), this.y.subarray(0, f.d));
