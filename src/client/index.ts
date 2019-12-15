@@ -1,5 +1,5 @@
 import { Renderer } from './renderer';
-import { stream } from './data';
+import { stream } from './stream';
 import { Controls } from './controls';
 
 document.onreadystatechange = (): void => {
