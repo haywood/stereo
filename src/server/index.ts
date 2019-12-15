@@ -1,8 +1,8 @@
 import http from 'http';
 import WebSocket from 'ws';
 import { getLogger, setDefaultLevel } from 'loglevel';
-import { Params } from '../core/pipeline/pipe';
-import { startPool, runPipeline, stopPool } from '../core/pipeline/pool';
+import { Params } from '../core/pipe/pipe';
+import { startPool, runPipeline, stopPool } from '../core/pipe/pool';
 
 setDefaultLevel('info');
 const logger = getLogger('Server');

@@ -2,8 +2,8 @@ import { Observable, timer, Subject, interval, EMPTY } from 'rxjs';
 import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
 import { q, streams } from './query';
-import { Params } from "../core/pipeline/pipe";
-import { startPool, stopPool, runPipeline } from '../core/pipeline/pool';
+import { Params } from "../core/pipe/pipe";
+import { startPool, stopPool, runPipeline } from '../core/pipe/pool';
 
 const second = 1000;
 let retryCount = 0;
