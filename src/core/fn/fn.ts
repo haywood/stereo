@@ -18,11 +18,12 @@ export interface Fn {
 }
 
 export class CompositeFn implements Fn {
-  private x: Vector;
-  private y: Vector;
+  private readonly x: Vector;
+  private readonly y: Vector;
   constructor(readonly fns: Fn[]) {
-    this.x = new Float32Array(this.domainMax);
-    this.y = new Float32Array(this.dMax);
+    const length = Math.max(this.domainMax, this.dMax);
+    this.x = new Float32Array(length);
+    this.y = new Float32Array(length);
 
   }
 
@@ -51,24 +52,26 @@ export class CompositeFn implements Fn {
   }
 
   sample = function* (this: CompositeFn, n: number) {
-    const { fns } = this;
+    const { fns, d } = this;
+    const [first, ...rest] = fns;
     if (fns.length == 0) return [];
 
-    const composite = new CompositeFn(fns.slice(1));
-    for (const x of fns[0].sample(n)) {
-      yield composite.fn(x);
+    for (const x of first.sample(n)) {
+      this.x.set(x);
+      if (rest.length) {
+        CompositeFn.apply(rest, this.x, this.y);
+      } else {
+        this.y.set(x);
+      }
+      yield this.y.subarray(0, d);
     }
   };
 
   sampleInto = (n: number, data: Float32Array) => {
-    const { d, fns } = this;
-    assert.equal(data.length, n * d);
-    if (fns.length == 0) return [];
-
-    const composite = new CompositeFn(fns.slice(1));
+    const { d } = this;
     let offset = 0;
-    for (const x of fns[0].sample(n)) {
-      composite.fn(x, data.subarray(offset, offset + d));
+    for (const y of this.sample(n)) {
+      data.set(y, offset);
       offset += d;
     }
   };
@@ -79,13 +82,17 @@ export class CompositeFn implements Fn {
     assert.equal(y.length, d);
 
     this.x.set(x);
-    for (const f of fns) {
-      f.fn(this.x.subarray(0, f.domain), this.y.subarray(0, f.d));
-      this.x.fill(0);
-      this.x.set(this.y.subarray(0, this.domainMax));
-    }
+    CompositeFn.apply(fns, this.x, this.y);
     y.set(this.y.subarray(0, d));
     return y;
+  };
+
+  private static apply = (fns: Fn[], x: Vector, y: Vector) => {
+    assert.equal(x.length, y.length);
+    for (const f of fns) {
+      f.fn(x.subarray(0, f.domain), y.subarray(0, f.d));
+      x.set(y);
+    }
   };
 
   static Builder = class {

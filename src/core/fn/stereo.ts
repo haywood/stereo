@@ -1,11 +1,16 @@
-import { dot, equal, min } from 'mathjs';
 import { Fn } from './fn';
 import Cube from './cube';
 import { Vector } from '../data';
 import assert from 'assert';
 
 export default class Stereo implements Fn {
-  constructor(private readonly from: number, private readonly to: number) { }
+  private readonly fromTemp: Vector;
+  private readonly toTemp: Vector;
+
+  constructor(private readonly from: number, private readonly to: number) {
+    this.fromTemp = new Float32Array(Math.max(from, to));
+    this.toTemp = new Float32Array(Math.max(from, to));
+  }
 
   get domain() {
     return this.from;
@@ -23,48 +28,53 @@ export default class Stereo implements Fn {
   };
 
   fn = (x: Vector, y: Vector = new Float32Array(this.to)) => {
-    const { from, to } = this;
+    let { from, to, fromTemp, toTemp } = this;
     assert.equal(x.length, from);
     assert.equal(y.length, to);
-    let temp;
-    // TODO: make up and down work with output param
-    if (from < to) {
-      temp = Stereo.up(x, to);
-    } else if (from > to) {
-      temp = Stereo.down(x, to);
-    } else {
-      temp = x;
+
+    fromTemp.set(x);
+    while (from < to) {
+      Stereo.up(
+        fromTemp.subarray(0, from),
+        toTemp.subarray(0, ++from)
+      );
+      fromTemp.set(toTemp);
     }
-    y.set(temp);
+
+    while (from > to) {
+      Stereo.down(
+        fromTemp.subarray(0, from),
+        toTemp.subarray(0, --from)
+      );
+      fromTemp.set(toTemp);
+    }
+
+    y.set(toTemp.subarray(0, to));
     return y;
   };
 
-  static up = (p, to) => {
-    const q = new Array(p.length + 1).fill(0);
-    const norm2 = dot(p, p);
-    const divisor = norm2 + 1;
-    q[0] = (norm2 - 1) / divisor;
-    for (let i = 1; i <= p.length; i++) {
-      q[i] = (2 * p[i - 1]) / divisor;
-    }
-
-    if (q.length >= to) {
-      return q;
-    } else {
-      return Stereo.up(q, to);
+  static up = (x: Vector, temp: Vector) => {
+    assert.equal(temp.length, x.length + 1);
+    const n2 = norm2(x);
+    const divisor = n2 + 1;
+    temp[0] = (n2 - 1) / divisor;
+    for (let i = 1; i <= x.length; i++) {
+      temp[i] = (2 * x[i - 1]) / divisor;
     }
   };
 
-  static down = (p, to) => {
-    const q = new Array(p.length - 1).fill(0);
-    for (let i = 0; i < q.length; i++) {
-      q[i] = p[i + 1] / (1 - p[0]);
-    }
-
-    if (q.length <= to) {
-      return q;
-    } else {
-      return Stereo.down(q, to);
+  static down = (x: Vector, temp: Vector) => {
+    assert.equal(temp.length, x.length - 1);
+    for (let i = 0; i < temp.length; i++) {
+      temp[i] = x[i + 1] / (1 - x[0]);
     }
   };
 }
+
+const norm2 = (x: Vector) => {
+  let result = 0;
+  for (let i = 0; i < x.length; i++) {
+    result += x[i] * x[i];
+  }
+  return result;
+};

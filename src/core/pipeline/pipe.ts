@@ -12,7 +12,7 @@ import Cube from '../fn/cube';
 import { Identity } from '../fn/identity';
 import Interval from '../fn/interval';
 import { Data, Vector } from '../data';
-import { Color, TypedArray } from 'three';
+import { Color } from 'three';
 import assert from 'assert';
 
 const logger = getLogger('Pipe');
@@ -66,7 +66,7 @@ export class Pipe {
         return new Pipe(params, ast.n, init, iter);
     };
 
-    initData = (data: Float32Array) => {
+    initData = (data: Vector) => {
         const { n, init, iter } = this;
         const start = Date.now();
         data[Data.nOffset] = n;
@@ -77,11 +77,13 @@ export class Pipe {
         logger.debug(`initializing input using ${n}, ${pp(init)}`);
         const input = Data.input(data);
         let i = 0;
-        init.sampleInto(n, input);
+        for (const y of init.sample(n)) {
+            set(input, y, i++, init.d);
+        }
         logger.info(`initialization completed in ${Date.now() - start}ms`);
     };
 
-    iterData = (data: Float32Array) => {
+    iterData = (data: Vector) => {
         const { init, iter, params, n } = this;
         const input = Data.input(data);
         const position = Data.position(data);
@@ -94,9 +96,7 @@ export class Pipe {
 
         logger.debug(`iterating using ${pp(params)}, ${pp(iter)}`);
         for (let i = 0; i < n; i++) {
-            const x = get(input, i, init.d);
-            const offset = i * iter.d;
-            iter.fn(x, position.subarray(offset, offset + iter.d));
+            iter.fn(get(input, i, init.d), get(position, i, iter.d));
         }
 
         const lightnessFn = math.compile(`100 * (${params.l})`);
@@ -114,16 +114,16 @@ export class Pipe {
             set(color, [c.r, c.g, c.b], i, 3);
         }
 
-        logger.debug(`iteration complete in ${Date.now() - start}ms`);
+        logger.info(`iteration complete in ${Date.now() - start}ms`);
     };
 }
 
-const get = (arr: Float32Array, i: number, stride: number) => {
+const get = (arr: Vector, i: number, stride: number) => {
     const offset = i * stride;
     return arr.subarray(offset, offset + stride);
 };
 
-const set = (arr: Float32Array, value: ArrayLike<number>, i: number, stride: number) => {
+const set = (arr: Vector, value: ArrayLike<number>, i: number, stride: number) => {
     assert(value.length <= stride);
     const offset = i * stride;
     logger.debug(`setting arr[${i}, stride=${stride}] to ${value}`);
