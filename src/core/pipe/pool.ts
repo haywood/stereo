@@ -43,15 +43,14 @@ export const stopPool = async (): Promise<boolean> => {
 };
 
 export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
-    return pool.queue(async (worker) => {
-        if (!data.has(params.pipe)) {
-            const { n, init, iter } = Pipe.parse(params);
-            data.set(params.pipe, Data.bufferFor(n, init.d, iter.d));
-        }
+    if (!data.has(params.pipe)) {
+        const { n, init, iter } = Pipe.parse(params);
+        data.set(params.pipe, Data.bufferFor(n, init.d, iter.d));
+    }
+    const buffer = data.get(params.pipe);
 
-        const buffer = data.get(params.pipe);
-        const result = await worker.runPipeline(params, Transfer(buffer));
-        data.set(params.pipe, result);
-        return result;
-    });
+    const result = await pool
+        .queue((worker) => worker.runPipeline(params, Transfer(buffer)));
+    data.set(params.pipe, result);
+    return result;
 };
