@@ -1,5 +1,5 @@
 import { Renderer } from './renderer';
-import { stream } from './stream';
+import { data } from './data';
 import { Controls } from './controls';
 
 document.onreadystatechange = (): void => {
@@ -10,6 +10,6 @@ document.onreadystatechange = (): void => {
     document.body.appendChild(renderer.domElement);
     document.body.appendChild(controls.domElement);
 
-    stream.subscribe(renderer.updatePoints);
+    data.subscribe(renderer.updatePoints);
   }
 };

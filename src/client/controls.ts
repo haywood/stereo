@@ -1,4 +1,4 @@
-import { q, streams, Q } from './query';
+import { inputs, streams, Inputs } from './inputs';
 
 export class Controls {
     readonly domElement = document.createElement('form');
@@ -13,9 +13,11 @@ export class Controls {
         this.domElement.style.flexDirection = 'column';
         this.domElement.style.alignItems = 'flex-end';
 
-        for (const name in q) {
-            const type = typeof q[name] === 'boolean' ? 'checkbox' : 'text';
-            const input = new Input(name, type);
+        for (const name in inputs) {
+            if (!(name in displayNames)) continue;
+
+            const type = typeof inputs[name] === 'boolean' ? 'checkbox' : 'text';
+            const input = new Control(name, type);
             this.domElement.appendChild(input.domElement);
         }
     }
@@ -26,7 +28,7 @@ export class Controls {
 }
 
 type DisplayNames = {
-    [P in keyof Q]: string;
+    [P in keyof Inputs]?: string;
 };
 const displayNames: DisplayNames = {
     pipe: 'Pipe Spec',
@@ -36,15 +38,14 @@ const displayNames: DisplayNames = {
     h: 'Hue',
     l: 'Lightness',
     animate: 'Animate',
-    remote: 'Remote',
 };
 
-class Input {
+class Control {
     readonly domElement = document.createElement('span');
 
     constructor(readonly name: string, readonly type: string) {
         const input: HTMLInputElement = document.createElement('input');
-        const value = q[name];
+        const value = inputs[name];
 
         input.name = name;
         input.type = type;
@@ -56,9 +57,9 @@ class Input {
         input.size = 50;
         input.onchange = () => {
             if (type === 'checkbox') {
-                q[name] = input.checked;
+                inputs[name] = input.checked;
             } else {
-                q[name] = input.value;
+                inputs[name] = input.value;
             }
         };
 

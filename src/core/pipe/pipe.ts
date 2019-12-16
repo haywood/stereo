@@ -14,24 +14,39 @@ import Interval from '../fn/interval';
 import { Data, Vector } from '../data';
 import { Color } from 'three';
 import assert from 'assert';
+import { pp } from '../pp';
 
 const logger = getLogger('Pipe');
 logger.setLevel('info');
-const pp = (a: any, p: number = 2) => JSON.stringify(a, null, p);
 
 export type Params = {
-    pipe?: string;
+    pipe: string;
     rate?: string;
     f0?: string;
     f1?: string;
     h?: string;
     l?: string;
     t?: number;
+    bpm?: number;
+};
+
+type UnaryOperator = (x: number) => number;
+
+export type CompiledParams = {
+    pipe: AST;
+    rate: number;
+    f0: UnaryOperator;
+    f1: UnaryOperator;
+    h: math.EvalFunction;
+    l: math.EvalFunction;
+    t: number;
+    bpm: number;
+    scope: Scope;
 };
 
 export class Pipe {
     constructor(
-        readonly params: Params,
+        readonly params: CompiledParams,
         readonly n: number,
         readonly init: CompositeFn,
         readonly iter: CompositeFn,
@@ -49,21 +64,40 @@ export class Pipe {
         pipe.iterData(data);
     };
 
-    static parse = (params: Params): Pipe => {
-        const rate = math.evaluate(params.rate);
+    static parse = (params: Params): Pipe => Pipe.build(Pipe.compileParams(params));
+
+    static compileParams = (params: Params): CompiledParams => {
+        const bpm = params.bpm;
+        const rate = math.evaluate(params.rate, { bpm });
         const t = rate * params.t / 1000;
         const f0 = rotationBasis(params.f0);
         const f1 = rotationBasis(params.f1);
-        const scope = { t, f0, f1 };
+        const h = math.compile(`360 * (${params.h || 1})`);
+        const l = math.compile(`100 * (${params.l || 0.5})`);
+        const scope = { t, f0, f1, bpm };
 
-        const ast: AST = parseAndEvaluateScalars(params.pipe, scope);
-        const init = createInit(ast, scope);
-        const iter = createIter(init, ast, scope);
-        ast.n = Interval.n(init.domain, ast.n);
+        return {
+            pipe: parseAndEvaluateScalars(params.pipe, scope),
+            rate,
+            f0,
+            f1,
+            h,
+            l,
+            t,
+            bpm,
+            scope,
+        };
+    };
+
+    private static build = (params: CompiledParams) => {
+        const { pipe, scope } = params;
+        const init = createInit(params);
+        const iter = createIter(init, params);
+        pipe.n = Interval.n(init.domain, pipe.n);
 
         logger.debug(`processed ast into composites ${pp({ init, iter }, 2)}`);
 
-        return new Pipe(params, ast.n, init, iter);
+        return new Pipe(params, pipe.n, init, iter);
     };
 
     initData = (data: Vector) => {
@@ -99,22 +133,18 @@ export class Pipe {
             iter.fn(get(input, i, init.d), get(position, i, iter.d));
         }
 
-        const lightnessFn = math.compile(`100 * (${params.l})`);
-        const hueFn = math.compile(`360 * (${params.h})`);
-        const rate = math.evaluate(params.rate);
-        const seconds = rate * params.t / 1000;
-
+        const { h, l, t, bpm } = params;
         logger.debug(`computing colors`);
         for (let i = 0; i < n; i++) {
             const p = get(position, i, iter.d);
-            const colorScope = { t: seconds, p, i, n };
-            const hue = math.round(hueFn.evaluate(colorScope), 0);
-            const lightness = math.round(lightnessFn.evaluate(colorScope), 0);
+            const colorScope = { t, p, i, n, bpm };
+            const hue = math.round(h.evaluate(colorScope), 0);
+            const lightness = math.round(l.evaluate(colorScope), 0);
             const c = new Color(`hsl(${hue}, 100%, ${lightness}%)`);
             set(color, [c.r, c.g, c.b], i, 3);
         }
 
-        logger.info(`iteration complete in ${Date.now() - start}ms`);
+        logger.debug(`iteration complete in ${Date.now() - start}ms`);
     };
 }
 
@@ -136,8 +166,9 @@ const rotationBasis = (expr: string): (x: number) => number => {
     return (phi: number) => fnc.evaluate({ phi });
 };
 
-const createInit = ({ chain }: AST, scope: Scope) => {
+const createInit = ({ pipe, scope }: CompiledParams) => {
     const init = new CompositeFn.Builder();
+    const { chain } = pipe;
     init.add(evaluateFirstFunction(chain.shift(), scope));
 
     while (chain.length && isStatic(chain[0])) {
@@ -151,11 +182,12 @@ const createInit = ({ chain }: AST, scope: Scope) => {
     return init.build();
 };
 
-const createIter = (init: CompositeFn, { chain }: AST, scope: Scope) => {
+const createIter = (init: CompositeFn, { pipe, scope }: CompiledParams) => {
     const iter = new CompositeFn.Builder();
     iter.add(new Identity(init.d));
+    const { chain } = pipe;
 
-    for (let { op, args } of chain) {
+    for (const { op, args } of chain) {
         const d = ranges[op](iter.d);
         logger.debug(`adding new ${op} of dimension ${d} to composite`);
         const fn = evaluateFunction(d, { op, args }, scope);
@@ -167,7 +199,7 @@ const createIter = (init: CompositeFn, { chain }: AST, scope: Scope) => {
 
 const isStatic = ({ args }: Function) => args.every(a => a.id !== 't');
 
-const parseAndEvaluateScalars = (spec: string, scope: Scope) => {
+const parseAndEvaluateScalars = (spec: string, scope: Scope): AST => {
     const ast: AST = parse(spec);
     logger.debug(`parsed params into ast:\n${pp(ast, 2)}`);
     for (const { args } of ast.chain) {
@@ -208,9 +240,10 @@ const evaluateScalar = (scalar: Scalar, scope: any): any => {
     }
 };
 type Scope = {
-    t: number,
-    f0: (x: number) => number,
-    f1: (x: number) => number,
+    t: number;
+    f0: (x: number) => number;
+    f1: (x: number) => number;
+    bpm: number;
 };
 
 type AST = {

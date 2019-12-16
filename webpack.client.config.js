@@ -3,29 +3,34 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
+const src = path.resolve(__dirname, 'src/client');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = {
   target: 'web',
   mode: 'development',
-  entry: './src/client/index.ts',
+  entry: {
+    index: path.resolve(src, 'index.ts'),
+  },
   devtool: 'inline-source-map',
   watchOptions: {
     aggregateTimeout: 1500,
     ignored: ['node_modules']
   },
-  devServer: {
-    contentBase: '.dist',
-  },
   output: {
     path: path.resolve(__dirname, '.client_dist'),
-    filename: 'client.js',
+    filename: '[name].js',
+    globalObject: 'self',
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        loader: 'ts-loader',
         exclude: '/node_modules/',
+        options: {
+          transpileOnly: true,
+        }
       },
     ]
   },
@@ -39,5 +44,6 @@ module.exports = {
     }),
     new ThreadsPlugin({ globalObject: 'self' }),
     new FaviconsWebpackPlugin('logo.svg'),
+    new ForkTsCheckerWebpackPlugin(),
   ],
 };

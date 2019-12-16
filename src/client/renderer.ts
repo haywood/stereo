@@ -9,13 +9,13 @@ import {
   Scene,
 } from 'three';
 import { Data } from '../core/data';
+import assert from 'assert';
 
 export class Renderer {
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
   private points: Points;
-  private dimension: number;
   private z = 5;
 
   constructor() {
@@ -59,19 +59,28 @@ export class Renderer {
 
   updatePoints = ({ d, position, color }: Data) => {
     const { points } = this;
-    if (position.length) {
-      const geometry = points.geometry as BufferGeometry;
-      this.dimension = d;
+    const geometry = points.geometry as BufferGeometry;
+    assert.equal(position.length % d, 0);
+    assert.equal(color.length % 3, 0);
 
-      geometry.setAttribute('position', new BufferAttribute(position, d));
-      geometry.setAttribute('color', new BufferAttribute(color, 3));
-      let z = 5;
-      if (d > 2) {
-        geometry.computeBoundingSphere();
-        const s = geometry.boundingSphere;
-        z = Math.min(5, s.center.z + s.radius + 1);
+    for (let i = 0; i < position.length; i++) {
+      const p = position[i];
+      if (isNaN(p) || !isFinite(p)) {
+        position[i] = 2 ** 32 - 1;
+        if (!isNaN(p)) position[i] *= Math.sign(p);
+        console.warn(`found value ${p} at index ${i}; setting to ${position[i]} for rendering`);
       }
-      this.camera.position.z = this.z = z;
     }
+
+    geometry.setAttribute('position', new BufferAttribute(position, d));
+    geometry.setAttribute('color', new BufferAttribute(color, 3));
+
+    let z = 5;
+    if (d > 2) {
+      geometry.computeBoundingSphere();
+      const s = geometry.boundingSphere;
+      z = Math.min(5, s.center.z + s.radius + 1);
+    }
+    this.camera.position.z = this.z = z;
   };
 }
