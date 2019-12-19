@@ -21,7 +21,7 @@ logger.setLevel('info');
 
 export type Params = {
     pipe: string;
-    rate?: string;
+    phi?: string;
     f0?: string;
     f1?: string;
     h?: string;
@@ -35,7 +35,7 @@ type UnaryOperator = (x: number) => number;
 
 export type CompiledParams = {
     pipe: AST;
-    rate: number;
+    phi: number;
     f0: UnaryOperator;
     f1: UnaryOperator;
     h: math.EvalFunction;
@@ -71,17 +71,17 @@ export class Pipe {
     static compileParams = (params: Params): CompiledParams => {
         const bpm = params.bpm || 0;
         const ebeat = params.ebeat;
-        const rate = math.evaluate(params.rate || '0', { bpm, ebeat });
-        const t = rate * params.t / 1000;
+        const t = (params.t || 0) / 1000;
         const f0 = rotationBasis(params.f0 || 'cos(phi)');
         const f1 = rotationBasis(params.f1 || 'sin(phi)');
         const h = math.compile(`360 * (${params.h || 1})`);
         const l = math.compile(`100 * (${params.l || 0.5})`);
         const scope = { t, f0, f1, bpm, ebeat };
+        const phi = math.evaluate(params.phi || 'pi * t', scope);
 
         return {
             pipe: parseAndEvaluateScalars(params.pipe, scope),
-            rate,
+            phi,
             f0,
             f1,
             h,

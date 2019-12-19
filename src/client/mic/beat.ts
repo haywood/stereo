@@ -1,6 +1,6 @@
 import { CircularBuffer } from "./circular_buffer";
 import assert from 'assert';
-import { mean, round } from "mathjs";
+import { mean } from "mathjs";
 import { getLogger } from 'loglevel';
 import { Bpm } from "./bpm";
 

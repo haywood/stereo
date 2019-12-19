@@ -32,7 +32,7 @@ type DisplayNames = {
 };
 const displayNames: DisplayNames = {
     pipe: 'Pipe Spec',
-    rate: 'Rate',
+    phi: 'Phi',
     f0: 'Rotation Basis 1',
     f1: 'Rotation Basis 2',
     h: 'Hue',
