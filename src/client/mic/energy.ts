@@ -16,9 +16,10 @@ export class Energy {
         for (let i = 0; i < this.bandCount; i++) {
             const offset = i * bandSize;
             for (let j = offset; j < offset + bandSize; j++) {
-                const x = freqs[j];
+                const x = freqs[j] / 255;
                 energies[i] += x * x;
             }
+            energies[i] /= bandSize;
         }
         logger.debug(`computed energies: ${energies}`);
         return energies;

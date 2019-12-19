@@ -7,10 +7,9 @@ const logger = getLogger('PipelineWorker');
 logger.debug('new worker started');
 
 const worker = {
-    runPipeline: (params: Params, buffer: SharedArrayBuffer): SharedArrayBuffer => {
+    runPipeline: (params: Params, buffer: SharedArrayBuffer) => {
         logger.debug('received message', params);
         Pipe.run(params, buffer);
-        return buffer;
     },
 };
 

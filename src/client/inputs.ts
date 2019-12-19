@@ -9,7 +9,7 @@ const initialValues = {
     // 1000 -> cube(3, tau) -> spiral (really good)
     // 1000 -> cube(3, tau) -> sphere -> sphere
     // 1000 -> cube(2, tau) -> 3 * sphere
-    pipe: '10000->sphere(2, 1)->torus(1, 0.25)->spiral(1, 1)->R(t, 0, 1)->stereo(3)',
+    pipe: '10000->sphere(3, 1)->R(t, 0, 2)',
     rate: 'pi / 40 + bpm',
     f0: 'cos(phi)',
     f1: 'tan(phi)',
@@ -21,7 +21,8 @@ const initialValues = {
 export type Inputs = typeof initialValues;
 
 const query = new URLSearchParams(window.location.search);
-if (query.has('ls') && query.get('ls') !== '0') {
+const useLs = query.get('ls') !== '0';
+if (useLs) {
     // TODO (maybe): also support override from window.location.hash
     const savedInputs = JSON.parse(localStorage.getItem('inputs') || '{}');
     for (const key in savedInputs) {
@@ -48,7 +49,7 @@ export const inputs = new Proxy(initialValues, {
     set(target, property, value) {
         const oldValue = target[property];
         const success = Reflect.set(target, property, value);
-        localStorage.setItem('inputs', JSON.stringify(target));
+        if (useLs) localStorage.setItem('inputs', JSON.stringify(target));
         subjects[property].next({ newValue: value, event: window.event, oldValue });
         return success;
     }

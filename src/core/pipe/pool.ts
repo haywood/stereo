@@ -8,7 +8,7 @@ type PipelineWorker = {
     runPipeline(
         params: Params,
         buffer: SharedArrayBuffer
-    ): SharedArrayBuffer;
+    ): void;
 };
 
 let pool: Pool<ModuleThread<PipelineWorker>>;
@@ -51,8 +51,6 @@ export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
         data.set(params.pipe, Data.bufferFor(n, init.d, iter.d));
     }
     const buffer = data.get(params.pipe);
-
-    const result = await pool
-        .queue((worker) => worker.runPipeline(params, buffer));
-    return result;
+    await pool.queue((worker) => worker.runPipeline(params, buffer));
+    return buffer.slice(0);
 };

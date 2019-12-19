@@ -55,7 +55,7 @@ export class Beat {
             e,
             E,
             bpm: mean(...this.durations[this.beat].buffer) / 60_000,
-            on: e > E,
+            on: e > E ? 1 : 0,
             last: this.lasts[this.beat],
         };
     };

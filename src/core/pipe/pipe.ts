@@ -28,6 +28,7 @@ export type Params = {
     l?: string;
     t?: number;
     bpm?: number;
+    on?: 0 | 1;
 };
 
 type UnaryOperator = (x: number) => number;
@@ -42,6 +43,7 @@ export type CompiledParams = {
     t: number;
     bpm: number;
     scope: Scope;
+    on: 0 | 1;
 };
 
 export class Pipe {
@@ -67,14 +69,15 @@ export class Pipe {
     static parse = (params: Params): Pipe => Pipe.build(Pipe.compileParams(params));
 
     static compileParams = (params: Params): CompiledParams => {
-        const bpm = params.bpm;
-        const rate = math.evaluate(params.rate, { bpm });
+        const bpm = params.bpm || 0;
+        const rate = math.evaluate(params.rate || '0', { bpm });
         const t = rate * params.t / 1000;
-        const f0 = rotationBasis(params.f0);
-        const f1 = rotationBasis(params.f1);
+        const f0 = rotationBasis(params.f0 || 'cos(phi)');
+        const f1 = rotationBasis(params.f1 || 'sin(phi)');
         const h = math.compile(`360 * (${params.h || 1})`);
         const l = math.compile(`100 * (${params.l || 0.5})`);
-        const scope = { t, f0, f1, bpm };
+        const on: 0 | 1 = params.on == null ? 1 : params.on;
+        const scope = { t, f0, f1, bpm, on };
 
         return {
             pipe: parseAndEvaluateScalars(params.pipe, scope),
@@ -85,15 +88,18 @@ export class Pipe {
             l,
             t,
             bpm,
+            on,
             scope,
         };
     };
 
     private static build = (params: CompiledParams) => {
-        const { pipe, scope } = params;
+        const { pipe } = params;
         const init = createInit(params);
-        const iter = createIter(init, params);
+        // TODO compute true n in compileParams
         pipe.n = Interval.n(init.domain, pipe.n);
+        params.scope.n = pipe.n;
+        const iter = createIter(init, params);
 
         logger.debug(`processed ast into composites ${pp({ init, iter }, 2)}`);
 
@@ -133,11 +139,11 @@ export class Pipe {
             iter.fn(get(input, i, init.d), get(position, i, iter.d));
         }
 
-        const { h, l, t, bpm } = params;
+        const { h, l } = params;
         logger.debug(`computing colors`);
         for (let i = 0; i < n; i++) {
             const p = get(position, i, iter.d);
-            const colorScope = { t, p, i, n, bpm };
+            const colorScope = { ...params.scope, p, i };
             const hue = math.round(h.evaluate(colorScope), 0);
             const lightness = math.round(l.evaluate(colorScope), 0);
             const c = new Color(`hsl(${hue}, 100%, ${lightness}%)`);
@@ -217,15 +223,10 @@ const evaluateFirstFunction = ({ op, args }: Function, scope: Scope) => {
 };
 
 const evaluateFunction = (d: number, node: Function, scope: Scope) => {
-    const expr = () => {
-        return `${op}(${pp(args)})`;
-    };
-
     const { op, args } = node;
-    if (!(op in fns)) {
-        throw new Error(`unrecognized operation ${op} in expression ${expr()}`);
-    }
-    return fns[op](d, ...args.map(a => a.value), scope);
+    const fn = fns[op];
+    assert(op, `unrecognized operation ${op} in expression ${op}(${pp(args)})`);
+    return fn(d, ...args.map(a => a.value), scope);
 };
 
 const evaluateScalar = (scalar: Scalar, scope: any): any => {
@@ -244,6 +245,8 @@ type Scope = {
     f0: (x: number) => number;
     f1: (x: number) => number;
     bpm: number;
+    on: 0 | 1;
+    n?: number;
 };
 
 type AST = {

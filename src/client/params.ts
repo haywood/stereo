@@ -18,5 +18,6 @@ combineLatest(mic.stream, interval(fps / 1000))
             l: inputs.l,
             t: Date.now(),
             bpm: band.bpm,
+            on: band.on,
         });
     });

@@ -32,7 +32,13 @@ export default class Stereo implements Fn {
     assert.equal(x.length, from);
     assert.equal(y.length, to);
 
+    if (from === to) {
+      y.set(x);
+      return y;
+    }
+
     fromTemp.set(x);
+
     while (from < to) {
       Stereo.up(
         fromTemp.subarray(0, from),

@@ -2,6 +2,7 @@ import { Subject, interval } from 'rxjs';
 import { Energy } from './mic/energy';
 import { Beat } from './mic/beat';
 import { getLogger } from 'loglevel';
+import { pp } from '../core/pp';
 
 const logger = getLogger('Energy');
 
@@ -10,7 +11,8 @@ export type Band = {
     e: number;
     E: number;
     bpm: number;
-    on: boolean;
+    on: 0 | 1;
+    last: number;
 };
 const bandCount = 32;
 const NO_BEAT: Band = {
@@ -18,7 +20,8 @@ const NO_BEAT: Band = {
     e: 0,
     E: 0,
     bpm: 0,
-    on: false,
+    on: 0,
+    last: 0,
 };
 const band = NO_BEAT;
 const subject = new Subject<Band>();
@@ -49,7 +52,8 @@ const initFromStream = async (stream: MediaStream) => {
             const energies = energy.compute(buffer);
             const { e, E, bpm, on, last } = beat.find(energies);
             Object.assign(band, { e, E, bpm, on, last });
-            logger.info(`updated band to ${JSON.stringify(band, null, 2)}`);
+            logger.info(`updated band to ${pp(band)}`);
+
             subject.next(band);
         } catch (err) {
             subject.error(err);
