@@ -1,7 +1,4 @@
 import { Subject, interval } from 'rxjs';
-import { partitionAudibleRange } from './mic/band_filter';
-import beatProcessorUrl from 'worklet-loader?name=[name].worklet.js!./mic/beat_processor';
-import energyProcessorUrl from 'worklet-loader?name=[name].worklet.js!./mic/energy_processor';
 import { Energy } from './mic/energy';
 import { Beat } from './mic/beat';
 import { getLogger } from 'loglevel';
