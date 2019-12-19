@@ -12,6 +12,7 @@ function_args =
  arg:scalar _ comma _ rest:function_args { return [arg, ...rest]; }
  / arg:scalar { return [arg] }
 
+// TODO forgot to use this
 arithmetic =
  add / sub / mul / div / exp / scalar
  / lparen _ x:arithmetic _ rparen { return x; }

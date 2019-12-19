@@ -9,14 +9,14 @@ export default class Rotator implements Fn {
 
   constructor(
     readonly d: number,
-    readonly phi: number,
+    readonly theta: number,
     readonly d0: number,
     readonly d1: number,
-    readonly f0: (phi: number) => number = cos,
-    readonly f1: (phi: number) => number = sin,
+    readonly f0: (theta: number) => number = cos,
+    readonly f1: (theta: number) => number = sin,
   ) {
-    this.r0 = f0(phi);
-    this.r1 = f1(phi);
+    this.r0 = f0(theta);
+    this.r1 = f1(theta);
   }
 
   get domain() {

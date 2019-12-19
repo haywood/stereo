@@ -58,7 +58,8 @@ export class Pipe {
         pipe.iterData(data);
     };
 
-    static parse = (params: Params): Pipe => Pipe.build(Pipe.compileParams(params));
+    static parse = (params: Params): Pipe =>
+        Pipe.build(Pipe.compileParams(params));
 
     static compileParams = (params: Params): CompiledParams => {
         const bpm = params.bpm || 0;
@@ -209,7 +210,7 @@ const evaluateFunctionCall = (d: number, node: FunctionCall) => {
     return fn(d, ...args.map(a => a.value));
 };
 
-const evaluateScalar = (scalar: Scalar, scope: any): any => {
+const evaluateScalar = (scalar: Scalar, scope: Scope): number | Function => {
     const id = scalar.id;
     if (scalar.value != null) {
         return scalar.value;
@@ -225,6 +226,7 @@ const evaluateScalar = (scalar: Scalar, scope: any): any => {
         }
     }
 };
+
 type Scope = {
     t: number;
     bpm: number;
@@ -248,8 +250,15 @@ type Scalar = {
     value?: number | Function;
 };
 
-const rotate = (d: number, theta: number, d0: number, d1: number, f0?: UnaryOperator, f1?: UnaryOperator) => {
-    return new Rotator(d, theta, d0, d1, f0 || Math.cos, f1 || Math.sin);
+const rotate = (
+    d: number,
+    theta: number,
+    d0: number,
+    d1: number,
+    f0: UnaryOperator = Math.cos,
+    f1: UnaryOperator = Math.sin,
+) => {
+    return new Rotator(d, theta, d0, d1, f0, f1);
 };
 
 const fns = {
