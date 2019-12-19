@@ -1,36 +1,21 @@
-import { Subject, interval } from 'rxjs';
+import { Subject, interval, BehaviorSubject } from 'rxjs';
 import { Energy } from './mic/energy';
-import { Beat } from './mic/beat';
+import { BeatFinder, Beat } from './mic/beat';
 import { getLogger } from 'loglevel';
-import { pp } from '../core/pp';
+import * as inputs from './inputs';
 
 const logger = getLogger('Energy');
 
-export type Band = {
-    frequency: number;
-    e: number;
-    E: number;
-    bpm: number;
-    on: 0 | 1;
-    last: number;
-};
-const bandCount = 32;
-const NO_BEAT: Band = {
-    frequency: 0,
-    e: 0,
-    E: 0,
+const FAKE_BEAT: Beat = {
+    e: 1,
     bpm: 0,
-    on: 0,
-    last: 0,
+    time: 0,
 };
-const band = NO_BEAT;
-const subject = new Subject<Band>();
-const ctx = new AudioContext();
+const subject = new BehaviorSubject<Beat>(FAKE_BEAT);
 
-export const stream = subject.asObservable();
-
-const initFromStream = async (stream: MediaStream) => {
+const start = async (stream: MediaStream) => {
     logger.info('initializing audio graph');
+    const ctx = new AudioContext();
     const source = ctx.createMediaStreamSource(stream);
     const max = 9000;
     const min = 16;
@@ -39,10 +24,11 @@ const initFromStream = async (stream: MediaStream) => {
         frequency: mid,
         Q: mid / (max - min),
     });
+    const bandCount = 32;
     const analyzer = new AnalyserNode(ctx, { fftSize: 1024 });
     const buffer = new Uint8Array(analyzer.frequencyBinCount);
     const energy = new Energy(bandCount);
-    const beat = new Beat(bandCount, 1024);
+    const beatFinder = new BeatFinder(bandCount, 1024);
 
     source.connect(filter).connect(analyzer);
 
@@ -50,33 +36,27 @@ const initFromStream = async (stream: MediaStream) => {
         try {
             analyzer.getByteFrequencyData(buffer);
             const energies = energy.compute(buffer);
-            const { e, E, bpm, on, last } = beat.find(energies);
-            Object.assign(band, { e, E, bpm, on, last });
-            logger.info(`updated band to ${pp(band)}`);
+            const beat = beatFinder.find(energies);
 
-            subject.next(band);
+            subject.next(beat);
         } catch (err) {
             subject.error(err);
         }
     }, 10);
+    return source;
 };
 
-navigator.mediaDevices
-    .getUserMedia({ audio: true })
-    .then(initFromStream);
+export const stream = subject.asObservable();
+let source: MediaStreamAudioSourceNode;
 
-let initted = false;
-const resumeContext = async () => {
-    if (ctx.state !== 'running' && !initted) {
-        logger.info('detected movement. attempting to resume audio context.');
-        initted = true;
-        try {
-            await ctx.resume();
-        } catch (err) {
-            initted = false;
-            logger.error(err);
-        }
+inputs.streams.sound.subscribe(async ({ newValue, event }) => {
+    if (!newValue) {
+        source.disconnect();
+        source = null;
+        subject.next(FAKE_BEAT);
+    } else if (event && !source) {
+        const stream = await navigator.mediaDevices
+            .getUserMedia({ audio: true });
+        source = await start(stream);
     }
-};
-
-window.addEventListener('mousemove', resumeContext);
+});

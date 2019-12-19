@@ -38,12 +38,13 @@ const displayNames: DisplayNames = {
     h: 'Hue',
     l: 'Lightness',
     animate: 'Animate',
+    sound: '♫'
 };
 
 class Control {
     readonly domElement = document.createElement('span');
 
-    constructor(readonly name: string, readonly type: string) {
+    constructor(readonly name: string, readonly type: 'text' | 'checkbox') {
         const input: HTMLInputElement = document.createElement('input');
         const value = inputs[name];
 
@@ -66,6 +67,7 @@ class Control {
         const label = document.createElement('label');
         label.innerText = displayNames[name];
         label.style.paddingRight = '8px';
+        if (type === 'checkbox') label.style.cursor = 'pointer';
         this.domElement.appendChild(label).appendChild(input);
 
         streams[name].subscribe(({ event, newValue }) => {

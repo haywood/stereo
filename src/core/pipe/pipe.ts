@@ -28,7 +28,7 @@ export type Params = {
     l?: string;
     t?: number;
     bpm?: number;
-    on?: 0 | 1;
+    ebeat?: number;
 };
 
 type UnaryOperator = (x: number) => number;
@@ -43,7 +43,7 @@ export type CompiledParams = {
     t: number;
     bpm: number;
     scope: Scope;
-    on: 0 | 1;
+    ebeat: number;
 };
 
 export class Pipe {
@@ -70,14 +70,14 @@ export class Pipe {
 
     static compileParams = (params: Params): CompiledParams => {
         const bpm = params.bpm || 0;
-        const rate = math.evaluate(params.rate || '0', { bpm });
+        const ebeat = params.ebeat;
+        const rate = math.evaluate(params.rate || '0', { bpm, ebeat });
         const t = rate * params.t / 1000;
         const f0 = rotationBasis(params.f0 || 'cos(phi)');
         const f1 = rotationBasis(params.f1 || 'sin(phi)');
         const h = math.compile(`360 * (${params.h || 1})`);
         const l = math.compile(`100 * (${params.l || 0.5})`);
-        const on: 0 | 1 = params.on == null ? 1 : params.on;
-        const scope = { t, f0, f1, bpm, on };
+        const scope = { t, f0, f1, bpm, ebeat };
 
         return {
             pipe: parseAndEvaluateScalars(params.pipe, scope),
@@ -88,8 +88,8 @@ export class Pipe {
             l,
             t,
             bpm,
-            on,
             scope,
+            ebeat,
         };
     };
 
@@ -245,7 +245,7 @@ type Scope = {
     f0: (x: number) => number;
     f1: (x: number) => number;
     bpm: number;
-    on: 0 | 1;
+    ebeat: number;
     n?: number;
 };
 

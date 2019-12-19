@@ -1,9 +1,11 @@
 import { CircularBuffer } from "./circular_buffer";
 import assert from 'assert';
-import { mean } from "mathjs";
+import { mean, round } from "mathjs";
 import { getLogger } from 'loglevel';
+import { Bpm } from "./bpm";
 
 const logger = getLogger('Energy');
+logger.setDefaultLevel('info');
 
 const fill = <T>(bandCount: number, f: () => T): T[] => {
     const arr = new Array(bandCount);
@@ -11,52 +13,46 @@ const fill = <T>(bandCount: number, f: () => T): T[] => {
     return arr;
 };
 
-export class Beat {
-    private readonly Es: CircularBuffer<Float32Array>[];
-    private readonly durations: CircularBuffer<Float64Array>[];
-    private readonly lasts: number[];
-    private beat = 0;
+export type Beat = {
+    e: number;
+    bpm: number;
+    time: number;
+};
+
+export class BeatFinder {
+    private readonly es: CircularBuffer<Float32Array>[];
+    private readonly bpm = new Bpm();
 
     constructor(readonly bandCount: number, memory: number) {
-        this.Es = fill(bandCount, () => new CircularBuffer(Float32Array, memory));
-        this.durations = fill(bandCount, () => new CircularBuffer(Float64Array, memory));
-        this.lasts = new Array(bandCount);
+        this.es = fill(bandCount, () => new CircularBuffer(Float32Array, memory));
     }
 
-    find = (es: ArrayLike<number>) => {
+    find = (es: Float32Array) => {
         assert.equal(
             es.length, this.bandCount,
             `Expected ${this.bandCount} energies, but got only ${es.length}`);
         logger.debug(`looking for beat in ${es}`);
 
-        let Ebeat = mean(...this.Es[this.beat].buffer);
+        let ebeat = 0, on = false;
         for (let i = 0; i < this.bandCount; i++) {
             const e = es[i];
-            const E = mean(...this.Es[i].buffer);
-            if (e > E && E > Ebeat) {
-                logger.info(`updating beat to ${i} from ${this.beat} e=${e} E=${E}, Ebeat=${Ebeat}`);
-                this.beat = i;
-                Ebeat = E;
-            }
-            this.Es[i].set(e);
+            const E = mean(...this.es[i].buffer);
+            this.es[i].set(e);
 
-            if (e > E) {
-                const on = this.lasts[i];
-                if (on) {
-                    this.durations[i].set(Date.now() - on);
-                }
-                this.lasts[i] = Date.now();
+            if (e > E && !on) {
+                logger.debug(`found beat at band ${i} e=${e} E=${E}`);
+                ebeat = e;
+                on = true;
             }
         }
 
-        const e = es[this.beat];
-        const E = this.Es[this.beat].get();
+        const now = Date.now();
+        if (on) this.bpm.update(now);
+
         return {
-            e,
-            E,
-            bpm: mean(...this.durations[this.beat].buffer) / 60_000,
-            on: e > E ? 1 : 0,
-            last: this.lasts[this.beat],
+            e: ebeat,
+            bpm: this.bpm.value,
+            time: now,
         };
     };
 }
