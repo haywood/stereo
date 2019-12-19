@@ -10,9 +10,7 @@ const initialValues = {
     // 1000 -> cube(3, tau) -> sphere -> sphere
     // 1000 -> cube(2, tau) -> 3 * sphere
     pipe: '10000->sphere(3, 1)->R(t, 0, 2)',
-    phi: 'bpm / 1000',
-    f0: 'cos(phi)',
-    f1: 'tan(phi)',
+    theta: 't',
     h: 'ebeat * i / n',
     l: '0.2 + 0.4 * ebeat',
     animate: true,
@@ -31,9 +29,7 @@ export const streams: { [P in keyof Inputs]?: Observable<Change<Inputs[P]>> } = 
 
 const persistence: { [P in keyof Inputs]: boolean } = {
     pipe: true,
-    phi: true,
-    f0: true,
-    f1: true,
+    theta: true,
     h: true,
     l: true,
     animate: false,

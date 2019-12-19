@@ -9,7 +9,11 @@ logger.debug('new worker started');
 const worker = {
     runPipeline: (params: Params, buffer: SharedArrayBuffer) => {
         logger.debug('received message', params);
-        Pipe.run(params, buffer);
+        try {
+            Pipe.run(params, buffer);
+        } catch (err) {
+            logger.error(err);
+        }
     },
 };
 

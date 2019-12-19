@@ -32,9 +32,7 @@ type DisplayNames = {
 };
 const displayNames: DisplayNames = {
     pipe: 'Pipe Spec',
-    phi: 'Phi',
-    f0: 'Rotation Basis 1',
-    f1: 'Rotation Basis 2',
+    theta: 'Theta',
     h: 'Hue',
     l: 'Lightness',
     animate: 'Animate',

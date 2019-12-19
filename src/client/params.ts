@@ -19,9 +19,7 @@ combineLatest(mic.stream, interval(fps / 1000))
 
         stream.next({
             pipe: inputs.pipe,
-            phi: inputs.phi,
-            f0: inputs.f0,
-            f1: inputs.f1,
+            theta: inputs.theta,
             h: inputs.h,
             l: inputs.l,
             t: Date.now(),

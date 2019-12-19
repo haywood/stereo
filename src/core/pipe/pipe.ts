@@ -1,6 +1,6 @@
 import { parse } from 'pegjs-loader!./grammar.pegjs';
 import Sphere from '../fn/sphere';
-import { CompositeFn } from '../fn/fn';
+import { CompositeFn, cos, sin } from '../fn/fn';
 import Spiral from '../fn/spiral';
 import Torus from '../fn/torus';
 import FuckedUpTorus from '../fn/fucked_up_torus';
@@ -21,9 +21,7 @@ logger.setLevel('info');
 
 export type Params = {
     pipe: string;
-    phi?: string;
-    f0?: string;
-    f1?: string;
+    theta?: string;
     h?: string;
     l?: string;
     t?: number;
@@ -35,15 +33,9 @@ type UnaryOperator = (x: number) => number;
 
 export type CompiledParams = {
     pipe: AST;
-    phi: number;
-    f0: UnaryOperator;
-    f1: UnaryOperator;
     h: math.EvalFunction;
     l: math.EvalFunction;
-    t: number;
-    bpm: number;
     scope: Scope;
-    ebeat: number;
 };
 
 export class Pipe {
@@ -72,24 +64,17 @@ export class Pipe {
         const bpm = params.bpm || 0;
         const ebeat = params.ebeat;
         const t = (params.t || 0) / 1000;
-        const f0 = rotationBasis(params.f0 || 'cos(phi)');
-        const f1 = rotationBasis(params.f1 || 'sin(phi)');
         const h = math.compile(`360 * (${params.h || 1})`);
         const l = math.compile(`100 * (${params.l || 0.5})`);
-        const scope = { t, f0, f1, bpm, ebeat };
-        const phi = math.evaluate(params.phi || 'pi * t', scope);
+        const scope: Scope = { t, bpm, ebeat };
+        const theta = math.evaluate(params.theta || 'pi * t', scope);
+        scope.theta = theta;
 
         return {
             pipe: parseAndEvaluateScalars(params.pipe, scope),
-            phi,
-            f0,
-            f1,
             h,
             l,
-            t,
-            bpm,
             scope,
-            ebeat,
         };
     };
 
@@ -167,21 +152,16 @@ const set = (arr: Vector, value: ArrayLike<number>, i: number, stride: number) =
     return arr.set(value, offset);
 };
 
-const rotationBasis = (expr: string): (x: number) => number => {
-    const fnc = math.compile(expr);
-    return (phi: number) => fnc.evaluate({ phi });
-};
-
 const createInit = ({ pipe, scope }: CompiledParams) => {
     const init = new CompositeFn.Builder();
     const { chain } = pipe;
-    init.add(evaluateFirstFunction(chain.shift(), scope));
+    init.add(evaluateFirstFunctionCall(chain.shift()));
 
     while (chain.length && isStatic(chain[0])) {
         const { op, args } = chain.shift();
         const d = ranges[op](init.d);
         logger.debug(`adding new ${op} of dimension ${d} to composite`);
-        const fn = evaluateFunction(d, { op, args }, scope);
+        const fn = evaluateFunctionCall(d, { op, args });
         init.add(fn);
     }
 
@@ -196,14 +176,14 @@ const createIter = (init: CompositeFn, { pipe, scope }: CompiledParams) => {
     for (const { op, args } of chain) {
         const d = ranges[op](iter.d);
         logger.debug(`adding new ${op} of dimension ${d} to composite`);
-        const fn = evaluateFunction(d, { op, args }, scope);
+        const fn = evaluateFunctionCall(d, { op, args });
         iter.add(fn);
     }
 
     return iter.build();
 };
 
-const isStatic = ({ args }: Function) => args.every(a => a.id !== 't');
+const isStatic = ({ args }: FunctionCall) => args.every(a => a.id !== 't');
 
 const parseAndEvaluateScalars = (spec: string, scope: Scope): AST => {
     const ast: AST = parse(spec);
@@ -213,28 +193,33 @@ const parseAndEvaluateScalars = (spec: string, scope: Scope): AST => {
             a.value = evaluateScalar(a, scope);
         }
     }
-    logger.debug(`ast with evaluated scalars is\n${pp(ast, 2)}`);
+    logger.debug(`ast with evaluated scalars in scope ${pp(scope)} is\n${pp(ast)}`);
     return ast;
 };
 
-const evaluateFirstFunction = ({ op, args }: Function, scope: Scope) => {
+const evaluateFirstFunctionCall = ({ op, args }: FunctionCall) => {
     const d = args.shift();
-    return evaluateFunction(d.value, { op, args }, scope);
+    return evaluateFunctionCall(d.value as number, { op, args });
 };
 
-const evaluateFunction = (d: number, node: Function, scope: Scope) => {
+const evaluateFunctionCall = (d: number, node: FunctionCall) => {
     const { op, args } = node;
     const fn = fns[op];
     assert(op, `unrecognized operation ${op} in expression ${op}(${pp(args)})`);
-    return fn(d, ...args.map(a => a.value), scope);
+    return fn(d, ...args.map(a => a.value));
 };
 
 const evaluateScalar = (scalar: Scalar, scope: any): any => {
+    const id = scalar.id;
     if (scalar.value != null) {
         return scalar.value;
-    } else if (scalar.id != null) {
+    } else if (id === null) {
+        throw new Error(`found invalid scalar with neight id nor value set`);
+    } else if (id in Math) {
+        return (phi: number) => Math[id](phi);
+    } else {
         try {
-            return math.evaluate(scalar.id, scope);
+            return math.evaluate(id, scope);
         } catch (err) {
             throw new Error(`failed to evaluate ${scalar.id} in scope ${pp(scope)} ${err.message}`);
         }
@@ -242,30 +227,30 @@ const evaluateScalar = (scalar: Scalar, scope: any): any => {
 };
 type Scope = {
     t: number;
-    f0: (x: number) => number;
-    f1: (x: number) => number;
     bpm: number;
     ebeat: number;
     n?: number;
+    theta?: number;
 };
 
 type AST = {
     n: number;
-    chain: Function[];
+    chain: FunctionCall[];
 };
 
-type Function = {
+type FunctionCall = {
     op?: string;
     args?: Scalar[];
 };
 
 type Scalar = {
     id?: string;
-    value?: number;
+    value?: number | Function;
 };
 
-const rotate = (d, phi: number, d0: number, d1: number, { f0, f1 }: Scope) =>
-    new Rotator(d, phi, d0, d1, f0, f1);
+const rotate = (d: number, theta: number, d0: number, d1: number, f0?: UnaryOperator, f1?: UnaryOperator) => {
+    return new Rotator(d, theta, d0, d1, f0 || Math.cos, f1 || Math.sin);
+};
 
 const fns = {
     cube: (d, l) => new Cube(d, l),

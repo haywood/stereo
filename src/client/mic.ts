@@ -13,7 +13,7 @@ const FAKE_BEAT: Beat = {
 };
 const subject = new BehaviorSubject<Beat>(FAKE_BEAT);
 
-const start = async (stream: MediaStream) => {
+const start = async (stream: MediaStream): Promise<State> => {
     logger.info('initializing audio graph');
     const ctx = new AudioContext();
     const source = ctx.createMediaStreamSource(stream);
@@ -32,7 +32,7 @@ const start = async (stream: MediaStream) => {
 
     source.connect(filter).connect(analyzer);
 
-    setInterval(() => {
+    const interval = setInterval(() => {
         try {
             analyzer.getByteFrequencyData(buffer);
             const energies = energy.compute(buffer);
@@ -43,20 +43,25 @@ const start = async (stream: MediaStream) => {
             subject.error(err);
         }
     }, 10);
-    return source;
+    return { source, interval };
 };
 
+type State = {
+    source: MediaStreamAudioSourceNode;
+    interval: NodeJS.Timeout;
+};
 export const stream = subject.asObservable();
-let source: MediaStreamAudioSourceNode;
+let state: State;
 
 inputs.streams.sound.subscribe(async ({ newValue, event }) => {
     if (!newValue) {
-        source.disconnect();
-        source = null;
+        state.source.disconnect();
+        clearInterval(state.interval);
+        state = null;
         subject.next(FAKE_BEAT);
-    } else if (event && !source) {
+    } else if (event && !state) {
         const stream = await navigator.mediaDevices
             .getUserMedia({ audio: true });
-        source = await start(stream);
+        state = await start(stream);
     }
 });

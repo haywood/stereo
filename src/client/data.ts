@@ -31,8 +31,9 @@ const { getData } = webWorkerSource();
 params.stream.subscribe(params => {
   if (inFlight) return;
   logger.debug('requesting data with params', params);
-  inFlight = getData(params).then(data => {
-    subject.next(data);
-    inFlight = null;
-  });
+  inFlight = getData(params)
+    .then(data => subject.next(data))
+    .finally(() => {
+      inFlight = null;
+    });
 });
