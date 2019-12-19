@@ -21,7 +21,7 @@ export class Data {
         const bytesPerNum = 4;
         const count = 3 + n * (d0 + d + 3);
         const byteLength = bytesPerNum * count;
-        return new ArrayBuffer(byteLength);
+        return new SharedArrayBuffer(byteLength);
     };
 
     static input = (arr: Float32Array) => {

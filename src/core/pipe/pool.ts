@@ -5,11 +5,14 @@ import { Pipe, Params } from "./pipe";
 
 const logger = getLogger('PipelinePool');
 type PipelineWorker = {
-    runPipeline(params: Params, transfer: TransferDescriptor): ArrayBuffer;
+    runPipeline(
+        params: Params,
+        buffer: SharedArrayBuffer
+    ): SharedArrayBuffer;
 };
 
 let pool: Pool<ModuleThread<PipelineWorker>>;
-let data: Map<string, ArrayBuffer>;
+let data: Map<string, SharedArrayBuffer>;
 
 export const startPool = (size: number) => {
     logger.info('starting worker pool');
@@ -50,7 +53,6 @@ export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
     const buffer = data.get(params.pipe);
 
     const result = await pool
-        .queue((worker) => worker.runPipeline(params, Transfer(buffer)));
-    data.set(params.pipe, result);
+        .queue((worker) => worker.runPipeline(params, buffer));
     return result;
 };
