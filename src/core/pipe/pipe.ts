@@ -1,6 +1,5 @@
-import { parse } from 'pegjs-loader!./grammar.pegjs';
 import Sphere from '../fn/sphere';
-import { CompositeFn, cos, sin } from '../fn/fn';
+import { CompositeFn, cos, sin, Fn } from '../fn/fn';
 import Spiral from '../fn/spiral';
 import Torus from '../fn/torus';
 import FuckedUpTorus from '../fn/fucked_up_torus';
@@ -15,29 +14,11 @@ import { Data, Vector } from '../data';
 import { Color } from 'three';
 import assert from 'assert';
 import { pp } from '../pp';
+import { CompiledParams, Params, Scope, UnaryOperator, SimplifiedAST, SimplifiedFunctionCall } from './types';
+import { Compiler } from './compiler';
 
 const logger = getLogger('Pipe');
 logger.setLevel('info');
-
-export type Params = {
-    pipe: string;
-    theta?: string;
-    h?: string;
-    l?: string;
-    t?: number;
-    bpm?: number;
-    ebeat?: number;
-};
-
-type UnaryOperator = (x: number) => number;
-
-export type CompiledParams = {
-    pipe: AST;
-    h: math.EvalFunction;
-    l: math.EvalFunction;
-    theta: string;
-    scope: Scope;
-};
 
 export class Pipe {
     constructor(
@@ -72,7 +53,7 @@ export class Pipe {
         const scope: Scope = { t, bpm, ebeat };
 
         return {
-            pipe: parseAndEvaluateScalars(params, scope),
+            pipe: parseAndEvaluateFunctionArgs(params, scope),
             h,
             l,
             theta,
@@ -159,11 +140,12 @@ const createInit = ({ pipe, scope }: CompiledParams) => {
     const { chain } = pipe;
     init.add(evaluateFirstFunctionCall(chain.shift()));
 
-    while (chain.length && isStatic(chain[0])) {
-        const { op, args } = chain.shift();
+    while (chain.length && !chain[0].isTemporal) {
+        const link = chain.shift();
+        const { op } = link;
         const d = ranges[op](init.d);
         logger.debug(`adding new ${op} of dimension ${d} to composite`);
-        const fn = evaluateFunctionCall(d, { op, args });
+        const fn = evaluateFunctionCall(d, link);
         init.add(fn);
     }
 
@@ -175,83 +157,33 @@ const createIter = (init: CompositeFn, { pipe, scope }: CompiledParams) => {
     iter.add(new Identity(init.d));
     const { chain } = pipe;
 
-    for (const { op, args } of chain) {
+    for (const link of chain) {
+        const { op } = link;
         const d = ranges[op](iter.d);
         logger.debug(`adding new ${op} of dimension ${d} to composite`);
-        const fn = evaluateFunctionCall(d, { op, args });
+        const fn = evaluateFunctionCall(d, link);
         iter.add(fn);
     }
 
     return iter.build();
 };
 
-const isStatic = ({ args }: FunctionCall) => args.every(a => a.id !== 't');
-
-const parseAndEvaluateScalars = (params: Params, scope: Scope): AST => {
-    const ast: AST = parse(params.pipe, {
-        symbols: { ...scope, theta: params.theta },
-        math,
-    });
+const parseAndEvaluateFunctionArgs = (params: Params, scope: Scope): SimplifiedAST => {
+    const ast = new Compiler(scope).compile(params);
     logger.debug(`parsed params into ast:\n${pp(ast, 2)}`);
-    for (const { args } of ast.chain) {
-        for (const a of args) {
-            a.value = evaluateScalar(a, scope);
-        }
-    }
-    logger.debug(`ast with evaluated scalars in scope ${pp(scope)} is\n${pp(ast)}`);
     return ast;
 };
 
-const evaluateFirstFunctionCall = ({ op, args }: FunctionCall) => {
-    const d = args.shift();
-    return evaluateFunctionCall(d.value as number, { op, args });
+const evaluateFirstFunctionCall = (call: SimplifiedFunctionCall) => {
+    const d = call.args.shift();
+    assert(typeof d === 'number', `Expected first argument of first function call to be a number representing its dimension.`);
+    return evaluateFunctionCall(d as number, call);
 };
 
-const evaluateFunctionCall = (d: number, node: FunctionCall) => {
-    const { op, args } = node;
+const evaluateFunctionCall = (d: number, { op, args }: SimplifiedFunctionCall) => {
     const fn = fns[op];
     assert(op, `unrecognized operation ${op} in expression ${op}(${pp(args)})`);
-    return fn(d, ...args.map(a => a.value));
-};
-
-const evaluateScalar = (scalar: Scalar, scope: Scope): number | Function => {
-    const id = scalar.id;
-    if (scalar.value != null) {
-        return scalar.value;
-    } else if (id === null) {
-        throw new Error(`found invalid scalar with neight id nor value set`);
-    } else if (id in Math) {
-        return (phi: number) => Math[id](phi);
-    } else {
-        try {
-            return math.evaluate(id, scope);
-        } catch (err) {
-            throw new Error(`failed to evaluate ${scalar.id} in scope ${pp(scope)} ${err.message}`);
-        }
-    }
-};
-
-type Scope = {
-    t: number;
-    bpm: number;
-    ebeat: number;
-    n?: number;
-    theta?: number;
-};
-
-type AST = {
-    n: number;
-    chain: FunctionCall[];
-};
-
-type FunctionCall = {
-    op?: string;
-    args?: Scalar[];
-};
-
-type Scalar = {
-    id?: string;
-    value?: number | Function;
+    return fn(d, ...args);
 };
 
 const rotate = (
@@ -265,7 +197,9 @@ const rotate = (
     return new Rotator(d, theta, d0, d1, f0, f1);
 };
 
-const fns = {
+const fns: {
+    [op: string]: (d: number, ...rest) => Fn;
+} = {
     cube: (d, l) => new Cube(d, l),
     sphere: (d, r: number) => new Sphere(d, r),
     spiral: (d, a: number, k: number) =>

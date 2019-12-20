@@ -1,5 +1,5 @@
 import * as mic from './mic';
-import { Params } from '../core/pipe/pipe';
+import { Params } from '../core/pipe/types';
 import { Subject, combineLatest, interval } from 'rxjs';
 import { inputs } from './inputs';
 import { Beat } from './mic/beat';

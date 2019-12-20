@@ -1,6 +1,7 @@
-import { Pipe, Params } from './pipe';
+import { Pipe } from './pipe';
 import { getLogger } from 'loglevel';
 import { expose, Transfer } from "threads/worker";
+import { Params } from './types';
 
 const logger = getLogger('PipelineWorker');
 

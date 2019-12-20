@@ -1,7 +1,9 @@
 import { spawn, Worker, Pool, ModuleThread, TransferDescriptor, Transfer } from "threads";
 import { getLogger } from 'loglevel';
 import { Data } from "../data";
-import { Pipe, Params } from "./pipe";
+import { Pipe } from "./pipe";
+import { Params } from './types';
+import { pp } from "../pp";
 
 const logger = getLogger('PipelinePool');
 type PipelineWorker = {
@@ -55,7 +57,11 @@ export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
         await pool.queue((worker) => worker.runPipeline(params, buffer));
         return buffer.slice(0);
     } catch (err) {
-        console.error(err);
+        if (err.location) {
+            console.error(`peg error '${err.message}' at ${pp(err.location)}`);
+        } else {
+            console.error(err);
+        }
         return new ArrayBuffer(0);
     }
 };
