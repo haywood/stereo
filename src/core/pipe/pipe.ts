@@ -35,6 +35,7 @@ export type CompiledParams = {
     pipe: AST;
     h: math.EvalFunction;
     l: math.EvalFunction;
+    theta: string;
     scope: Scope;
 };
 
@@ -67,14 +68,14 @@ export class Pipe {
         const t = (params.t || 0) / 1000;
         const h = math.compile(`360 * (${params.h || 1})`);
         const l = math.compile(`100 * (${params.l || 0.5})`);
+        const theta = params.theta = params.theta || 't';
         const scope: Scope = { t, bpm, ebeat };
-        const theta = math.evaluate(params.theta || 'pi * t', scope);
-        scope.theta = theta;
 
         return {
-            pipe: parseAndEvaluateScalars(params.pipe, scope),
+            pipe: parseAndEvaluateScalars(params, scope),
             h,
             l,
+            theta,
             scope,
         };
     };
@@ -125,11 +126,11 @@ export class Pipe {
             iter.fn(get(input, i, init.d), get(position, i, iter.d));
         }
 
-        const { h, l } = params;
+        const { h, l, theta } = params;
         logger.debug(`computing colors`);
         for (let i = 0; i < n; i++) {
             const p = get(position, i, iter.d);
-            const colorScope = { ...params.scope, p, i };
+            const colorScope = { ...params.scope, p, i, theta };
             const hue = math.round(h.evaluate(colorScope), 0);
             const lightness = math.round(l.evaluate(colorScope), 0);
             const c = new Color(`hsl(${hue}, 100%, ${lightness}%)`);
@@ -186,8 +187,11 @@ const createIter = (init: CompositeFn, { pipe, scope }: CompiledParams) => {
 
 const isStatic = ({ args }: FunctionCall) => args.every(a => a.id !== 't');
 
-const parseAndEvaluateScalars = (spec: string, scope: Scope): AST => {
-    const ast: AST = parse(spec);
+const parseAndEvaluateScalars = (params: Params, scope: Scope): AST => {
+    const ast: AST = parse(params.pipe, {
+        symbols: { ...scope, theta: params.theta },
+        math,
+    });
     logger.debug(`parsed params into ast:\n${pp(ast, 2)}`);
     for (const { args } of ast.chain) {
         for (const a of args) {

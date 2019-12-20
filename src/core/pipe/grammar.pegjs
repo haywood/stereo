@@ -1,3 +1,10 @@
+{
+  function lookup(name) {
+    const symbols = options.symbols;
+    return symbols && symbols[name];
+  }
+}
+
 pipe = n:uint '->' chain:chain { return {n: parseInt(n), chain}; }
 
 chain =
@@ -24,7 +31,7 @@ div = a:scalar _ '/' _ b:arithmetic { return {op: '/', args: [a, b]}; }
 exp = a:scalar _ ('**' / '^') _ b:scalar { return {op: '**', args: [a, b]}; }
 
 scalar =
-  id:identifier { return {id}; }
+  id:identifier { return {id: lookup(id) || id}; }
   / value:number { return {value}; }
 
 number =
