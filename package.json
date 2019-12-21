@@ -50,12 +50,7 @@
   },
   "author": "",
   "license": "ISC",
-  "nodemonConfig": {
-    "watch": [
-      ".server_dist"
-    ],
-    "ignore": [
-      "*.test.js"
-    ]
+  "scripts": {
+    "dev": "webpack-dev-server --config webpack.dev.config.js"
   }
 }

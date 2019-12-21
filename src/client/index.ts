@@ -1,6 +1,9 @@
 import { Renderer } from './renderer';
 import { data } from './data';
 import { Controls } from './controls';
+import { setDefaultLevel } from 'loglevel';
+
+setDefaultLevel('info');
 
 document.onreadystatechange = (): void => {
   if (document.readyState === 'complete') {

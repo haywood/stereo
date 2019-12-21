@@ -1,18 +1,12 @@
 import { Observable, Subject } from 'rxjs';
 
 const initialValues = {
-    // good ones
-    // 1000 -> cube(2, tau) -> sphere -> spiral
-    // 1000 -> cube(2, tau) -> sphere -> spiral -> (fucked_up_)?torus
-    // 1000 -> cube(3, tau) -> sphere
-    // 1000 -> cube(3, tau) -> (fucked_up_)?torus (interesting)
-    // 1000 -> cube(3, tau) -> spiral (really good)
-    // 1000 -> cube(3, tau) -> sphere -> sphere
-    // 1000 -> cube(2, tau) -> 3 * sphere
-    pipe: '10000->spiral(4, 1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
+    pipe: defaultPipe(),
     theta: 'pi * t / 20',
     h: 'abs(sin(theta * bpm)) * i / n',
-    l: 'sin(pi / 2 * esong)',
+    // Models lightness as a sigmoid centered at 0.5
+    // See https://en.wikipedia.org/wiki/Logistic_function
+    l: '1 / (1 + e ^ (4 * (0.5 - ebeat)))',
     animate: true,
     sound: false,
 };
@@ -55,8 +49,7 @@ const restore = () => {
 };
 
 const query = new URLSearchParams(window.location.search);
-const useLs = query.get('ls') !== '0';
-if (useLs) {
+if (query.get('restore') !== '0') {
     restore();
 }
 
@@ -69,8 +62,45 @@ export const inputs = new Proxy(initialValues, {
     set(target, property, value) {
         const oldValue = target[property];
         const success = Reflect.set(target, property, value);
-        if (useLs) persist();
+        if (query.get('persist') !== '0') persist();
         subjects[property].next({ newValue: value, event: window.event, oldValue });
         return success;
     }
 });
+
+// Genereates 10,000 points on a 4-d spiral and oscillates them
+// in the first 3 of the 6 planes of R^4. Use of tanh instead of sin in
+// the xy-plane causes the system to expand and contract at intervals.
+function defaultPipe() {
+    const d = 4;
+    const planes = (limit: number): [number, number][] => {
+        let ps = [];
+        for (let i = 0; i < d; i++) {
+            for (let j = i + 1; j < d; j++) {
+                if (ps.length < limit) {
+                    ps.push([i, j]);
+                } else {
+                    return ps;
+                }
+            }
+        }
+        return ps;
+    };
+
+    const f0s = {
+        '[0,1]': 'cos',
+    };
+
+    const f1s = {
+        '[0,1]': 'tan',
+    };
+
+    const rotations = planes(3).map(plane => {
+        const key = JSON.stringify(plane);
+        const f0 = f0s[key] || 'cos';
+        const f1 = f1s[key] || 'sin';
+        return `R(theta, ${plane[0]}, ${plane[1]}, ${f0}, ${f1})`;
+    }).join('->');
+
+    return `10000->spiral(${4}, 1, 1)->${rotations}->stereo(3)`;
+}
