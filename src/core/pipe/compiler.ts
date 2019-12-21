@@ -1,5 +1,5 @@
 import { parse, ASTNode } from './grammar.pegjs';
-import { Params, Scope, SimplifiedFunctionCall, SimplifiedAST, Value } from './types';
+import { Params, Scope, CompiledAST } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
 import * as math from 'mathjs';
@@ -24,7 +24,7 @@ const loggingParse: typeof parse = (expr, options) => {
 export class Compiler {
     constructor(private readonly scope: Scope) { }
 
-    compile = (params: Params): SimplifiedAST => {
+    compile = (params: Params): CompiledAST => {
         const ast = loggingParse(params.pipe);
         logger.debug(`parsed params into ast ${pp(ast)}`);
         const substitutions = {

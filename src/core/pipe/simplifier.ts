@@ -1,4 +1,3 @@
-import { getLogger } from 'loglevel';
 import * as math from 'mathjs';
 import { ASTNode } from './grammar.pegjs';
 import { Scope, Substitutions, Value } from './types';

@@ -1,4 +1,5 @@
 import { ASTNode } from './grammar.pegjs';
+import { Fn } from '../fn/fn';
 
 export type Params = {
     pipe: string;
@@ -14,7 +15,7 @@ export type Params = {
 export type UnaryOperator = (x: number) => number;
 
 export type CompiledParams = {
-    pipe: SimplifiedAST;
+    pipe: CompiledAST;
     h: math.EvalFunction;
     l: math.EvalFunction;
     theta: string;
@@ -34,14 +35,13 @@ export type Substitutions = {
     [id: string]: ASTNode;
 };
 
-export type SimplifiedAST = {
+export type CompiledAST = {
     n: number;
-    chain: SimplifiedFunctionCall[];
+    chain: Link[];
 };
 
-export type SimplifiedFunctionCall = {
-    fn: string;
-    args: Value[];
+export type Link = {
+    fn: Fn;
     isTemporal: boolean;
 };
 

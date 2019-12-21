@@ -9,8 +9,8 @@ const logger = getLogger('PipelinePool');
 type PipelineWorker = {
     runPipeline(
         params: Params,
-        buffer: SharedArrayBuffer
-    ): void;
+        buffer?: SharedArrayBuffer
+    ): SharedArrayBuffer;
 };
 
 let pool: Pool<ModuleThread<PipelineWorker>>;
@@ -48,11 +48,12 @@ export const stopPool = async (): Promise<boolean> => {
 };
 
 export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
+    const buffer = await pool.queue((worker) =>
+        worker.runPipeline(params, data.get(params.pipe)));
+
     if (!data.has(params.pipe)) {
-        const { n, init, iter } = Pipe.parse(params);
-        data.set(params.pipe, Data.bufferFor(n, init.d, iter.d));
+        data.set(params.pipe, buffer);
     }
-    const buffer = data.get(params.pipe);
-    await pool.queue((worker) => worker.runPipeline(params, buffer));
+
     return buffer.slice(0);
 };

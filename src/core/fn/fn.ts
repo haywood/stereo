@@ -114,6 +114,7 @@ export class CompositeFn implements Fn {
         );
       }
       fns.push(fn);
+      return this;
     };
 
     build = () => {

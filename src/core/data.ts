@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 export type Vector = Float32Array;
 
 export class Data {
@@ -59,4 +61,16 @@ export class Data {
 
     static colorOffset = (arr: Float32Array) =>
         Data.positionOffset(arr) + Data.positionLength(arr) + 1;
+
+
+    static get = (arr: Vector, i: number, stride: number) => {
+        const offset = i * stride;
+        return arr.subarray(offset, offset + stride);
+    };
+
+    static set = (arr: Vector, value: ArrayLike<number>, i: number, stride: number) => {
+        assert(value.length <= stride);
+        const offset = i * stride;
+        return arr.set(value, offset);
+    };
 }
