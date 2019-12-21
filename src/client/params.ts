@@ -14,7 +14,7 @@ const bpmChanged = (beat: Beat) =>
     lastBeat && abs(beat.bpm - lastBeat.bpm) > 0.1 * abs(lastBeat.bpm);
 
 combineLatest(mic.stream, interval(fps / 1000))
-    .subscribe(([beat]: [Beat, number]) => {
+    .subscribe(([{ esong, beat }]: [mic.Music, number]) => {
         if (bpmChanged(beat)) {
             console.info(`bpm changed between ${pp(lastBeat)} and ${pp(beat)}`);
         }
@@ -28,5 +28,6 @@ combineLatest(mic.stream, interval(fps / 1000))
             t: Date.now(),
             bpm: beat.bpm,
             ebeat: beat.e,
+            esong: esong,
         });
     });

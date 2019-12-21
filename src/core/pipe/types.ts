@@ -6,6 +6,7 @@ export type Params = {
     t?: number;
     bpm?: number;
     ebeat?: number;
+    esong?: number;
 };
 
 export type UnaryOperator = (x: number) => number;
@@ -22,6 +23,7 @@ export type Scope = {
     t: number;
     bpm: number;
     ebeat: number;
+    esong: number;
     n?: number;
     theta?: number;
 };

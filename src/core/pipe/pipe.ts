@@ -48,11 +48,12 @@ export class Pipe {
     static compileParams = (params: Params): CompiledParams => {
         const bpm = params.bpm || 0;
         const ebeat = params.ebeat;
+        const esong = params.esong || 1;
         const t = (params.t || 0) / 1000;
         const h = math.compile(`360 * (${params.h || 1})`);
         const l = math.compile(`100 * (${params.l || 0.5})`);
         const theta = params.theta = params.theta || 't';
-        const scope: Scope = { t, bpm, ebeat };
+        const scope: Scope = { t, bpm, ebeat, esong };
 
         return {
             pipe: parseAndEvaluateFunctionArgs(params, scope),
