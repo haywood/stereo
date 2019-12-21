@@ -1,5 +1,5 @@
 import { CompositeFn } from "../fn/fn";
-import { CompiledAST, Scope } from "./types";
+import { CompiledAST, Scope, HL } from "./types";
 import { Identity } from "../fn/identity";
 import { Data, Vector } from "../data";
 import { pp } from "../pp";
@@ -19,8 +19,7 @@ export class Evaluator {
     constructor(
         private readonly scope: Scope,
         ast: CompiledAST,
-        private readonly h: EvalFunction,
-        private readonly l: EvalFunction,
+        private readonly hl: HL,
     ) {
         const [init, iter] = this.buildComposites(ast);
         this.n = ast.n;
@@ -107,15 +106,15 @@ export class Evaluator {
 
     private computeColors = (data: Vector) => {
         logger.debug(`computing colors`);
-        const { d, scope, h, l, n } = this;
+        const { d, scope, hl, n } = this;
         const position = Data.position(data);
         const color = Data.color(data);
 
         for (let i = 0; i < n; i++) {
             const p = Data.get(position, i, d);
             const colorScope = { ...scope, p, i };
-            const hue = round(h.evaluate(colorScope), 0);
-            const lightness = round(l.evaluate(colorScope), 0);
+            const hue = round(hl.h.evaluate(colorScope), 0);
+            const lightness = round(hl.l.evaluate(colorScope), 0);
             const c = new Color(`hsl(${hue}, 100%, ${lightness}%)`);
 
             Data.set(color, [c.r, c.g, c.b], i, 3);

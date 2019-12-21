@@ -1,5 +1,6 @@
 import { ASTNode } from './grammar.pegjs';
 import { Fn } from '../fn/fn';
+import { EvalFunction } from 'mathjs';
 
 export type Params = {
     pipe: string;
@@ -12,15 +13,18 @@ export type Params = {
     esong?: number;
 };
 
-export type UnaryOperator = (x: number) => number;
-
-export type CompiledParams = {
-    pipe: CompiledAST;
-    h: math.EvalFunction;
-    l: math.EvalFunction;
+export type NormalizedParams = {
+    pipe: string;
     theta: string;
-    scope: Scope;
+    h: string;
+    l: string;
+    t: number;
+    bpm: number;
+    ebeat: number;
+    esong: number;
 };
+
+export type UnaryOperator = (x: number) => number;
 
 export type Scope = {
     t: number;
@@ -29,6 +33,11 @@ export type Scope = {
     esong: number;
     n?: number;
     theta?: number;
+};
+
+export type HL = {
+    h: EvalFunction;
+    l: EvalFunction;
 };
 
 export type Substitutions = {
