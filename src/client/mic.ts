@@ -8,7 +8,7 @@ const logger = getLogger('Energy');
 
 const FAKE_BEAT: Beat = {
     e: 1,
-    bpm: 0,
+    bpm: 1,
     time: 0,
 };
 const subject = new BehaviorSubject<Beat>(FAKE_BEAT);
