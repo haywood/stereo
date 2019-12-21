@@ -39,13 +39,15 @@ id = id:identifier {
     return {id};
   }
 
-/** TOKENS */
+/** TERMINALS */
 
 number =
-  f:float { return parseFloat(f); }
-  / i:int { return parseInt(i); }
+  _ f:float _ { return parseFloat(f); }
+  / _ i:int _ { return parseInt(i); }
 
-identifier = $([a-zA-Z] [a-zA-Z0-9]*)
+identifier = _ id:$([a-zA-Z] [a-zA-Z0-9]*) _ { return id; }
+
+/** TOKENS */
 
 float =
   $([+-]? [0-9] mantissa [eE] int)
