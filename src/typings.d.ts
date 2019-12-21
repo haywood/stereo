@@ -9,9 +9,7 @@ declare module 'worker-loader!*' {
 }
 
 declare module './grammar.pegjs' {
-    export function parse(spec: string, options: {
-        substitutions?: { [name: string]: any; };
-    }): AST;
+    export function parse(spec: string): AST;
 
     export function parse(spec: string, options: {
         startRule: 'arith';
@@ -26,7 +24,7 @@ declare module './grammar.pegjs' {
         args?: ASTNode[];
         op?: string;
         operands?: ASTNode[];
-        value?: number;
+        value?: number | Function;
         id?: string;
         sub?: ASTNode;
     }

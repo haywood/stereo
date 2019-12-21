@@ -1,3 +1,5 @@
+import { ASTNode } from './grammar.pegjs';
+
 export type Params = {
     pipe: string;
     theta?: string;
@@ -26,6 +28,10 @@ export type Scope = {
     esong: number;
     n?: number;
     theta?: number;
+};
+
+export type Substitutions = {
+    [id: string]: ASTNode;
 };
 
 export type SimplifiedAST = {

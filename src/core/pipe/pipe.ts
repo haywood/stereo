@@ -54,9 +54,11 @@ export class Pipe {
         const l = math.compile(`100 * (${params.l || 0.5})`);
         const theta = params.theta = params.theta || 't';
         const scope: Scope = { t, bpm, ebeat, esong };
+        const pipe = new Compiler(scope).compile(params);
+        logger.debug(`parsed params into ast:\n${pp(pipe)}`);
 
         return {
-            pipe: parseAndEvaluateFunctionArgs(params, scope),
+            pipe,
             h,
             l,
             theta,
@@ -168,12 +170,6 @@ const createIter = (init: CompositeFn, { pipe, scope }: CompiledParams) => {
     }
 
     return iter.build();
-};
-
-const parseAndEvaluateFunctionArgs = (params: Params, scope: Scope): SimplifiedAST => {
-    const ast = new Compiler(scope).compile(params);
-    logger.debug(`parsed params into ast:\n${pp(ast, 2)}`);
-    return ast;
 };
 
 const evaluateFirstFunctionCall = (call: SimplifiedFunctionCall) => {

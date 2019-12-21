@@ -1,10 +1,3 @@
-{
-  function substitute(name) {
-    const substitutions = options.substitutions;
-    return substitutions && substitutions[name];
-  }
-}
-
 /** RULES */
 
 pipe = n:uint pipe_sep chain:chain {
@@ -33,11 +26,7 @@ scalar =
   value:number { return {value}; }
   / id
 
-id = id:identifier {
-    const sub = substitute(id);
-    if (sub) return {id, sub};
-    return {id};
-  }
+id = id:identifier { return {id}; }
 
 /** TERMINALS */
 
