@@ -9,10 +9,10 @@ const initialValues = {
     // 1000 -> cube(3, tau) -> spiral (really good)
     // 1000 -> cube(3, tau) -> sphere -> sphere
     // 1000 -> cube(2, tau) -> 3 * sphere
-    pipe: '10000->spiral(4, 1, 1)->R(theta, 0, 1)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
+    pipe: '10000->spiral(4, 1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
     theta: 'pi * t / 20',
     h: 'abs(sin(theta * bpm)) * i / n',
-    l: '0.6 * sin(pi * esong)',
+    l: 'sin(pi / 2 * esong)',
     animate: true,
     sound: false,
 };
