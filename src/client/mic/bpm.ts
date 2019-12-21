@@ -7,9 +7,6 @@ export class Bpm {
     private readonly times: CircularBuffer<Float64Array> = new CircularBuffer(Float64Array, 60);
 
     get value() {
-        // TODO: This still outputs super high values.
-        // Not sure if it's because of a bug or because
-        // the standard definition of bpm has some quirk.
         return this.times.length * this.bpmRatio;
     }
 

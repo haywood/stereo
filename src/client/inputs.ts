@@ -12,7 +12,7 @@ const initialValues = {
     pipe: '10000->spiral(4, 1, 1)->R(theta, 0, 1)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
     theta: 'pi * t * bpm',
     h: 'abs(sin(theta)) * i / n',
-    l: '0.2 + 0.4 * ebeat',
+    l: 'ebeat',
     animate: true,
     sound: false,
 };

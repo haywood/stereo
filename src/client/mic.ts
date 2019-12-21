@@ -17,20 +17,13 @@ const start = async (stream: MediaStream): Promise<State> => {
     logger.info('initializing audio graph');
     const ctx = new AudioContext();
     const source = ctx.createMediaStreamSource(stream);
-    const max = 9000;
-    const min = 16;
-    const mid = (max + min) / 2;
-    const filter = new BiquadFilterNode(ctx, {
-        frequency: mid,
-        Q: mid / (max - min),
-    });
     const bandCount = 32;
     const analyzer = new AnalyserNode(ctx, { fftSize: 1024 });
     const buffer = new Uint8Array(analyzer.frequencyBinCount);
     const energy = new Energy(bandCount);
     const beatFinder = new BeatFinder(bandCount, 1024);
 
-    source.connect(filter).connect(analyzer);
+    source.connect(analyzer);
 
     const interval = setInterval(() => {
         try {
