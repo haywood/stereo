@@ -107,11 +107,12 @@ export class Pipe {
             iter.fn(get(input, i, init.d), get(position, i, iter.d));
         }
 
-        const { h, l, theta } = params;
+        const { h, l, scope } = params;
+        const theta = math.evaluate(params.theta, scope);
         logger.debug(`computing colors`);
         for (let i = 0; i < n; i++) {
             const p = get(position, i, iter.d);
-            const colorScope = { ...params.scope, p, i, theta };
+            const colorScope = { ...scope, p, i, theta };
             const hue = math.round(h.evaluate(colorScope), 0);
             const lightness = math.round(l.evaluate(colorScope), 0);
             const c = new Color(`hsl(${hue}, 100%, ${lightness}%)`);
