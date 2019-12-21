@@ -1,115 +1,138 @@
-import { parse, AST, FunctionCall, Arithmetic, Scalar, Value, Arg } from 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arithmetic!./grammar.pegjs';
-import { Params, Scope, SimplifiedFunctionCall, SimplifiedAST } from './types';
+import { parse, ASTNode } from 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith!./grammar.pegjs';
+import { Params, Scope, SimplifiedFunctionCall, SimplifiedAST, Value } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
 import * as math from 'mathjs';
+import { getLogger } from 'loglevel';
 
-const assertNumber = (x: any): number => {
-    assert.equal(typeof x, 'number', `Expected ${pp(x)} to be a number.`);
-    return x as number;
+const logger = getLogger('Compiler');
+logger.setDefaultLevel('info');
+
+const loggingParse: typeof parse = (expr, options) => {
+    try {
+        const node = parse(expr, options);
+        logger.debug(`parsed ${expr} into node ${pp(node)}`);
+        return node;
+    } catch (err) {
+        logger.error(`error parsing ${expr} at ${pp(err.location)}: ${err.message}`);
+        throw err;
+    }
 };
 
 export class Compiler {
     constructor(private readonly scope: Scope) { }
 
     compile = (params: Params): SimplifiedAST => {
-        const theta = parse(params.theta, { startRule: 'arithmetic' });
-        const ast = parse(params.pipe, {
-            startRule: 'pipe',
+        const theta = loggingParse(params.theta, { startRule: 'arith' });
+        const ast = loggingParse(params.pipe, {
             substitutions: {
                 theta,
             },
         });
-        return this.simplify(ast);
+        const pipe = this.compilePipe(ast);
+        logger.debug(`parsed params into simplified ast ${pp(pipe)}`);
+        return pipe;
     };
 
-    simplify = (ast: AST): SimplifiedAST => {
+    compilePipe = (pipe: ASTNode): SimplifiedAST => {
+        const n = assertNumberInNode('n', pipe);
+        const chain = assertDefInNode('chain', pipe);
+
         return {
-            n: ast.n,
-            chain: ast.chain.map(this.simplifyFunctionCall),
+            n,
+            chain: chain.map(this.compileFun),
         };
     };
 
-    simplifyFunctionCall = (fc: FunctionCall): SimplifiedFunctionCall => {
+    compileFun = (fun: ASTNode): SimplifiedFunctionCall => {
+        const fn = assertDefInNode('fn', fun);
+        const args = assertDefInNode('args', fun);
+
         return {
-            op: fc.op,
-            args: fc.args.map(this.simplifyArg),
-            isTemporal: fc.args.some(this.isTemporalArg),
+            fn,
+            args: args.map(this.compileFunArg),
+            isTemporal: args.some(isTemporal),
         };
     };
 
-    isTemporalArg = (a: Arg) => {
-        const { scalar, arithmetic } = a;
-        if (scalar) {
-            return this.isTemporalScalar(scalar);
-        } else if (arithmetic) {
-            return this.isTemporalArithmetic(arithmetic);
+    compileFunArg = (arg: ASTNode): Value => {
+        if (arg.id) {
+            return this.compileVar(arg);
         } else {
-            return false;
+            return this.compileArith(arg);
         }
     };
 
-    isTemporalScalar = (s: Scalar) => s.id === 't';
-
-    isTemporalArithmetic = (a: Arithmetic) => {
-        const { args, scalar } = a;
-        if (scalar) return this.isTemporalScalar(scalar);
-        else if (args) return args.some(this.isTemporalArg);
-        else return false;
-    };
-
-    simplifyArg = (fa: Arg): Value => {
-        const { scalar, arithmetic } = fa;
-        if (scalar) {
-            return this.simplifyScalar(scalar);
-        } else if (arithmetic) {
-            return this.simplifyArithmetic(arithmetic);
+    compileArith = (arith: ASTNode): number => {
+        if (arith.op != null) {
+            const op = ops[arith.op];
+            const [a, b] = assertDefInNode('operands', arith);
+            return op(this.compileArith(a), this.compileArith(b));
         } else {
-            this.fail('arg', fa);
+            return this.compileNumericScalar(arith);
         }
     };
 
-    simplifyArithmetic = (a: Arithmetic): number => {
-        const { op, args, scalar } = a;
-        if (op) {
-            assert.equal(args.length, 2,
-                `All arithmetic operators are binary, but found ${args.length} args were found in node ${pp(a)}`);
-            assert(arithmeticOps[op], `arithmetic op ${op} not found`);
-            const x = assertNumber(this.simplifyArg(args[0]));
-            const y = assertNumber(this.simplifyArg(args[1]));
-            return arithmeticOps[op](x, y);
-        } else if (scalar) {
-            return this.simplifyNumericScalar(scalar);
+    compileVar = (node: ASTNode): Value => {
+        const id = node.id;
+        if (id in Math && typeof Math[id] === 'function') {
+            return Math[id];
+        } else if (node.sub != null) {
+            return this.compileArith(node.sub);
         } else {
-            this.fail('arithmetic', a);
+            assert.fail(`don't know how to handle var node ${pp(node)}`);
         }
     };
 
-    simplifyNumericScalar = (s: Scalar): number => {
-        let value = s.value;
-        if (value == null && s.id) {
-            value = math.evaluate(s.id, this.scope);
-        }
-        return assertNumber(value);
-    };
-
-    simplifyScalar = (s: Scalar): Value => {
-        const { id, value } = s;
-        if (id in Math) {
-            return (theta: number) => Math[id](theta);
-        } else if (id || value) {
-            return this.simplifyNumericScalar(s);
+    compileNumericScalar = (scalar: ASTNode): number => {
+        if (scalar.value != null) {
+            return scalar.value;
+        } else if (scalar.sub) {
+            return this.compileArith(scalar.sub);
+        } else if (scalar.id) {
+            const result = math.evaluate(scalar.id, this.scope);
+            assert.equal(typeof result, 'number', `Expected evaluation of ${pp(scalar.id)} to produce a number`);
+            return result;
         } else {
-            this.fail('scalar', s);
+            assert.fail(`don't know how to handle numeric scalar ${pp(scalar)}`);
         }
     };
 
-    fail = (type: string, node: any) => {
-        assert.fail(`Don't know how to handle ${type} node ${pp(node)}`);
+    compileScalar = (scalar: ASTNode): Value => {
+        const id = scalar.id;
+        if (id in Math && typeof Math[id] === 'function') {
+            return Math[id] as number;
+        } else {
+            return this.compileNumericScalar(scalar);
+        }
     };
 }
 
-const arithmeticOps: {
+const assertDefInNode = (name: string, node: ASTNode) => {
+    const x = node[name];
+    assertCondInNode(x != null, name, 'to be defined', node);
+    return x;
+};
+
+const assertNumberInNode = (name: string, node: ASTNode): number => {
+    const x = node[name];
+    assertCondInNode(typeof x === 'number', name, 'a number', node);
+    return x as number;
+};
+
+const assertCondInNode = (cond: boolean, name: string, expected: string, node: ASTNode) => {
+    assert(cond, `Expected ${name} to be ${expected} in ${pp(node)}`);
+};
+
+const isTemporal = (node: ASTNode): boolean => {
+    if (node.id === 't') return true;
+    else if (node.args) return node.args.some(isTemporal);
+    else if (node.operands) return node.operands.some(isTemporal);
+    else if (node.sub) return isTemporal(node.sub);
+    else return false;
+};
+
+const ops: {
     [op: string]: (a: number, b: number) => number;
 } = {
     '+': (a, b) => a + b,
@@ -117,4 +140,5 @@ const arithmeticOps: {
     '*': (a, b) => a * b,
     '/': (a, b) => a / b,
     '**': (a, b) => a ** b,
+    '^': (a, b) => a ** b,
 };

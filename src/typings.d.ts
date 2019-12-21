@@ -8,43 +8,26 @@ declare module 'worker-loader!*' {
     export default PipelineWorker;
 }
 
-declare module 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arithmetic!*' {
+declare module 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith!*' {
     export function parse(spec: string, options: {
-        startRule?: 'pipe';
         substitutions?: { [name: string]: any; };
     }): AST;
 
     export function parse(spec: string, options: {
-        startRule: 'arithmetic';
+        startRule: 'arith';
     }): Arithmetic;
 
     export interface SyntaxError extends Error { }
 
-    export type AST = {
-        n: number;
-        chain: FunctionCall[];
-    };
-
-    export type FunctionCall = {
-        op: string;
-        args: Arg[];
-    };
-
-    export type Arithmetic = {
+    export interface ASTNode {
+        n?: number;
+        chain?: ASTNode[];
+        fn?: string;
+        args?: ASTNode[];
         op?: string;
-        args?: Arg[];
-        scalar?: Scalar;
-    };
-
-    export type Arg = {
-        arithmetic: Arithmetic;
-        scalar: Scalar;
-    };
-
-    export type Scalar = {
+        operands?: ASTNode[];
+        value?: number;
         id?: string;
-        value?: Value;
-    };
-
-    export type Value = number | Function;
+        sub?: ASTNode;
+    }
 }

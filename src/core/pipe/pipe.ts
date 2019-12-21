@@ -142,11 +142,10 @@ const createInit = ({ pipe, scope }: CompiledParams) => {
 
     while (chain.length && !chain[0].isTemporal) {
         const link = chain.shift();
-        const { op } = link;
-        const d = ranges[op](init.d);
-        logger.debug(`adding new ${op} of dimension ${d} to composite`);
-        const fn = evaluateFunctionCall(d, link);
-        init.add(fn);
+        const { fn } = link;
+        const d = ranges[fn](init.d);
+        logger.debug(`adding new ${fn} of dimension ${d} to composite`);
+        init.add(evaluateFunctionCall(d, link));
     }
 
     return init.build();
@@ -158,11 +157,10 @@ const createIter = (init: CompositeFn, { pipe, scope }: CompiledParams) => {
     const { chain } = pipe;
 
     for (const link of chain) {
-        const { op } = link;
-        const d = ranges[op](iter.d);
-        logger.debug(`adding new ${op} of dimension ${d} to composite`);
-        const fn = evaluateFunctionCall(d, link);
-        iter.add(fn);
+        const { fn } = link;
+        const d = ranges[fn](iter.d);
+        logger.debug(`adding new ${fn} of dimension ${d} to composite`);
+        iter.add(evaluateFunctionCall(d, link));
     }
 
     return iter.build();
@@ -180,10 +178,10 @@ const evaluateFirstFunctionCall = (call: SimplifiedFunctionCall) => {
     return evaluateFunctionCall(d as number, call);
 };
 
-const evaluateFunctionCall = (d: number, { op, args }: SimplifiedFunctionCall) => {
-    const fn = fns[op];
-    assert(op, `unrecognized operation ${op} in expression ${op}(${pp(args)})`);
-    return fn(d, ...args);
+const evaluateFunctionCall = (d: number, { fn, args }: SimplifiedFunctionCall) => {
+    const factory = fns[fn];
+    assert(factory, `unrecognized operation ${fn} in expression ${fn}(${pp(args)})`);
+    return factory(d, ...args);
 };
 
 const rotate = (

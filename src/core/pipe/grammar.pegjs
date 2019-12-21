@@ -5,48 +5,51 @@
   }
 }
 
-pipe = n:uint '->' chain:chain { return {n: parseInt(n), chain}; }
+/** RULES */
 
-chain =
- f:function '->' rest:chain { return [f, ...rest]; }
- / f:function { return [f]; }
-
-function = op:identifier lparen args:function_args rparen {
-    return {op, args};
+pipe = n:uint pipe_sep chain:chain {
+  return {n: parseInt(n), chain};
 }
 
-function_args =
- arithmetic:arithmetic _ comma _ rest:function_args { return [{arithmetic}, ...rest]; }
- / arithmetic:arithmetic { return [{arithmetic}] }
+chain =
+  head:fun pipe_sep tail:chain { return [head, ...tail]; }
+  / f:fun { return [f]; }
 
-arithmetic =
- _ scalar: scalar _ op:arithmetic_op _ arithmetic:arithmetic _ {
-   return {op, args: [{scalar}, {arithmetic}]}
- }
- / _ id:identifier _ {
-    const substitution = substitute(id);
-    if (substitution) return substitution;
-    else return {scalar: {id}};
- }
- / scalar:scalar { return {scalar}; }
- / lparen _ x:arithmetic _ rparen { return x; }
+fun =
+  fn:identifier lparen args:fun_args rparen { return {fn, args} }
 
-// TODO
-// - inline number where scalar appears
-// - define substitutable to handle substitutions
+fun_args =
+  head:fun_arg fn_arg_sep tail:fun_args { return [head, ...tail]; }
+  / a:fun_arg { return [a]; }
+
+fun_arg = id / arith
+
+arith =
+  s:scalar op:arith_op a:arith { return {op, operands: [s, a]}; }
+  / scalar
+  / lparen a:arith rparen { return a; }
+
 scalar =
-  id:identifier { return {id}; }
-  / value:number { return {value}; }
+  value:number { return {value}; }
+  / id
+
+id = id:identifier {
+    const sub = substitute(id);
+    if (sub) return {id, sub};
+    return {id};
+  }
+
+/** TOKENS */
 
 number =
- f:float { return parseFloat(f); }
- / i:int { return parseInt(i); }
+  f:float { return parseFloat(f); }
+  / i:int { return parseInt(i); }
 
 identifier = $([a-zA-Z] [a-zA-Z0-9]*)
 
 float =
- $([+-]? [0-9] mantissa [eE] int)
- / $(i:int? m:mantissa)
+  $([+-]? [0-9] mantissa [eE] int)
+  / $(i:int? m:mantissa)
 
 int = $([+-]? uint)
 
@@ -54,12 +57,16 @@ uint = $[0-9]+
 
 mantissa = $('.' uint)
 
-arithmetic_op = $('+' / '-' / '*' / '/' / '**' / '^')
+arith_op =
+  _ op:$('+' / '-' / '*' / '/' / '**' / '^') _ { return op; }
 
-lparen = '('
+lparen = _ '(' _
 
-rparen = ')'
+rparen = _ ')' _
 
-comma = ','
+fn_arg_sep = _ ',' _
 
-_ = $[ \t\n\r]*
+pipe_sep = _ $('->' / __ / '=>') _
+
+_ = [ \t\n\r]*
+__ = $[ \t\n\r]+

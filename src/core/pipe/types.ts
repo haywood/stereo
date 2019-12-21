@@ -1,5 +1,3 @@
-import { Value } from "pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arithmetic!*";
-
 export type Params = {
     pipe: string;
     theta?: string;
@@ -34,7 +32,9 @@ export type SimplifiedAST = {
 };
 
 export type SimplifiedFunctionCall = {
-    op: string;
+    fn: string;
     args: Value[];
     isTemporal: boolean;
 };
+
+export type Value = number | Function;
