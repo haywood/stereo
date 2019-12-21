@@ -20,6 +20,8 @@ import { Compiler } from './compiler';
 const logger = getLogger('Pipe');
 logger.setLevel('info');
 
+// TODO there's at least two classes' worth of shit in here
+
 export class Pipe {
     constructor(
         readonly params: CompiledParams,
