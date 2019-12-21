@@ -8,7 +8,7 @@ declare module 'worker-loader!*' {
     export default PipelineWorker;
 }
 
-declare module 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith!*' {
+declare module './grammar.pegjs' {
     export function parse(spec: string, options: {
         substitutions?: { [name: string]: any; };
     }): AST;

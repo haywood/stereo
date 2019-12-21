@@ -32,10 +32,14 @@ module.exports = {
           transpileOnly: true,
         }
       },
+      {
+        test: /\.pegjs$/,
+        loader: 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith',
+      },
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.pegjs'],
   },
   plugins: [
     new CleanWebpackPlugin(),
@@ -43,7 +47,7 @@ module.exports = {
       title: 'Stereo',
     }),
     new ThreadsPlugin({ globalObject: 'self' }),
-    new FaviconsWebpackPlugin('logo.svg'),
+    new FaviconsWebpackPlugin('logo.png'),
     new ForkTsCheckerWebpackPlugin(),
   ],
 };

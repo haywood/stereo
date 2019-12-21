@@ -1,4 +1,4 @@
-import { parse, ASTNode } from 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith!./grammar.pegjs';
+import { parse, ASTNode } from './grammar.pegjs';
 import { Params, Scope, SimplifiedFunctionCall, SimplifiedAST, Value } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
