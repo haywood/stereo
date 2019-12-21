@@ -1,4 +1,3 @@
-import { ASTNode } from './grammar.pegjs';
 import { Fn } from '../fn/fn';
 import { EvalFunction } from 'mathjs';
 
@@ -55,3 +54,15 @@ export type Link = {
 };
 
 export type Value = number | Function;
+
+export type ASTNode = {
+    n?: number;
+    chain?: ASTNode[];
+    fn?: string;
+    args?: ASTNode[];
+    op?: string;
+    operands?: ASTNode[];
+    value?: number | Function;
+    id?: string;
+    sub?: ASTNode;
+};

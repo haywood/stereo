@@ -1,8 +1,6 @@
-import { parse, ASTNode } from './grammar.pegjs';
-import { Params, Scope, CompiledAST, NormalizedParams } from './types';
-import assert from 'assert';
+import { parse } from './grammar.pegjs';
+import { Scope, CompiledAST, NormalizedParams } from './types';
 import { pp } from '../pp';
-import * as math from 'mathjs';
 import { getLogger } from 'loglevel';
 import { Resolver } from './resolver';
 import { Simplifier } from './simplifier';

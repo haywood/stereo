@@ -1,6 +1,5 @@
 import * as math from 'mathjs';
-import { ASTNode } from './grammar.pegjs';
-import { Scope, Substitutions } from './types';
+import { Scope, Substitutions, ASTNode } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
 
