@@ -25,7 +25,7 @@ export class Pipe {
             theta: params.theta || 't',
             h: params.h || '1',
             l: params.l || '0.5',
-            t: (params.t || 0) / 1000,
+            t: params.t || 0,
             bpm: params.bpm || 0,
             ebeat: params.ebeat || 0,
             esong: params.esong || 0,
@@ -42,15 +42,16 @@ export class Pipe {
         const ebeat = params.ebeat;
         const esong = params.esong;
         const t = params.t;
-        const theta = params.theta;
         const scope: Scope = { t, bpm, ebeat, esong, n: ast.n };
-        scope.theta = math.evaluate(theta, scope);
+        scope.theta = math.evaluate(params.theta, scope);
+
         return scope;
     };
 
     private static compileHL = (params: NormalizedParams): HL => {
-        const h = math.compile(`360 * (${params.h})`);
-        const l = math.compile(`100 * (${params.l})`);
-        return { h, l };
+        return {
+            h: math.compile(`360 * (${params.h})`),
+            l: math.compile(`100 * (${params.l})`),
+        };
     };
 }

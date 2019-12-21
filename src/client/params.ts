@@ -13,7 +13,7 @@ combineLatest(mic.stream, interval(fps / 1000))
             theta: inputs.theta,
             h: inputs.h,
             l: inputs.l,
-            t: Date.now(),
+            t: Date.now() / 1000,
             bpm: beat.bpm,
             ebeat: beat.e,
             esong: esong,
