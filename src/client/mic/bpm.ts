@@ -7,10 +7,7 @@ export class Bpm {
     private readonly times: CircularBuffer<Float64Array> = new CircularBuffer(Float64Array, 60);
 
     get value() {
-        // in practice the unscaled value is O(1000),
-        // so scale down by 100 so that a typical song
-        // will have bpm O(10)
-        return this.times.length * this.bpmRatio / 100;
+        return this.times.length * this.bpmRatio;
     }
 
     private get bpmRatio() {

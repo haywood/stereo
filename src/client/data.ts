@@ -11,7 +11,7 @@ const logger = getLogger('Data');
 const subject = new Subject<Data>();
 let logged = 0;
 
-const timeToLog = () => Date.now() - logged >= 3000;
+const timeTooLong = () => Date.now() - logged >= 1000;
 
 export const data = subject.asObservable();
 
@@ -35,7 +35,7 @@ const { getData } = webWorkerSource();
 params.stream.subscribe(params => {
   if (inFlight) return;
   logger.debug('requesting data with params', params);
-  if (timeToLog()) {
+  if (timeTooLong()) {
     logger.info(`sending request for data with params ${pp(params)}`);
     logged = Date.now();
   }

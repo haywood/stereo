@@ -3,14 +3,20 @@ import assert from 'assert';
 type FloatArray = Float32Array | Float64Array;
 
 export class CircularBuffer<T extends FloatArray> {
-    readonly buffer: T;
-    readonly length: number;
+    private readonly buffer: T;
     private offset = 0;
 
     constructor(ctor: new (l: number) => T, length: number) {
         assert(length, 'Empty CircularBuffer is useless CircularBuffer');
         this.buffer = new ctor(length);
-        this.length = length;
+    }
+
+    [Symbol.iterator]() {
+        return this.buffer[Symbol.iterator]();
+    }
+
+    get length() {
+        return this.buffer.length;
     }
 
     set = (x: number) => {

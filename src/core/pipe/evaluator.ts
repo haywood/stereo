@@ -10,7 +10,6 @@ import { Color } from "three";
 
 const logger = getLogger('Evaluator');
 
-// TODO pull a lot of the evaluation logic from pipe into here
 export class Evaluator {
     private readonly n: number;
     private readonly init: CompositeFn;

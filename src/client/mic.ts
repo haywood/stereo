@@ -3,7 +3,7 @@ import { Energy } from './mic/energy';
 import { BeatFinder, Beat } from './mic/beat';
 import { getLogger } from 'loglevel';
 import * as inputs from './inputs';
-import { mean } from 'mathjs';
+import { mean, floor } from 'mathjs';
 
 const logger = getLogger('Energy');
 
@@ -23,48 +23,43 @@ const FAKE_MUSIC = {
 
 const subject = new BehaviorSubject<Music>(FAKE_MUSIC);
 
-const newMusicFilter = (ctx: AudioContext) => {
-    const max = 9000;
-    const min = 16;
-    const mid = (max + min) / 2;
-    return new BiquadFilterNode(ctx, {
-        frequency: mid,
-        Q: mid / (max - min),
-    });
+const bandCount = 64;
+const fftSize = 2048;
+const memory = 43;
+const energy = new Energy(bandCount, fftSize, memory);
+const beatFinder = new BeatFinder(bandCount, memory);
+const detectMusic = (buffer: Uint8Array): Music => {
+    const energies = energy.compute(buffer);
+    const beat = beatFinder.find(energies);
+    const esong = mean(...energies);
+    return { beat, esong };
 };
 
 const start = async (stream: MediaStream): Promise<State> => {
     logger.info('initializing audio graph');
     const ctx = new AudioContext();
     const source = ctx.createMediaStreamSource(stream);
-    const bandCount = 32;
-    const filter = newMusicFilter(ctx);
     const analyzer = new AnalyserNode(ctx, {
-        fftSize: 1024,
+        fftSize,
         maxDecibels: -50,
+        minDecibels: -100,
+        smoothingTimeConstant: 0,
     });
     const buffer = new Uint8Array(analyzer.frequencyBinCount);
-    const energy = new Energy(bandCount);
-    const beatFinder = new BeatFinder(bandCount, 1024);
 
-    source.connect(filter).connect(analyzer);
-    const getEsong = (energies: Float32Array) => {
-        const nonZero = energies.filter(e => e !== 0);
-        if (nonZero.length) {
-            return mean(...nonZero);
-        } else {
-            return 0;
-        }
-    };
+    source.connect(analyzer);
 
     const interval = setInterval(() => {
         try {
+            // This code attempts to implement the beat detection algorithm described at
+            // http://archive.gamedev.net/archive/reference/programming/features/beatdetection/index.html
+            // TODO: The O(1000) bpm values that it produces suggest that something is off...
             analyzer.getByteFrequencyData(buffer);
-            const energies = energy.compute(buffer);
-            const beat = beatFinder.find(energies);
-            const esong = getEsong(energies);
 
-            subject.next({ beat, esong });
+            // TODO: do this part in a worker
+            const music = detectMusic(buffer);
+
+            subject.next(music);
         } catch (err) {
             subject.error(err);
         }

@@ -36,10 +36,11 @@ export class BeatFinder {
         let ebeat = 0, on = false;
         for (let i = 0; i < this.bandCount; i++) {
             const e = es[i];
-            const E = mean(...this.es[i].buffer);
+            const E = mean(...this.es[i]);
+            const C = 1.3;
             this.es[i].set(e);
 
-            if (e > E && !on) {
+            if (e > C * E && !on) {
                 logger.debug(`found beat at band ${i} e=${e} E=${E}`);
                 ebeat = e;
                 on = true;
