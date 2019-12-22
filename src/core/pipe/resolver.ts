@@ -68,8 +68,10 @@ export class Resolver {
     private resolveArithNode = (node: ASTNode): number => {
         if (node.op != null) {
             const op = ops[node.op];
-            const [a, b] = assertDefInNode('operands', node);
-            return op(this.resolveArithNode(a), this.resolveArithNode(b));
+            const [a, b] = assertDefInNode('operands', node)
+                .map(this.resolveArithNode);
+            const c = op(a, b);
+            return c;
         } else {
             return this.resolveNumberNode(node);
         }

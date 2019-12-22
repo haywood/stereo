@@ -34,6 +34,7 @@ export default class Rotator implements Fn {
     const { d, d0, d1, r0, r1 } = this;
     assert.equal(x.length, d);
     assert.equal(y.length, d);
+    y.set(x);
 
     const a = x[d0], b = x[d1];
     y[d0] = a * r0 - b * r1;

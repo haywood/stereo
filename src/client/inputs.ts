@@ -88,19 +88,18 @@ function defaultPipe() {
     };
 
     const f0s = {
-        '[0,1]': 'cos',
     };
 
     const f1s = {
-        '[0,1]': 'tan',
+        '[0,2]': 'sin',
     };
 
     const rotations = planes(3).map(plane => {
         const key = JSON.stringify(plane);
         const f0 = f0s[key] || 'cos';
-        const f1 = f1s[key] || 'sin';
+        const f1 = f1s[key] || 'tan';
         return `R(theta, ${plane[0]}, ${plane[1]}, ${f0}, ${f1})`;
     }).join('->');
 
-    return `10000->sphere(${4}, 1)->${rotations}->stereo(3)`;
+    return `10000->sphere(${d}, 1)->${rotations}->stereo(3)`;
 }

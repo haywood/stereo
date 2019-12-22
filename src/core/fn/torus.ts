@@ -3,16 +3,15 @@ import Sphere from './sphere';
 import { Fn } from './fn';
 import { tau } from 'mathjs';
 import Rotator from './rotator';
-import { TypedArray } from 'three';
+import assert from 'assert';
 import { Vector } from '../data';
 
 export default class Torus implements Fn {
   private readonly cross: Sphere;
-  private readonly main: Sphere;
 
   constructor(readonly d: number, readonly r: number, readonly t: number) {
-    this.cross = new Sphere(this.d - 1, t);
-    this.main = new Sphere(2, r);
+    assert(d > 2, `torus is only defined for d > 2; got ${d}`);
+    this.cross = new Sphere(d - 1, t);
   }
 
   get domain() {
@@ -26,19 +25,14 @@ export default class Torus implements Fn {
     }
   };
 
-  fn = (phi: Vector, y: Vector = new Float32Array(this.d)) => {
-    const { d, main, cross } = this;
-    const phiCross = phi.subarray(0, d - 2);
-    const phiMain = phi.subarray(d - 2);
-    const rotator = new Rotator(d, phiMain[0], 0, d - 1);
+  fn = (theta: Vector, y: Vector = new Float32Array(this.d)) => {
+    const { cross, d, r } = this;
+    assert.equal(theta.length, d - 1, `torus expects an input of ${d - 1}; got ${theta.length}`);
+    const rotator = new Rotator(d, theta[d - 2], 0, d - 1);
 
-    cross.fn(phiCross, y.subarray(0, d - 1));
+    cross.fn(theta.subarray(0, d - 2), y.subarray(0, d - 1));
+    y[0] += r;
     rotator.fn(y, y);
-
-    // use the circle to translate the point
-    // outward, creating a donut shape
-    const r = new Rotator(d, phiMain[0], 0, d - 1);
-    r.fn(y, y);
 
     return y;
   };
