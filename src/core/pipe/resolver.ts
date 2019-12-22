@@ -1,13 +1,13 @@
 import { ASTNode } from './grammar.pegjs';
-import { Scope, CompiledAST, Value, UnaryOperator, Link } from './types';
+import { Scope, CompiledAST, Value, UnaryOperator, Link, ASTNode } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
 import { Fn } from '../fn/fn';
 import Cube from '../fn/cube';
-import { Sphere } from 'three';
 import Spiral from '../fn/spiral';
 import Torus from '../fn/torus';
 import FuckedUpTorus from '../fn/fucked_up_torus';
+import Sphere from '../fn/sphere';
 import Stereo from '../fn/stereo';
 import Rotator from '../fn/rotator';
 import Interval from '../fn/interval';
@@ -24,23 +24,33 @@ export class Resolver {
         const links: Link[] = [];
         const fun = chain.shift();
         const d = fun.args.shift().value as number;
-        const link = this.resolveFunNode(d, fun);
+        const link = this.resolveFirstFunNode(d, fun);
         const n = Interval.n(link.fn.domain, assertNumberInNode('n', pipe));
 
         links.push(link);
 
         for (let i = 0; i < chain.length; i++) {
-            const fun = chain[0];
-            const link = this.resolveFunNode(links[i].fn.d, fun);
+            const fun = chain[i];
+            const link = this.resolveFunNode(links[i].fn, fun);
             links.push(link);
         }
 
         return { n, chain: links };
     };
 
-    private resolveFunNode = (d: number, fun: ASTNode): Link => {
+    private resolveFirstFunNode = (d: number, fun: ASTNode) => {
         const name: string = assertDefInNode('fn', fun);
         const args = assertDefInNode('args', fun);
+        const fn = funs[name](d, ...args.map(this.resolveFunArgNode));
+        const isTemporal = args.some(isNodeTemporal);
+
+        return { fn, isTemporal };
+    };
+
+    private resolveFunNode = (prev: Fn, fun: ASTNode): Link => {
+        const name: string = assertDefInNode('fn', fun);
+        const args = assertDefInNode('args', fun);
+        const d = ranges[name](prev.d);
         const fn = funs[name](d, ...args.map(this.resolveFunArgNode));
         const isTemporal = args.some(isNodeTemporal);
 

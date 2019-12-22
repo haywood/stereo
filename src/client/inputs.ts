@@ -102,5 +102,5 @@ function defaultPipe() {
         return `R(theta, ${plane[0]}, ${plane[1]}, ${f0}, ${f1})`;
     }).join('->');
 
-    return `10000->spiral(${4}, 1, 1)->${rotations}->stereo(3)`;
+    return `10000->sphere(${4}, 1)->${rotations}->stereo(3)`;
 }
