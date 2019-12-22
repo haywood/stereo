@@ -11,8 +11,8 @@ export class Bpm {
     }
 
     private get bpmRatio() {
-        const newest = Math.max(...this.times.buffer);
-        const oldest = Math.min(...this.times.buffer);
+        const newest = Math.max(...this.times);
+        const oldest = Math.min(...this.times);
         if (oldest && oldest != newest) {
             return 60_000 / (newest - oldest);
         } else {
