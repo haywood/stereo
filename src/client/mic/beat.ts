@@ -21,10 +21,11 @@ export type Beat = {
 
 export class BeatFinder {
     private readonly es: CircularBuffer<Float32Array>[];
-    private readonly bpm = new Bpm();
+    private readonly bpm: Bpm;
 
     constructor(readonly bandCount: number, memory: number) {
         this.es = fill(bandCount, () => new CircularBuffer(Float32Array, memory));
+        this.bpm = new Bpm(memory);
     }
 
     find = (es: Float32Array) => {
