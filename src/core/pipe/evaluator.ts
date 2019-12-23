@@ -30,10 +30,10 @@ export class Evaluator {
         return this.iter.d;
     }
 
-    initialize = (buffer: SharedArrayBuffer): SharedArrayBuffer => {
+    initialize = (): SharedArrayBuffer => {
         const { n, init, iter } = this;
         const start = Date.now();
-        buffer = Data.bufferFor(n, init.d, iter.d);
+        const buffer = Data.bufferFor(n, init.d, iter.d);
         const data = new Float32Array(buffer);
         this.initData(data);
         logger.info(`initialization completed in ${Date.now() - start}ms`);

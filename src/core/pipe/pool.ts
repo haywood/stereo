@@ -7,10 +7,8 @@ import { pp } from "../pp";
 
 const logger = getLogger('PipelinePool');
 type PipelineWorker = {
-    runPipeline(
-        params: Params,
-        buffer?: SharedArrayBuffer
-    ): SharedArrayBuffer;
+    initialize(params: Params): SharedArrayBuffer;
+    iterate(params: Params, buffer: SharedArrayBuffer): void;
 };
 
 let pool: Pool<ModuleThread<PipelineWorker>>;
@@ -51,12 +49,10 @@ export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
     const key = JSON.stringify(params);
     let buffer = data.get(key);
     if (!buffer) {
-        const evaluator = Pipe.evaluatorFor(params);
-        buffer = evaluator.initialize(buffer);
+        buffer = await pool.queue(worker => worker.initialize(params));
         data.set(key, buffer);
     }
-
-    await pool.queue((worker) => worker.runPipeline(params, buffer));
+    await pool.queue(worker => worker.iterate(params, buffer));
 
     return buffer.slice(0);
 };
