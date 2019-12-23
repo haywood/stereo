@@ -8,12 +8,22 @@ const logger = getLogger('Pipe');
 logger.setLevel('info');
 
 export class Pipe {
+    static compile = (params: Params): CompiledAST => {
+        return Pipe.compileNormal(Pipe.normalized(params));
+    };
+
     static run = (params: Params, buffer?: SharedArrayBuffer) => {
         return Pipe.runNormal(Pipe.normalized(params), buffer);
     };
 
+    private static compileNormal = (params: NormalizedParams): CompiledAST => {
+        const { bpm, ebeat, esong, t } = params;
+        return new Compiler({ t, bpm, ebeat, esong }).compile(params);
+
+    };
+
     private static runNormal = (params: NormalizedParams, buffer?: SharedArrayBuffer) => {
-        const ast = Pipe.compile(params);
+        const ast = Pipe.compileNormal(params);
         const scope = Pipe.finalScope(params, ast);
         const hl = Pipe.compileHL(params);
         return new Evaluator(scope, ast, hl).evaluate(buffer);
@@ -30,11 +40,6 @@ export class Pipe {
             ebeat: params.ebeat || 0,
             esong: params.esong || 0,
         };
-    };
-
-    private static compile = (params: NormalizedParams): CompiledAST => {
-        const { bpm, ebeat, esong, t } = params;
-        return new Compiler({ t, bpm, ebeat, esong }).compile(params);
     };
 
     private static finalScope = (params: NormalizedParams, ast: CompiledAST): Scope => {
