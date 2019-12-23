@@ -30,17 +30,19 @@ export default class Interval implements Fn {
     return y;
   };
 
-  sample = function* (n: number) {
+  sample = function* (n: number, offset: number = 0, limit: number = n) {
     const { d, fn } = this;
     n = Interval.nPerLevel(d, n);
     const points: number[][] = [[]];
+    let i = offset;
 
-    while (points.length) {
+    while (points.length && i < limit) {
       const p = points.pop()!;
       if (p.length < d) {
         points.push(...successors(p));
-      } else {
+      } else if (i >= offset) {
         yield fn(p);
+        i++;
       }
     }
 

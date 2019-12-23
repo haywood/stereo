@@ -1,6 +1,6 @@
 import * as math from 'mathjs';
 import { getLogger } from 'loglevel';
-import { Params, Scope, NormalizedParams, CompiledAST, HL } from './types';
+import { Params, Scope, NormalizedParams, CompiledAST, HL, Chunk } from './types';
 import { Compiler } from './compiler';
 import { Evaluator } from './evaluator';
 
@@ -11,30 +11,21 @@ export class Pipe {
     static compile = (params: Params): CompiledAST => {
         return Pipe.compileNormal(Pipe.normalized(params));
     };
-
-    static run = (params: Params, buffer?: SharedArrayBuffer) => {
-        return Pipe.runNormal(Pipe.normalized(params), buffer);
+    static evaluatorFor = (params: Params, chunk?: Chunk) => {
+        return Pipe.evaluatorForNormal(Pipe.normalized(params), chunk);
     };
 
-    static evaluatorFor = (params: Params) => {
-        return Pipe.evaluatorForNormal(Pipe.normalized(params));
+    private static evaluatorForNormal = (params: NormalizedParams, chunk?: Chunk) => {
+        const ast = Pipe.compileNormal(params);
+        const scope = Pipe.finalScope(params, ast);
+        const hl = Pipe.compileHL(params);
+        return new Evaluator(scope, ast, hl, chunk);
     };
 
     private static compileNormal = (params: NormalizedParams): CompiledAST => {
         const { bpm, ebeat, esong, t } = params;
         return new Compiler({ t, bpm, ebeat, esong }).compile(params);
 
-    };
-
-    private static evaluatorForNormal = (params: NormalizedParams) => {
-        const ast = Pipe.compileNormal(params);
-        const scope = Pipe.finalScope(params, ast);
-        const hl = Pipe.compileHL(params);
-        return new Evaluator(scope, ast, hl);
-    };
-
-    private static runNormal = (params: NormalizedParams, buffer?: SharedArrayBuffer) => {
-        return Pipe.evaluatorForNormal(params).iterate(buffer);
     };
 
     private static normalized = (params: Params): NormalizedParams => {

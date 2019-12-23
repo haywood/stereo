@@ -19,5 +19,5 @@ export default class Cube implements Fn {
 
   fn = (x: Vector, y?: Vector) => this.interval.fn(x, y);
 
-  sample = n => this.interval.sample(n);
+  sample = (n, offset?, limit?) => this.interval.sample(n, offset, limit);
 }

@@ -1,16 +1,9 @@
 import { spawn, Worker, Pool, ModuleThread, TransferDescriptor, Transfer } from "threads";
 import { getLogger } from 'loglevel';
-import { Data } from "../data";
+import { Params, PipelineWorker } from './types';
 import { Pipe } from "./pipe";
-import { Params } from './types';
-import { pp } from "../pp";
 
 const logger = getLogger('PipelinePool');
-type PipelineWorker = {
-    initialize(params: Params): SharedArrayBuffer;
-    iterate(params: Params, buffer: SharedArrayBuffer): void;
-};
-
 let pool: Pool<ModuleThread<PipelineWorker>>;
 let data: Map<string, SharedArrayBuffer>;
 
@@ -47,12 +40,19 @@ export const stopPool = async (): Promise<boolean> => {
 
 export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
     const key = JSON.stringify(params);
+    const { n } = Pipe.compile(params);
+    const size = 1000;
     let buffer = data.get(key);
     if (!buffer) {
         buffer = await pool.queue(worker => worker.initialize(params));
         data.set(key, buffer);
     }
-    await pool.queue(worker => worker.iterate(params, buffer));
+    let promises = [];
+    for (let offset = 0; offset < n; offset += size) {
+        const chunk = { offset, size: Math.min(n - offset, size) };
+        promises.push(pool.queue(worker => worker.iterate(params, chunk, buffer)));
+    }
+    await Promise.all(promises);
 
     return buffer.slice(0);
 };

@@ -1,6 +1,5 @@
 import { CompositeFn } from "../fn/fn";
-import { CompiledAST, Scope, HL } from "./types";
-import { Identity } from "../fn/identity";
+import { CompiledAST, Scope, HL, Chunk } from "./types";
 import { Data, Vector } from "../data";
 import { pp } from "../pp";
 import { getLogger } from "loglevel";
@@ -14,15 +13,27 @@ export class Evaluator {
     private readonly n: number;
     private readonly init: CompositeFn;
     private readonly iter: CompositeFn;
+    private readonly offset: number;
+    private readonly limit: number;
 
     constructor(
         private readonly scope: Scope,
         ast: CompiledAST,
         private readonly hl: HL,
+        chunk?: Chunk,
     ) {
-        this.n = ast.n;
-        this.init = ast.init;
-        this.iter = ast.iter;
+        const { n, init, iter } = ast;
+        const offset = chunk?.offset || 0;
+        const size = chunk?.size || n;
+        const limit = offset + size;
+        assert(offset >= 0, `offset must be non-negative; got ${offset}`);
+        assert(limit <= n, `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`);
+
+        this.n = n;
+        this.init = init;
+        this.iter = iter;
+        this.offset = offset;
+        this.limit = limit;
     }
 
 
@@ -47,16 +58,16 @@ export class Evaluator {
     };
 
     private initData = (data: Vector) => {
-        const { n, init } = this;
+        const { n, init, offset, limit } = this;
         const input = Data.input(data);
-        let i = 0;
-        for (const y of init.sample(n)) {
+        let i = this.offset;
+        for (const y of init.sample(n, offset, limit)) {
             Data.set(input, y, i++, init.d);
         }
     };
 
     private iterData = (data: Vector) => {
-        const { init, iter, scope, n } = this;
+        const { init, iter, scope, n, offset, limit } = this;
         const input = Data.input(data);
         const position = Data.position(data);
         const start = Date.now();
@@ -66,7 +77,7 @@ export class Evaluator {
         assert.equal(data[Data.positionOffset(data)], iter.d, 'd(data) != d(evaluator)');
 
         logger.debug(`iterating using ${pp(scope)}, ${pp(iter)}`);
-        for (let i = 0; i < n; i++) {
+        for (let i = offset; i < limit; i++) {
             iter.fn(Data.get(input, i, init.d), Data.get(position, i, iter.d));
         }
 
@@ -77,11 +88,11 @@ export class Evaluator {
 
     private computeColors = (data: Vector) => {
         logger.debug(`computing colors`);
-        const { d, scope, hl, n } = this;
+        const { d, scope, hl, n, offset, limit } = this;
         const position = Data.position(data);
         const color = Data.color(data);
 
-        for (let i = 0; i < n; i++) {
+        for (let i = offset; i < limit; i++) {
             const p = Data.get(position, i, d);
             const colorScope = { ...scope, p, i };
             const hue = round(hl.h.evaluate(colorScope), 0);

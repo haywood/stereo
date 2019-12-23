@@ -67,3 +67,13 @@ export type ASTNode = {
     id?: string;
     sub?: ASTNode;
 };
+
+export type Chunk = {
+    offset: number;
+    size: number;
+};
+
+export type PipelineWorker = {
+    initialize(params: Params): SharedArrayBuffer;
+    iterate(params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void;
+};

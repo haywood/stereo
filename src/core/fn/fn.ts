@@ -1,4 +1,3 @@
-import { TypedArray } from "three";
 import { Vector } from "../data";
 import assert from 'assert';
 
@@ -14,7 +13,7 @@ export interface Fn {
   readonly d: number;
   readonly domain: number;
   fn(x: Vector, y?: Vector): Vector;
-  sample(n: number): Generator<Vector>;
+  sample(n: number, offset?: number, count?: number): Generator<Vector>;
 }
 
 export class CompositeFn implements Fn {
@@ -53,12 +52,12 @@ export class CompositeFn implements Fn {
     return this.fns.reduce((max, f) => Math.max(f.d, max), 0);
   }
 
-  sample = function* (this: CompositeFn, n: number) {
+  sample = function* (n: number, offset: number, limit: number) {
     const { fns, d } = this;
     const [first, ...rest] = fns;
     if (fns.length == 0) return [];
 
-    for (const x of first.sample(n)) {
+    for (const x of first.sample(n, offset, limit)) {
       this.x.set(x);
       if (rest.length) {
         CompositeFn.apply(rest, this.x, this.y);
@@ -66,15 +65,6 @@ export class CompositeFn implements Fn {
         this.y.set(x);
       }
       yield this.y.subarray(0, d);
-    }
-  };
-
-  sampleInto = (n: number, data: Float32Array) => {
-    const { d } = this;
-    let offset = 0;
-    for (const y of this.sample(n)) {
-      data.set(y, offset);
-      offset += d;
     }
   };
 
