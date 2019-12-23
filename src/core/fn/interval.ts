@@ -34,15 +34,14 @@ export default class Interval implements Fn {
     const { d, fn } = this;
     n = Interval.nPerLevel(d, n);
     const points: number[][] = [[]];
-    let i = offset;
+    let i = 0;
 
     while (points.length && i < limit) {
       const p = points.pop()!;
       if (p.length < d) {
         points.push(...successors(p));
-      } else if (i >= offset) {
+      } else if (i++ >= offset) {
         yield fn(p);
-        i++;
       }
     }
 

@@ -11,11 +11,17 @@ let data: Map<string, SharedArrayBuffer>;
 logger.setLevel('info');
 let poolSize = 0;
 
-export const startPool = (size: number) => {
+export const startPool = async (size: number) => {
     logger.info('starting worker pool');
     pool = Pool(() => spawn(new Worker('./worker')), size);
     poolSize = size;
     data = new Map();
+    let promises = [];
+    for (let i = 0; i < size; i++) {
+        // pre-load scripts so the first task doesn't take forever
+        promises.push(pool.queue(async () => { }));
+    }
+    await Promise.all(promises);
 
     pool.events().subscribe((event: any) => {
         if (event.error) {
@@ -45,16 +51,16 @@ export const stopPool = async (): Promise<boolean> => {
 
 const initialize = (params: Params, n: number, buffer: SharedArrayBuffer): Promise<void> => {
     return timing('initialization')(async () => {
-        return pool.queue(w => w.initialize(params, { offset: 0, size: n }, buffer));
+        return forkJoin(n, async (chunk) => {
+            return pool.queue(w => w.initialize(params, chunk, buffer));
+        });
     });
 };
 
 const iterate = (params: Params, n: number, buffer: SharedArrayBuffer) => {
-    return timing('iteration')(() => {
+    return timing('iteration')(async () => {
         return forkJoin(n, async (chunk) => {
-            return pool.queue(w => {
-                return w.iterate(params, chunk, buffer);
-            });
+            return pool.queue(w => w.iterate(params, chunk, buffer));
         });
     });
 };
@@ -90,7 +96,7 @@ const timing = (label: string) => async<T>(op: () => Promise<T>) => {
     const start = Date.now();
     const t = await op();
     const elapsed = Date.now() - start;
-    logger.info(`${label} took ${elapsed}ms`);
+    logger.debug(`${label} took ${elapsed}ms`);
     return t;
 };
 

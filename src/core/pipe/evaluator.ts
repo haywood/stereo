@@ -23,8 +23,8 @@ export class Evaluator {
         chunk: Chunk,
     ) {
         const { n, init, iter } = ast;
-        const offset = chunk.offset || 0;
-        const size = chunk.size || n;
+        const offset = chunk.offset;
+        const size = chunk.size;
         const limit = offset + size;
         assert(offset >= 0, `offset must be non-negative; got ${offset}`);
         assert(limit <= n, `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`);
@@ -45,7 +45,7 @@ export class Evaluator {
         const data = new Float32Array(buffer);
         const { n, init, offset, limit } = this;
         const input = Data.input(data);
-        let i = this.offset;
+        let i = offset;
         for (const y of init.sample(n, offset, limit)) {
             Data.set(input, y, i++, init.d);
         }
@@ -74,7 +74,7 @@ export class Evaluator {
 
     private computeColors = (data: Vector) => {
         logger.debug(`computing colors`);
-        const { d, scope, hl, n, offset, limit } = this;
+        const { d, scope, hl, offset, limit } = this;
         const position = Data.position(data);
         const color = Data.color(data);
 

@@ -19,9 +19,9 @@ type Source = {
   getData(params: Params): Promise<Data>;
 };
 
-const webWorkerSource = (): Source => {
+const webWorkerSource = async (): Promise<Source> => {
   console.info('starting web worker data source');
-  startPool(navigator.hardwareConcurrency);
+  await startPool(navigator.hardwareConcurrency);
 
   const getData = (params: Params) =>
     runPipeline(params).then(Data.fromBuffer);
@@ -29,19 +29,21 @@ const webWorkerSource = (): Source => {
   return { getData };
 };
 
-let inFlight: Promise<void> | null;
+(async () => {
+  const { getData } = await webWorkerSource();
+  let inFlight: Promise<void> | null;
 
-const { getData } = webWorkerSource();
-params.stream.subscribe(params => {
-  if (inFlight) return;
-  logger.debug('requesting data with params', params);
-  if (timeTooLong()) {
-    logger.info(`sending request for data with params ${pp(params)}`);
-    logged = Date.now();
-  }
-  inFlight = getData(params)
-    .then(data => subject.next(data))
-    .finally(() => {
-      inFlight = null;
-    });
-});
+  params.stream.subscribe(params => {
+    if (inFlight) return;
+    logger.debug('requesting data with params', params);
+    if (timeTooLong()) {
+      logger.info(`sending request for data with params ${pp(params)}`);
+      logged = Date.now();
+    }
+    inFlight = getData(params)
+      .then(data => subject.next(data))
+      .finally(() => {
+        inFlight = null;
+      });
+  });
+})();
