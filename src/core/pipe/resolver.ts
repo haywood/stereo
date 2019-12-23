@@ -2,7 +2,7 @@ import { ASTNode } from './grammar.pegjs';
 import { Scope, CompiledAST, Value, UnaryOperator, Link, ASTNode } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
-import { Fn } from '../fn/fn';
+import { Fn, CompositeFn } from '../fn/fn';
 import Cube from '../fn/cube';
 import Spiral from '../fn/spiral';
 import Torus from '../fn/torus';
@@ -11,6 +11,7 @@ import Sphere from '../fn/sphere';
 import Stereo from '../fn/stereo';
 import Rotator from '../fn/rotator';
 import Interval from '../fn/interval';
+import { Identity } from '../fn/identity';
 
 export class Resolver {
     constructor(private readonly scope: Scope) { }
@@ -35,7 +36,25 @@ export class Resolver {
             links.push(link);
         }
 
-        return { n, chain: links };
+        const [init, iter] = this.buildComposites(links);
+        return { n, chain: links, init, iter };
+    };
+
+    private buildComposites = (links: Link[]) => {
+        let builder = new CompositeFn.Builder();
+        while (links.length && !links[0].isTemporal) {
+            builder.add(links.shift().fn);
+        }
+
+        const init = builder.build();
+        builder = new CompositeFn.Builder().add(new Identity(init.d));
+
+        while (links.length) {
+            builder.add(links.shift().fn);
+        }
+
+        const iter = builder.build();
+        return [init, iter];
     };
 
     private resolveFirstFunNode = (d: number, fun: ASTNode) => {

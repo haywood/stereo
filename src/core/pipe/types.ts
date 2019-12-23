@@ -1,4 +1,4 @@
-import { Fn } from '../fn/fn';
+import { Fn, CompositeFn } from '../fn/fn';
 import { EvalFunction } from 'mathjs';
 
 export type Params = {
@@ -45,7 +45,8 @@ export type Substitutions = {
 
 export type CompiledAST = {
     n: number;
-    chain: Link[];
+    init: CompositeFn;
+    iter: CompositeFn;
 };
 
 export type Link = {

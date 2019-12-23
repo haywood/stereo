@@ -21,6 +21,8 @@ export class CompositeFn implements Fn {
   private readonly x: Vector;
   private readonly y: Vector;
   constructor(readonly fns: Fn[]) {
+    assert(fns.length, 'fns cannot be empty');
+
     const length = Math.max(this.domainMax, this.dMax);
     this.x = new Float32Array(length);
     this.y = new Float32Array(length);

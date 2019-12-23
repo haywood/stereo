@@ -4,7 +4,7 @@ import { Identity } from "../fn/identity";
 import { Data, Vector } from "../data";
 import { pp } from "../pp";
 import { getLogger } from "loglevel";
-import { EvalFunction, round } from "mathjs";
+import { round } from "mathjs";
 import assert from 'assert';
 import { Color } from "three";
 
@@ -20,15 +20,11 @@ export class Evaluator {
         ast: CompiledAST,
         private readonly hl: HL,
     ) {
-        const [init, iter] = this.buildComposites(ast);
         this.n = ast.n;
-        this.init = init;
-        this.iter = iter;
+        this.init = ast.init;
+        this.iter = ast.iter;
     }
 
-    private get d0() {
-        return this.init.d;
-    }
 
     private get d() {
         return this.iter.d;
@@ -42,23 +38,6 @@ export class Evaluator {
         this.iterData(new Float32Array(buffer));
 
         return buffer;
-    };
-
-    private buildComposites = ({ chain }: CompiledAST) => {
-        let builder = new CompositeFn.Builder();
-        while (chain.length && !chain[0].isTemporal) {
-            builder.add(chain.shift().fn);
-        }
-
-        const init = builder.build();
-        builder = new CompositeFn.Builder().add(new Identity(init.d));
-
-        while (chain.length) {
-            builder.add(chain.shift().fn);
-        }
-
-        const iter = builder.build();
-        return [init, iter];
     };
 
     private initBuffer = (buffer: SharedArrayBuffer): SharedArrayBuffer => {
