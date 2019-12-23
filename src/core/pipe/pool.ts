@@ -1,6 +1,6 @@
 import { spawn, Worker, Pool, ModuleThread, TransferDescriptor, Transfer } from "threads";
 import { getLogger } from 'loglevel';
-import { Params, PipelineWorker } from './types';
+import { Params, PipelineWorker, Chunk } from './types';
 import { Pipe } from "./pipe";
 
 const logger = getLogger('PipelinePool');
@@ -38,21 +38,35 @@ export const stopPool = async (): Promise<boolean> => {
         });
 };
 
-export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
+const initialize = async (params: Params, n: number): Promise<SharedArrayBuffer> => {
+    return pool.queue(worker => worker.initialize(params, { offset: 0, size: n }));
+};
+
+const iterate = (params: Params, buffer: SharedArrayBuffer) => async (chunk: Chunk) => {
+    return pool.queue(worker => worker.iterate(params, chunk, buffer));
+};
+
+const getOrInitialize = async (params: Params, n: number): Promise<SharedArrayBuffer> => {
     const key = JSON.stringify(params);
-    const { n } = Pipe.compile(params);
-    const size = 1000;
-    let buffer = data.get(key);
-    if (!buffer) {
-        buffer = await pool.queue(worker => worker.initialize(params));
-        data.set(key, buffer);
+    if (!data.has(key)) {
+        data.set(key, await initialize(params, n));
     }
+    return data.get(key);
+};
+
+const forkJoin = async (n: number, size: number, op: (chunk: Chunk) => Promise<void>) => {
     let promises = [];
     for (let offset = 0; offset < n; offset += size) {
         const chunk = { offset, size: Math.min(n - offset, size) };
-        promises.push(pool.queue(worker => worker.iterate(params, chunk, buffer)));
+        promises.push(op(chunk));
     }
     await Promise.all(promises);
+};
+
+export const runPipeline = async (params: Params): Promise<SharedArrayBuffer> => {
+    const { n } = Pipe.compile(params);
+    const buffer = await getOrInitialize(params, n);
+    await forkJoin(n, 1000, iterate(params, buffer));
 
     return buffer.slice(0);
 };
