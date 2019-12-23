@@ -3,6 +3,7 @@ import { getLogger } from 'loglevel';
 import { Params, PipelineWorker, Chunk } from './types';
 import { Pipe } from "./pipe";
 import { ceil } from "mathjs";
+import { Data } from "../data";
 
 const logger = getLogger('PipelinePool');
 let pool: Pool<ModuleThread<PipelineWorker>>;
@@ -42,9 +43,9 @@ export const stopPool = async (): Promise<boolean> => {
         });
 };
 
-const initialize = (params: Params, n: number): Promise<SharedArrayBuffer> => {
+const initialize = (params: Params, n: number, buffer: SharedArrayBuffer): Promise<void> => {
     return timing('initialization')(async () => {
-        return pool.queue(w => w.initialize(params, { offset: 0, size: n }));
+        return pool.queue(w => w.initialize(params, { offset: 0, size: n }, buffer));
     });
 };
 
@@ -65,10 +66,11 @@ const getKey = (params: Params) => JSON.stringify({
     l: params.l,
 });
 
-const getOrInitialize = async (params: Params, n: number): Promise<SharedArrayBuffer> => {
+const getOrInitialize = async (params: Params, n: number, d0: number, d: number): Promise<SharedArrayBuffer> => {
     const key = getKey(params);
     if (!data.has(key)) {
-        const buffer = await initialize(params, n);
+        const buffer = Data.bufferFor(n, d0, d);
+        await initialize(params, n, buffer);
         data.set(key, buffer);
     }
     return data.get(key);
@@ -93,8 +95,8 @@ const timing = (label: string) => async<T>(op: () => Promise<T>) => {
 };
 
 export const runPipeline = async (params: Params): Promise<SharedArrayBuffer> => {
-    const { n } = Pipe.compile(params);
-    const buffer = await getOrInitialize(params, n);
+    const { n, init, iter } = Pipe.compile(params);
+    const buffer = await getOrInitialize(params, n, init.d, iter.d);
     await iterate(params, n, buffer);
 
     return buffer.slice(0);

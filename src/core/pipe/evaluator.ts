@@ -20,11 +20,11 @@ export class Evaluator {
         private readonly scope: Scope,
         ast: CompiledAST,
         private readonly hl: HL,
-        chunk?: Chunk,
+        chunk: Chunk,
     ) {
         const { n, init, iter } = ast;
-        const offset = chunk?.offset || 0;
-        const size = chunk?.size || n;
+        const offset = chunk.offset || 0;
+        const size = chunk.size || n;
         const limit = offset + size;
         assert(offset >= 0, `offset must be non-negative; got ${offset}`);
         assert(limit <= n, `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`);
@@ -41,21 +41,8 @@ export class Evaluator {
         return this.iter.d;
     }
 
-    initialize = (): SharedArrayBuffer => {
-        const { n, init, iter } = this;
-        const start = Date.now();
-        const buffer = Data.bufferFor(n, init.d, iter.d);
+    initialize = (buffer: SharedArrayBuffer): void => {
         const data = new Float32Array(buffer);
-        this.initData(data);
-        logger.info(`initialization completed in ${Date.now() - start}ms`);
-        return buffer;
-    };
-
-    iterate = (buffer: SharedArrayBuffer): void => {
-        this.iterData(new Float32Array(buffer));
-    };
-
-    private initData = (data: Vector) => {
         const { n, init, offset, limit } = this;
         const input = Data.input(data);
         let i = this.offset;
@@ -64,7 +51,8 @@ export class Evaluator {
         }
     };
 
-    private iterData = (data: Vector) => {
+    iterate = (buffer: SharedArrayBuffer): void => {
+        const data = new Float32Array(buffer);
         const { init, iter, scope, n, offset, limit } = this;
         const input = Data.input(data);
         const position = Data.position(data);
