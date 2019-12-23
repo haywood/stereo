@@ -19,11 +19,16 @@ export class Data {
         return new Data(n, d, position, color);
     };
 
-    static bufferFor = (n: number, d0: number, d: number) => {
+    static bufferFor = (n: number, d0: number, d: number): SharedArrayBuffer => {
         const bytesPerNum = 4;
         const count = 3 + n * (d0 + d + 3);
         const byteLength = bytesPerNum * count;
-        return new SharedArrayBuffer(byteLength);
+        const buffer = new SharedArrayBuffer(byteLength);
+        const data = new Float32Array(buffer);
+        data[Data.nOffset] = n;
+        data[Data.inputOffset] = d0;
+        data[Data.positionOffset(data)] = d;
+        return buffer;
     };
 
     static input = (arr: Float32Array) => {

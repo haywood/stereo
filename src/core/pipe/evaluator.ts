@@ -42,24 +42,21 @@ export class Evaluator {
 
     private initBuffer = (buffer: SharedArrayBuffer): SharedArrayBuffer => {
         const { n, init, iter } = this;
+        const start = Date.now();
         buffer = Data.bufferFor(n, init.d, iter.d);
         const data = new Float32Array(buffer);
         this.initData(data);
+        logger.info(`initialization completed in ${Date.now() - start}ms`);
         return buffer;
     };
 
     private initData = (data: Vector) => {
-        const { n, init, d } = this;
-        const start = Date.now();
-        data[Data.nOffset] = n;
-        data[Data.inputOffset] = init.d;
-        data[Data.positionOffset(data)] = d;
+        const { n, init } = this;
         const input = Data.input(data);
         let i = 0;
         for (const y of init.sample(n)) {
             Data.set(input, y, i++, init.d);
         }
-        logger.info(`initialization completed in ${Date.now() - start}ms`);
     };
 
     private iterData = (data: Vector) => {
