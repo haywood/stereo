@@ -8,12 +8,10 @@ import { getLogger } from 'loglevel';
 import { pp } from '../core/pp';
 
 const logger = getLogger('Data');
+logger.setDefaultLevel('info');
 const subject = new Subject<Data>();
-let logged = 0;
 
-const timeTooLong = () => Date.now() - logged >= 1000;
-
-export const data = subject.asObservable();
+export const stream = subject.asObservable();
 
 type Source = {
   getData(params: Params): Promise<Data>;
@@ -32,11 +30,12 @@ const webWorkerSource = async (): Promise<Source> => {
 (async () => {
   const { getData } = await webWorkerSource();
   let inFlight: Promise<void> | null;
+  let logged = 0;
 
   params.stream.subscribe(params => {
     if (inFlight) return;
     logger.debug('requesting data with params', params);
-    if (timeTooLong()) {
+    if (Date.now() - logged >= 1000) {
       logger.info(`sending request for data with params ${pp(params)}`);
       logged = Date.now();
     }
