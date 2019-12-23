@@ -21,7 +21,7 @@ type Source = {
 
 const webWorkerSource = (): Source => {
   console.info('starting web worker data source');
-  startPool(2);
+  startPool(2 * navigator.hardwareConcurrency);
 
   const getData = (params: Params) =>
     runPipeline(params).then(Data.fromBuffer);

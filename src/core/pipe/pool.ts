@@ -2,14 +2,17 @@ import { spawn, Worker, Pool, ModuleThread, TransferDescriptor, Transfer } from 
 import { getLogger } from 'loglevel';
 import { Params, PipelineWorker, Chunk } from './types';
 import { Pipe } from "./pipe";
+import { ceil } from "mathjs";
 
 const logger = getLogger('PipelinePool');
 let pool: Pool<ModuleThread<PipelineWorker>>;
 let data: Map<string, SharedArrayBuffer>;
+let poolSize = 0;
 
 export const startPool = (size: number) => {
     logger.info('starting worker pool');
     pool = Pool(() => spawn(new Worker('./worker')), size);
+    poolSize = size;
     data = new Map();
 
     pool.events().subscribe((event: any) => {
@@ -54,7 +57,8 @@ const getOrInitialize = async (params: Params, n: number): Promise<SharedArrayBu
     return data.get(key);
 };
 
-const forkJoin = async (n: number, size: number, op: (chunk: Chunk) => Promise<void>) => {
+const forkJoin = async (n: number, op: (chunk: Chunk) => Promise<void>) => {
+    const size = ceil(n / poolSize);
     let promises = [];
     for (let offset = 0; offset < n; offset += size) {
         const chunk = { offset, size: Math.min(n - offset, size) };
@@ -66,7 +70,7 @@ const forkJoin = async (n: number, size: number, op: (chunk: Chunk) => Promise<v
 export const runPipeline = async (params: Params): Promise<SharedArrayBuffer> => {
     const { n } = Pipe.compile(params);
     const buffer = await getOrInitialize(params, n);
-    await forkJoin(n, 1000, iterate(params, buffer));
+    await forkJoin(n, iterate(params, buffer));
 
     return buffer.slice(0);
 };
