@@ -31,8 +31,11 @@ const beatFinder = new BeatFinder(bandCount, memory);
 const detectMusic = (buffer: Uint8Array): Music => {
     const energies = energy.compute(buffer);
     const beat = beatFinder.find(energies);
-    const esong = mean(...energies);
-    return { beat, esong };
+    const esong = () => {
+        const nonZero = energies.filter(x => x);
+        return nonZero.length ? mean(...nonZero) : 0;
+    };
+    return { beat, esong: esong() };
 };
 
 const start = async (stream: MediaStream): Promise<State> => {
