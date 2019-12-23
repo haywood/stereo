@@ -16,17 +16,25 @@ export class Pipe {
         return Pipe.runNormal(Pipe.normalized(params), buffer);
     };
 
+    static evaluatorFor = (params: Params) => {
+        return Pipe.evaluatorForNormal(Pipe.normalized(params));
+    };
+
     private static compileNormal = (params: NormalizedParams): CompiledAST => {
         const { bpm, ebeat, esong, t } = params;
         return new Compiler({ t, bpm, ebeat, esong }).compile(params);
 
     };
 
-    private static runNormal = (params: NormalizedParams, buffer?: SharedArrayBuffer) => {
+    private static evaluatorForNormal = (params: NormalizedParams) => {
         const ast = Pipe.compileNormal(params);
         const scope = Pipe.finalScope(params, ast);
         const hl = Pipe.compileHL(params);
-        return new Evaluator(scope, ast, hl).evaluate(buffer);
+        return new Evaluator(scope, ast, hl);
+    };
+
+    private static runNormal = (params: NormalizedParams, buffer?: SharedArrayBuffer) => {
+        return Pipe.evaluatorForNormal(params).iterate(buffer);
     };
 
     private static normalized = (params: Params): NormalizedParams => {

@@ -30,23 +30,19 @@ export class Evaluator {
         return this.iter.d;
     }
 
-    evaluate = (buffer?: SharedArrayBuffer): SharedArrayBuffer => {
-        if (!buffer) {
-            buffer = this.initBuffer(buffer);
-        }
-
-        this.iterData(new Float32Array(buffer));
-
-        return buffer;
-    };
-
-    private initBuffer = (buffer: SharedArrayBuffer): SharedArrayBuffer => {
+    initialize = (buffer: SharedArrayBuffer): SharedArrayBuffer => {
         const { n, init, iter } = this;
         const start = Date.now();
         buffer = Data.bufferFor(n, init.d, iter.d);
         const data = new Float32Array(buffer);
         this.initData(data);
         logger.info(`initialization completed in ${Date.now() - start}ms`);
+        return buffer;
+    };
+
+    iterate = (buffer: SharedArrayBuffer): SharedArrayBuffer => {
+        this.iterData(new Float32Array(buffer));
+
         return buffer;
     };
 

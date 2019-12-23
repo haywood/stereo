@@ -67,7 +67,6 @@ export class Data {
     static colorOffset = (arr: Float32Array) =>
         Data.positionOffset(arr) + Data.positionLength(arr) + 1;
 
-
     static get = (arr: Vector, i: number, stride: number) => {
         const offset = i * stride;
         return arr.subarray(offset, offset + stride);

@@ -49,12 +49,14 @@ export const stopPool = async (): Promise<boolean> => {
 
 export const runPipeline = async (params: Params): Promise<ArrayBuffer> => {
     const key = JSON.stringify(params);
-    const buffer = await pool.queue((worker) =>
-        worker.runPipeline(params, data.get(key)));
-
-    if (!data.has(key)) {
-        data.set(params.pipe, buffer);
+    let buffer = data.get(key);
+    if (!buffer) {
+        const evaluator = Pipe.evaluatorFor(params);
+        buffer = evaluator.initialize(buffer);
+        data.set(key, buffer);
     }
+
+    await pool.queue((worker) => worker.runPipeline(params, buffer));
 
     return buffer.slice(0);
 };
