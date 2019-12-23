@@ -42,24 +42,34 @@ export const stopPool = async (): Promise<boolean> => {
         });
 };
 
-const initialize = async (params: Params, n: number): Promise<SharedArrayBuffer> => {
-    return pool.queue(worker => worker.initialize(params, { offset: 0, size: n }));
+const initialize = (params: Params, n: number): Promise<SharedArrayBuffer> => {
+    return timing('initialization')(async () => {
+        return pool.queue(w => w.initialize(params, { offset: 0, size: n }));
+    });
 };
 
 const iterate = (params: Params, n: number, buffer: SharedArrayBuffer) => {
     return timing('iteration')(() => {
         return forkJoin(n, async (chunk) => {
-            return pool.queue(async (worker) => {
-                return worker.iterate(params, chunk, buffer);
+            return pool.queue(w => {
+                return w.iterate(params, chunk, buffer);
             });
         });
     });
 };
 
+const getKey = (params: Params) => JSON.stringify({
+    pipe: params.pipe,
+    theta: params.theta,
+    h: params.h,
+    l: params.l,
+});
+
 const getOrInitialize = async (params: Params, n: number): Promise<SharedArrayBuffer> => {
-    const key = JSON.stringify(params);
+    const key = getKey(params);
     if (!data.has(key)) {
-        data.set(key, await initialize(params, n));
+        const buffer = await initialize(params, n);
+        data.set(key, buffer);
     }
     return data.get(key);
 };

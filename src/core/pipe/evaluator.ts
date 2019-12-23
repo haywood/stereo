@@ -51,10 +51,8 @@ export class Evaluator {
         return buffer;
     };
 
-    iterate = (buffer: SharedArrayBuffer): SharedArrayBuffer => {
+    iterate = (buffer: SharedArrayBuffer): void => {
         this.iterData(new Float32Array(buffer));
-
-        return buffer;
     };
 
     private initData = (data: Vector) => {

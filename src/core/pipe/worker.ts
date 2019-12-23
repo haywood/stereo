@@ -8,12 +8,12 @@ const logger = getLogger('PipelineWorker');
 logger.debug('new worker started');
 
 const worker: PipelineWorker = {
-    initialize: (params: Params, chunk: Chunk) => {
+    initialize: (params: Params, chunk: Chunk): SharedArrayBuffer => {
         return Pipe.evaluatorFor(params, chunk).initialize();
     },
 
-    iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer) => {
-        return Pipe.evaluatorFor(params, chunk).iterate(buffer);
+    iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void => {
+        Pipe.evaluatorFor(params, chunk).iterate(buffer);
     }
 };
 
