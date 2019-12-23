@@ -7,6 +7,7 @@ import { ceil } from "mathjs";
 const logger = getLogger('PipelinePool');
 let pool: Pool<ModuleThread<PipelineWorker>>;
 let data: Map<string, SharedArrayBuffer>;
+logger.setLevel('info');
 let poolSize = 0;
 
 export const startPool = (size: number) => {
@@ -45,8 +46,14 @@ const initialize = async (params: Params, n: number): Promise<SharedArrayBuffer>
     return pool.queue(worker => worker.initialize(params, { offset: 0, size: n }));
 };
 
-const iterate = (params: Params, buffer: SharedArrayBuffer) => async (chunk: Chunk) => {
-    return pool.queue(worker => worker.iterate(params, chunk, buffer));
+const iterate = (params: Params, n: number, buffer: SharedArrayBuffer) => {
+    return timing('iteration')(() => {
+        return forkJoin(n, async (chunk) => {
+            return pool.queue(async (worker) => {
+                return worker.iterate(params, chunk, buffer);
+            });
+        });
+    });
 };
 
 const getOrInitialize = async (params: Params, n: number): Promise<SharedArrayBuffer> => {
@@ -67,10 +74,18 @@ const forkJoin = async (n: number, op: (chunk: Chunk) => Promise<void>) => {
     await Promise.all(promises);
 };
 
+const timing = (label: string) => async<T>(op: () => Promise<T>) => {
+    const start = Date.now();
+    const t = await op();
+    const elapsed = Date.now() - start;
+    logger.info(`${label} took ${elapsed}ms`);
+    return t;
+};
+
 export const runPipeline = async (params: Params): Promise<SharedArrayBuffer> => {
     const { n } = Pipe.compile(params);
     const buffer = await getOrInitialize(params, n);
-    await forkJoin(n, iterate(params, buffer));
+    await iterate(params, n, buffer);
 
     return buffer.slice(0);
 };
