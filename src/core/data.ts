@@ -32,9 +32,8 @@ export class Data {
     };
 
     static input = (arr: Float32Array) => {
-        const n = arr[0];
-        const d = arr[1];
-        return arr.subarray(2, 2 + n * d);
+        const offset = Data.inputOffset + 1;
+        return arr.subarray(offset, offset + Data.inputLength(arr));
     };
 
     static position = (arr: Float32Array) => {
