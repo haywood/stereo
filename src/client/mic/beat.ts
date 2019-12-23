@@ -1,6 +1,6 @@
 import { CircularBuffer } from "./circular_buffer";
 import assert from 'assert';
-import { mean } from "mathjs";
+import { mean, std } from "mathjs";
 import { getLogger } from 'loglevel';
 import { Bpm } from "./bpm";
 
@@ -37,11 +37,11 @@ export class BeatFinder {
         let ebeat = 0, on = false;
         for (let i = 0; i < this.bandCount; i++) {
             const e = es[i];
-            const E = mean(...this.es[i]);
-            const C = 1.3;
+            const E = mean([...this.es[i]]);
+            const sigma = std([...this.es[i]]);
             this.es[i].set(e);
 
-            if (e > C * E && !on) {
+            if (e > E + sigma && !on) {
                 logger.debug(`found beat at band ${i} e=${e} E=${E}`);
                 ebeat = e;
                 on = true;

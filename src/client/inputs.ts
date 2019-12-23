@@ -2,11 +2,9 @@ import { Observable, Subject } from 'rxjs';
 
 const initialValues = {
     pipe: defaultPipe(),
-    theta: 'pi * t * bpm / 20',
+    theta: 'pi * t / 20',
     h: 'abs(sin(theta)) * i / n',
-    // Models lightness as a sigmoid centered at 0.5
-    // See https://en.wikipedia.org/wiki/Logistic_function
-    l: '1 / (1 + e ^ (4 * (0.5 - ebeat)))',
+    l: '0.3 * ebeat + 0.3',
     animate: true,
     sound: false,
 };
