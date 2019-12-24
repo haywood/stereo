@@ -3,25 +3,24 @@ import { Params } from '../core/pipe/types';
 import { Subject, combineLatest, interval } from 'rxjs';
 import { values, streams } from './inputs';
 import { Music } from './mic/types';
+import { fps } from './constants';
 
 export const stream = new Subject<Params>();
-const fps = 60;
 let t = 0;
 
 let music: Music;
 mic.stream.subscribe(m => music = m);
 
 const emit = () => {
-    const { beat, esong } = music;
+    const { esong, dsong } = music;
     stream.next({
         pipe: values.pipe,
         theta: values.theta,
         h: values.h,
         l: values.l,
         t,
-        bpm: beat.bpm,
-        ebeat: beat.e,
         esong: esong,
+        dsong: dsong,
     });
     t += 1 / fps;
 };

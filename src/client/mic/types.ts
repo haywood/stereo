@@ -1,10 +1,8 @@
-import { Beat } from './beat';
-
 export type Music = {
-    beat: Beat;
     esong: number;
+    dsong: number;
 };
 
 export type MusicWorker = {
-    analyze(buffer: SharedArrayBuffer): Music;
+    analyze(buffer: Array<number>): Music;
 };
