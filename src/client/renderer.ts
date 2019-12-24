@@ -21,7 +21,10 @@ export class Renderer {
   constructor() {
     this.renderer = new WebGLRenderer();
     this.setSize();
-    window.onresize = this.setSize;
+    window.onresize = () => {
+      this.setSize();
+      requestAnimationFrame(this.render);
+    };
 
     this.points = new Points(
       new BufferGeometry(),
@@ -33,8 +36,6 @@ export class Renderer {
 
     this.scene = new Scene();
     this.scene.add(this.points);
-
-    this.renderer.setAnimationLoop(this.render);
   }
 
   private setSize = () => {
@@ -82,5 +83,7 @@ export class Renderer {
       z = Math.min(5, s.center.z + s.radius + 1);
     }
     this.camera.position.z = this.z = z;
+
+    requestAnimationFrame(this.render);
   };
 }

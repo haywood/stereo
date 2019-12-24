@@ -6,14 +6,14 @@ import { inputs } from './inputs';
 export const stream = new Subject<Params>();
 const fps = 60;
 
-combineLatest(mic.stream, interval(fps / 1000))
-    .subscribe(([{ esong, beat }]: [mic.Music, number]) => {
+combineLatest(mic.stream, interval(1000 / fps))
+    .subscribe(([{ esong, beat }, i]: [mic.Music, number]) => {
         stream.next({
             pipe: inputs.pipe,
             theta: inputs.theta,
             h: inputs.h,
             l: inputs.l,
-            t: Date.now() / 1000,
+            t: i / fps,
             bpm: beat.bpm,
             ebeat: beat.e,
             esong: esong,
