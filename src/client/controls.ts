@@ -1,4 +1,4 @@
-import { inputs, streams, Inputs } from './inputs';
+import { values, streams, Inputs } from './inputs';
 
 export class Controls {
     readonly domElement = document.createElement('form');
@@ -13,10 +13,10 @@ export class Controls {
         this.domElement.style.flexDirection = 'column';
         this.domElement.style.alignItems = 'flex-end';
 
-        for (const name in inputs) {
+        for (const name in values) {
             if (!(name in displayNames)) continue;
 
-            const type = typeof inputs[name] === 'boolean' ? 'checkbox' : 'text';
+            const type = typeof values[name] === 'boolean' ? 'checkbox' : 'text';
             const input = new Control(name, type);
             this.domElement.appendChild(input.domElement);
         }
@@ -44,7 +44,7 @@ class Control {
 
     constructor(readonly name: string, readonly type: 'text' | 'checkbox') {
         const input: HTMLInputElement = document.createElement('input');
-        const value = inputs[name];
+        const value = values[name];
 
         input.name = name;
         input.type = type;
@@ -56,9 +56,9 @@ class Control {
         input.size = 50;
         input.onchange = () => {
             if (type === 'checkbox') {
-                inputs[name] = input.checked;
+                values[name] = input.checked;
             } else {
-                inputs[name] = input.value;
+                values[name] = input.value;
             }
         };
 

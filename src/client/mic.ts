@@ -42,7 +42,7 @@ const start = async (stream: MediaStream): Promise<void> => {
     source.connect(analyzer);
 
     interval(10).subscribe(async () => {
-        if (!inputs.inputs.sound) return;
+        if (!inputs.values.sound) return;
 
         try {
             analyzer.getByteFrequencyData(data);

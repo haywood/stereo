@@ -29,7 +29,7 @@ const persistence: { [P in keyof Inputs]: boolean } = {
 };
 
 const persist = () => {
-    for (const [key, value] of Object.entries(inputs)) {
+    for (const [key, value] of Object.entries(values)) {
         if (persistence[key]) {
             localStorage.setItem(`inputs.${key}`, value.toString());
         };
@@ -56,7 +56,7 @@ for (const key in initialValues) {
     streams[key] = subjects[key].asObservable();
 }
 
-export const inputs = new Proxy(initialValues, {
+export const values = new Proxy(initialValues, {
     set(target, property, value) {
         const oldValue = target[property];
         const success = Reflect.set(target, property, value);
