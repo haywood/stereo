@@ -1,16 +1,20 @@
 import * as mic from './mic';
 import { Params } from '../core/pipe/types';
-import { Subject, combineLatest, interval, of, EMPTY } from 'rxjs';
+import { Subject, combineLatest, interval } from 'rxjs';
 import { inputs, streams } from './inputs';
-import { delayWhen } from 'rxjs/operators';
+import { Music } from './mic/types';
 
 export const stream = new Subject<Params>();
 const fps = 60;
 let t = 0;
 
-combineLatest(mic.stream, interval(1000 / fps))
-    .subscribe(([{ esong, beat }]: [mic.Music, number]) => {
+let music: Music;
+mic.stream.subscribe(m => music = m);
+
+interval(1000 / fps)
+    .subscribe(() => {
         if (inputs.animate) {
+            const { beat, esong } = music;
             stream.next({
                 pipe: inputs.pipe,
                 theta: inputs.theta,
