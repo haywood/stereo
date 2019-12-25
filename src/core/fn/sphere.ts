@@ -19,7 +19,7 @@ export default class Sphere implements Fn {
     return this.d - 1;
   }
 
-  sample = function* (n: number, offset?, limit?) {
+  sample = function* (n: number, offset: number, limit: number) {
     const cube = new Cube(this.domain, tau);
     for (const phi of cube.sample(n, offset, limit)) {
       yield this.fn(phi);

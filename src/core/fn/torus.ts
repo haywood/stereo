@@ -18,9 +18,9 @@ export default class Torus implements Fn {
     return this.d - 1;
   }
 
-  sample = function* (this: Torus, n: number) {
+  sample = function* (n: number, offset: number, limit: number) {
     const cube = new Cube(this.domain, tau);
-    for (const phi of cube.sample(n)) {
+    for (const phi of cube.sample(n, offset, limit)) {
       yield this.fn(phi);
     }
   };

@@ -30,7 +30,7 @@ export default class Interval implements Fn {
     return y;
   };
 
-  sample = function* (n: number, offset: number = 0, limit: number = n) {
+  sample = function* (n: number, offset: number, limit: number) {
     const { d, fn } = this;
     n = Interval.nPerLevel(d, n);
     const points: number[][] = [[]];

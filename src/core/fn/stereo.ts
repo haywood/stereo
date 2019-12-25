@@ -20,9 +20,9 @@ export default class Stereo implements Fn {
     return this.to;
   }
 
-  sample = function* (n: number) {
+  sample = function* (n: number, offset: number, limit: number) {
     const cube = new Cube(this.domain, 2);
-    for (const phi of cube.sample(n)) {
+    for (const phi of cube.sample(n, offset, limit)) {
       yield this.fn(phi);
     }
   };

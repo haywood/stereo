@@ -18,7 +18,7 @@ export class Identity implements Fn {
         return y;
     };
 
-    sample = function* (n: number) {
+    sample = function* (n: number, offset: number, limit: number) {
         throw new Error('identity function does not support sampling');
     };
 }

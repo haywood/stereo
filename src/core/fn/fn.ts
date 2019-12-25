@@ -13,7 +13,7 @@ export interface Fn {
   readonly d: number;
   readonly domain: number;
   fn(x: Vector, y?: Vector): Vector;
-  sample(n: number, offset?: number, count?: number): Generator<Vector>;
+  sample(n: number, offset: number, limit: number): Generator<Vector>;
 }
 
 export class CompositeFn implements Fn {

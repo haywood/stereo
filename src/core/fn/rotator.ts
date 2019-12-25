@@ -23,9 +23,9 @@ export default class Rotator implements Fn {
     return this.d;
   }
 
-  sample = function* (this: Rotator, n: number) {
+  sample = function* (n: number, offset: number, limit: number) {
     const cube = new Cube(this.domain, 2);
-    for (const p of cube.sample(n)) {
+    for (const p of cube.sample(n, offset, limit)) {
       yield this.fn(p);
     }
   };
