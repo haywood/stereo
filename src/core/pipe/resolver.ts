@@ -1,3 +1,4 @@
+import { ASTNode } from './grammar.pegjs';
 import { Scope, CompiledAST, Value, UnaryOperator, Link, ASTNode } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
@@ -36,7 +37,7 @@ export class Resolver {
         }
 
         const [init, iter] = this.buildComposites(links);
-        return { n, init, iter };
+        return { n, chain: links, init, iter };
     };
 
     private buildComposites = (links: Link[]) => {

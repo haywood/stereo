@@ -4,7 +4,6 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const src = path.resolve(__dirname, 'src/client');
-const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
   target: 'web',
@@ -26,10 +25,14 @@ module.exports = {
           transpileOnly: true,
         }
       },
+      {
+        test: /\.pegjs$/,
+        loader: 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith',
+      },
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.pegjs'],
   },
   plugins: [
     new CleanWebpackPlugin(),
@@ -38,8 +41,5 @@ module.exports = {
     }),
     new ThreadsPlugin({ globalObject: 'self' }),
     new FaviconsWebpackPlugin(path.resolve(__dirname, 'logo.png')),
-    new WebpackShellPlugin({
-      onBuildStart: ['npx tspegjs -- --allowed-start-rules=pipe,arith src/core/pipe/grammar.pegjs']
-    })
   ],
 };

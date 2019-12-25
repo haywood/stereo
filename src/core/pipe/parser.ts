@@ -1,4 +1,4 @@
-import { parse } from './grammar';
+import { parse } from './grammar.pegjs';
 import { ASTNode } from './types';
 import { pp } from '../pp';
 import { getLogger } from 'loglevel';
