@@ -7,7 +7,7 @@ import { mean, floor } from 'mathjs';
 import { Music, MusicWorker } from './mic/types';
 import { spawn, Worker, ModuleThread } from 'threads';
 import { map, switchMap } from 'rxjs/operators';
-import { sampleRate } from './constants';
+import { audioSampleRate } from './constants';
 
 const logger = getLogger('Energy');
 
@@ -37,7 +37,7 @@ const start = async (stream: MediaStream): Promise<void> => {
 
     source.connect(analyzer);
 
-    interval(1 / sampleRate).subscribe(async () => {
+    interval(1 / audioSampleRate).subscribe(async () => {
         if (!inputs.values.sound) return;
 
         try {

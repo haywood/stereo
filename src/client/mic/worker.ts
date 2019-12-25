@@ -3,10 +3,10 @@ import { Energy } from './energy';
 import { mean } from 'mathjs';
 import { MusicWorker, Music } from './types';
 import { History } from './history';
-import { sampleRate } from '../constants';
+import { audioSampleRate } from '../constants';
 
 const energy = new Energy(32);
-const history = new History(1000 * sampleRate);
+const history = new History(1000 * audioSampleRate);
 
 const worker: MusicWorker = {
     analyze: (arr: Array<number>): Music => {
