@@ -1,4 +1,3 @@
-import { ASTNode } from './grammar.pegjs';
 import { Scope, CompiledAST, Value, UnaryOperator, Link, ASTNode } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
