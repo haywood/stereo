@@ -1,7 +1,7 @@
 import * as mic from './mic';
 import { Params } from '../core/pipe/types';
-import { Subject, combineLatest, interval } from 'rxjs';
-import { values, streams } from './inputs';
+import { Subject, interval } from 'rxjs';
+import { values } from './inputs';
 import { Music } from './mic/types';
 import { fps } from './constants';
 
