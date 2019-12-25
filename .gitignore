@@ -6,3 +6,4 @@ node_modules/
 report.*.json
 .*_dist
 grammar.js
+grammar.ts

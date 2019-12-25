@@ -5,6 +5,7 @@ const ThreadsPlugin = require('threads-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const src = path.resolve(__dirname, 'src/client');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
   target: 'web',
@@ -32,14 +33,10 @@ module.exports = {
           transpileOnly: true,
         }
       },
-      {
-        test: /\.pegjs$/,
-        loader: 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith',
-      },
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.pegjs'],
+    extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [
     new CleanWebpackPlugin(),
@@ -49,5 +46,8 @@ module.exports = {
     new ThreadsPlugin({ globalObject: 'self' }),
     new FaviconsWebpackPlugin('logo.png'),
     new ForkTsCheckerWebpackPlugin(),
+    new WebpackShellPlugin({
+      onBuildStart: ['npx tspegjs src/core/pipe/grammar.pegjs']
+    })
   ],
 };
