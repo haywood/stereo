@@ -5,11 +5,15 @@ import { values } from './inputs';
 import { Music } from './mic/types';
 import { fps } from './constants';
 
-export const stream = new Subject<Params>();
+const subject = new Subject<Params>();
+export const stream = subject;
 let t = 0;
 
 let music: Music;
-mic.stream.subscribe(m => music = m);
+mic.stream.subscribe(
+    m => music = m,
+    err => subject.error(err),
+);
 
 const emit = () => {
     const { esong, dsong } = music;
@@ -25,4 +29,7 @@ const emit = () => {
     t += 1 / fps;
 };
 
-interval(1000 / fps).subscribe(() => values.animate && emit());
+interval(1000 / fps).subscribe(
+    () => values.animate && emit(),
+    err => subject.error(err),
+);

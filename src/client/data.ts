@@ -32,17 +32,20 @@ const webWorkerSource = async (): Promise<Source> => {
   let inFlight: Promise<void> | null;
   let logged = 0;
 
-  params.stream.subscribe(params => {
-    if (inFlight) return;
-    logger.debug('requesting data with params', params);
-    if (Date.now() - logged >= 1000) {
-      logger.info(`sending request for data with params ${pp(params)}`);
-      logged = Date.now();
-    }
-    inFlight = getData(params)
-      .then(data => subject.next(data))
-      .finally(() => {
-        inFlight = null;
-      });
-  });
+  params.stream.subscribe(
+    params => {
+      if (inFlight) return;
+      logger.debug('requesting data with params', params);
+      if (Date.now() - logged >= 1000) {
+        logger.info(`sending request for data with params ${pp(params)}`);
+        logged = Date.now();
+      }
+      inFlight = getData(params)
+        .then(data => subject.next(data))
+        .finally(() => {
+          inFlight = null;
+        });
+    },
+    err => subject.error(err),
+  );
 })();

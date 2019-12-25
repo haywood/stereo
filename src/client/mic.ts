@@ -1,13 +1,10 @@
 import { BehaviorSubject, interval, Observable } from 'rxjs';
-import { Energy } from './mic/energy';
-import { BeatFinder, Beat } from './mic/beat';
 import { getLogger } from 'loglevel';
 import * as inputs from './inputs';
-import { mean, floor } from 'mathjs';
 import { Music, MusicWorker } from './mic/types';
 import { spawn, Worker, ModuleThread } from 'threads';
-import { map, switchMap } from 'rxjs/operators';
 import { audioSampleRate } from './constants';
+import { Analyzer } from './mic/analyzer';
 
 const logger = getLogger('Energy');
 
@@ -18,37 +15,18 @@ const FAKE_MUSIC: Music = {
 
 const subject = new BehaviorSubject<Music>(FAKE_MUSIC);
 
-const fftSize = 2048;
-
 const start = async (stream: MediaStream): Promise<void> => {
     logger.info('initializing audio graph');
     const worker = await spawn<ModuleThread<MusicWorker>>(new Worker('./mic/worker'));
-    const ctx = new AudioContext();
-    const source = ctx.createMediaStreamSource(stream);
-    const analyzer = new AnalyserNode(ctx, {
-        fftSize,
-        maxDecibels: -50,
-        minDecibels: -100,
-        // smoothingTimeConstant: 0,
-    });
-    // need this array, because AnalyserNode won't accept one
-    // backed by a shared buffer
-    const data = new Uint8Array(analyzer.frequencyBinCount);
-
-    source.connect(analyzer);
+    const analyzer = new Analyzer(stream);
 
     interval(1 / audioSampleRate).subscribe(async () => {
         if (!inputs.values.sound) return;
 
         try {
-            analyzer.getByteFrequencyData(data);
-            const arr = new Float32Array(data.length);
-            for (let i = 0; i < data.length; i++) {
-                arr[i] = data[i] / 255;
-            }
-            subject.next(await worker.analyze(arr));
+            subject.next(await worker.analyze(analyzer.read()));
         } catch (err) {
-            logger.error(err);
+            subject.error(err);
         }
     });
 };

@@ -51,7 +51,7 @@ export class History {
         }
 
         const finiteDeltas = deltas.filter(d => isFinite(d) && !isNaN(d));
-        return this.spread * mean(finiteDeltas);
+        return finiteDeltas.length ? this.spread * mean(finiteDeltas) : 0;
     };
 
     set = (v: number): void => {

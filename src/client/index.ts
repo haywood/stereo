@@ -13,6 +13,9 @@ document.onreadystatechange = (): void => {
     document.body.appendChild(renderer.domElement);
     document.body.appendChild(controls.domElement);
 
-    data.stream.subscribe(renderer.updatePoints);
+    data.stream.subscribe(
+      renderer.updatePoints,
+      (err: Error) => alert(`${err.message}\n${err.stack}`),
+    );
   }
 };
