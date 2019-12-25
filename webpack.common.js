@@ -4,19 +4,12 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const src = path.resolve(__dirname, 'src/client');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
   target: 'web',
-  mode: 'development',
   entry: {
     index: path.resolve(src, 'index.ts'),
-  },
-  devtool: 'inline-source-map',
-  watchOptions: {
-    aggregateTimeout: 1500,
-    ignored: ['node_modules']
   },
   output: {
     path: path.resolve(__dirname, '.client_dist'),
@@ -44,10 +37,9 @@ module.exports = {
       title: 'Stereo',
     }),
     new ThreadsPlugin({ globalObject: 'self' }),
-    new FaviconsWebpackPlugin('logo.png'),
-    new ForkTsCheckerWebpackPlugin(),
+    new FaviconsWebpackPlugin(path.resolve(__dirname, 'logo.png')),
     new WebpackShellPlugin({
-      onBuildStart: ['npx tspegjs src/core/pipe/grammar.pegjs']
+      onBuildStart: ['npx tspegjs -- --allowed-start-rules=pipe,arith src/core/pipe/grammar.pegjs']
     })
   ],
 };
