@@ -4,5 +4,5 @@ export type Music = {
 };
 
 export type MusicWorker = {
-    analyze(buffer: Array<number>): Music;
+    analyze(buffer: Float32Array): Music;
 };

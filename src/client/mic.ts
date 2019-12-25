@@ -42,7 +42,7 @@ const start = async (stream: MediaStream): Promise<void> => {
 
         try {
             analyzer.getByteFrequencyData(data);
-            const arr = new Array(data.length);
+            const arr = new Float32Array(data.length);
             for (let i = 0; i < data.length; i++) {
                 arr[i] = data[i] / 255;
             }
