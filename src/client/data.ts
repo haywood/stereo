@@ -2,7 +2,7 @@ import { Observable, timer, Subject, interval, EMPTY } from 'rxjs';
 import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
 import { Params } from "../core/pipe/types";
-import { startPool, stopPool, runPipeline } from '../core/pipe/pool';
+import { startPool, runPipeline } from '../core/pipe/pool';
 import * as params from './params';
 import { getLogger } from 'loglevel';
 import { pp } from '../core/pp';
@@ -29,22 +29,26 @@ const webWorkerSource = async (): Promise<Source> => {
 
 (async () => {
   const { getData } = await webWorkerSource();
-  let inFlight: Promise<void> | null;
+  let inFlight: Promise<Data> | null;
   let logged = 0;
 
   params.stream.subscribe(
-    params => {
+    async (params) => {
       if (inFlight) return;
       logger.debug('requesting data with params', params);
       if (Date.now() - logged >= 1000) {
         logger.info(`sending request for data with params ${pp(params)}`);
         logged = Date.now();
       }
-      inFlight = getData(params)
-        .then(data => subject.next(data))
-        .finally(() => {
-          inFlight = null;
-        });
+      // TODO i feel like there's a more rx-y way to do this
+      inFlight = getData(params);
+      try {
+        subject.next(await inFlight);
+      } catch (err) {
+        subject.error(err);
+      } finally {
+        inFlight = null;
+      }
     },
     err => subject.error(err),
   );

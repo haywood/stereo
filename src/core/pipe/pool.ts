@@ -30,23 +30,15 @@ export const startPool = async (size: number) => {
     });
 };
 
-export const stopPool = async (): Promise<boolean> => {
+export const stopPool = async (): Promise<void> => {
     logger.info('waiting for pending tasks to complete before terminating pool');
-    return await pool.completed(true)
-        .then(() => {
-            logger.info('terminating pool');
-            pool.terminate();
-        })
-        .then(() => true)
-        .catch(err => {
-            logger.error('error terminating worker pool', err);
-            return false;
-        })
-        .finally(() => {
-            logger.info('resetting data');
-            data.clear(); // not necessary?
-            pool = null;
-        });
+    try {
+        await pool.terminate(true);
+    } catch (err) {
+        logger.error(err);
+    } finally {
+        pool = null;
+    }
 };
 
 const initialize = (params: Params, n: number, buffer: SharedArrayBuffer): Promise<void> => {
