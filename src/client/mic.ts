@@ -9,8 +9,8 @@ import { Analyzer } from './mic/analyzer';
 const logger = getLogger('Energy');
 
 const FAKE_MUSIC: Music = {
-    esong: 0.5,
-    dsong: 1,
+    eaudio: 0.5,
+    daudio: 1,
 };
 
 const subject = new BehaviorSubject<Music>(FAKE_MUSIC);

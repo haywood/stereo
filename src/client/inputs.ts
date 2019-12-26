@@ -2,9 +2,9 @@ import { Observable, Subject } from 'rxjs';
 
 const initialValues = {
     pipe: defaultPipe(),
-    theta: 'pi * t * dsong / 20',
+    theta: 'pi * t * daudio / 20',
     h: 'abs(sin(theta)) * i / n',
-    l: 'esong',
+    l: 'eaudio',
     animate: true,
     sound: false,
 };

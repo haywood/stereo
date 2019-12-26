@@ -16,15 +16,15 @@ mic.stream.subscribe(
 );
 
 const emit = () => {
-    const { esong, dsong } = music;
+    const { eaudio, daudio } = music;
     stream.next({
         pipe: values.pipe,
         theta: values.theta,
         h: values.h,
         l: values.l,
         t,
-        esong: esong,
-        dsong: dsong,
+        eaudio: eaudio,
+        daudio: daudio,
     });
     t += 1 / fps;
 };

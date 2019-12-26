@@ -23,8 +23,8 @@ export class Pipe {
     };
 
     private static compileNormal = (params: NormalizedParams): CompiledAST => {
-        const { esong, dsong, t } = params;
-        return new Compiler({ t, esong, dsong }).compile(params);
+        const { eaudio, daudio, t } = params;
+        return new Compiler({ t, eaudio, daudio }).compile(params);
 
     };
 
@@ -35,14 +35,14 @@ export class Pipe {
             h: params.h || '1',
             l: params.l || '0.5',
             t: params.t || 0,
-            esong: params.esong || 0,
-            dsong: params.dsong || 0,
+            eaudio: params.eaudio || 0,
+            daudio: params.daudio || 0,
         };
     };
 
     private static finalScope = (params: NormalizedParams, ast: CompiledAST): Scope => {
-        const { esong, dsong, t } = params;
-        const scope: Scope = { t, esong, dsong, n: ast.n };
+        const { eaudio, daudio, t } = params;
+        const scope: Scope = { t, eaudio, daudio, n: ast.n };
         scope.theta = math.evaluate(params.theta, scope);
 
         return scope;

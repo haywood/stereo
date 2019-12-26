@@ -11,11 +11,11 @@ const history = new History(1000 * audioSampleRate);
 const worker: MusicWorker = {
     analyze: (data: Float32Array): Music => {
         const energies = energy.compute(data);
-        const esong = mean(...energies);
-        history.set(esong);
-        const dsong = history.delta();
+        const eaudio = mean(...energies);
+        history.set(eaudio);
+        const daudio = history.delta();
 
-        return { esong, dsong };
+        return { eaudio, daudio };
     },
 };
 

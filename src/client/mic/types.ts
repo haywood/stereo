@@ -1,6 +1,6 @@
 export type Music = {
-    esong: number;
-    dsong: number;
+    eaudio: number;
+    daudio: number;
 };
 
 export type MusicWorker = {
