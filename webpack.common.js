@@ -50,7 +50,8 @@ module.exports = {
     new ThreadsPlugin({ globalObject: 'self' }),
     new FaviconsWebpackPlugin({
       logo: path.resolve(__dirname, 'logo.png'),
-      prefix: 'public/',
+      outputPath: './',
+      prefix: '',
     }),
   ],
 };
