@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
 
 const src = path.resolve(__dirname, 'src/client');
 
@@ -13,17 +12,9 @@ module.exports = {
     index: path.resolve(src, 'index.ts'),
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'stereo'),
     filename: '[name].[hash].js',
-  },
-  optimization: {
-    usedExports: true,
-    splitChunks: {
-      chunks: 'all',
-    },
-    minimizer: [
-      new TerserPlugin({ terserOptions: { module: true } })
-    ],
+    publicPath: '/stereo/'
   },
   module: {
     rules: [
@@ -50,8 +41,7 @@ module.exports = {
     new ThreadsPlugin({ globalObject: 'self' }),
     new FaviconsWebpackPlugin({
       logo: path.resolve(__dirname, 'logo.png'),
-      outputPath: './',
-      prefix: '',
+      prefix: 'icons/',
     }),
   ],
 };

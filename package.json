@@ -42,8 +42,10 @@
     "html-webpack-plugin": "^3.2.0",
     "jest": "^24.9.0",
     "koa-webpack": "^5.2.4",
+    "npm-run-all": "^4.1.5",
     "pegjs": "^0.10.0",
     "pegjs-loader": "^0.5.5",
+    "serve": "^11.2.0",
     "threads-plugin": "^1.2.0",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
@@ -63,8 +65,9 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "web": "webpack-dev-server --config webpack.dev.js",
-    "predeploy": "webpack --config webpack.prod.js",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npm run dist && gh-pages -d stereo",
+    "dev": "webpack --watch --config webpack.dev.js",
+    "dist": "webpack --config webpack.prod.js",
+    "serve": "serve"
   }
 }

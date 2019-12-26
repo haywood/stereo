@@ -13,7 +13,7 @@ let poolSize = 0;
 
 export const startPool = async (size: number) => {
     logger.info('starting worker pool');
-    pool = Pool(() => spawn(new Worker('./worker')), size);
+    pool = Pool(() => spawn(new Worker('./pipe.worker')), size);
     poolSize = size;
     data = new Map();
     let promises = [];

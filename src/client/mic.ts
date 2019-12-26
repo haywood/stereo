@@ -17,7 +17,7 @@ const subject = new BehaviorSubject<Music>(FAKE_MUSIC);
 
 const start = async (stream: MediaStream): Promise<void> => {
     logger.info('initializing audio graph');
-    const worker = await spawn<ModuleThread<MusicWorker>>(new Worker('./mic/worker'));
+    const worker = await spawn<ModuleThread<MusicWorker>>(new Worker('./mic/mic.worker'));
     const analyzer = new Analyzer(stream);
 
     interval(1 / audioSampleRate).subscribe(async () => {

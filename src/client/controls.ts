@@ -36,7 +36,7 @@ const displayNames: DisplayNames = {
     h: 'Hue',
     l: 'Lightness',
     animate: 'Animate',
-    sound: '♫'
+    sound: '🎙️',
 };
 
 class Control {
