@@ -1,4 +1,4 @@
-import { spawn, Worker, Pool, ModuleThread, TransferDescriptor, Transfer } from "threads";
+import { spawn, Worker, Pool, ModuleThread } from "threads";
 import { getLogger } from 'loglevel';
 import { Params, PipelineWorker, Chunk } from './types';
 import { Pipe } from "./pipe";
