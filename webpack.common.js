@@ -2,7 +2,6 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
-const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 
 const src = path.resolve(__dirname, 'src/client');
 
@@ -14,10 +13,15 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'stereo'),
     filename: '[name].[hash].js',
-    publicPath: '/stereo/'
+    publicPath: '/stereo/',
+    globalObject: 'self',
   },
   module: {
     rules: [
+      {
+        test: /\.worklet\.ts$/,
+        use: 'worklet-loader',
+      },
       {
         // Include ts, tsx, js, and jsx files.
         test: /\.(ts|js)x?$/,
@@ -37,11 +41,8 @@ module.exports = {
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: 'Stereo',
+      favicon: path.resolve(__dirname, 'logo.png'),
     }),
-    new ThreadsPlugin({ globalObject: 'self' }),
-    new FaviconsWebpackPlugin({
-      logo: path.resolve(__dirname, 'logo.png'),
-      prefix: 'icons/',
-    }),
+    new ThreadsPlugin(),
   ],
 };

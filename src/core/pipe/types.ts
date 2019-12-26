@@ -7,8 +7,8 @@ export type Params = {
     h?: string;
     l?: string;
     t?: number;
-    eaudio?: number;
-    daudio?: number;
+    power?: number;
+    chroma?: number;
 };
 
 export type NormalizedParams = {
@@ -17,16 +17,16 @@ export type NormalizedParams = {
     h: string;
     l: string;
     t: number;
-    eaudio: number;
-    daudio: number;
+    power: number;
+    chroma: number;
 };
 
 export type UnaryOperator = (x: number) => number;
 
 export type Scope = {
     t: number;
-    eaudio: number;
-    daudio: number;
+    power: number;
+    chroma: number;
     n?: number;
     theta?: number;
 };

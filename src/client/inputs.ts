@@ -1,10 +1,10 @@
 import { Observable, Subject } from 'rxjs';
 
 const initialValues = {
-    pipe: defaultPipe(),
-    theta: 'pi * t * daudio / 20',
-    h: 'abs(sin(theta)) * i / n',
-    l: 'eaudio',
+    pipe: '10000->sphere(4, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
+    theta: 'pi * t / 20 + pi * power / 20',
+    h: 'chroma * i / n',
+    l: '0.2 + 0.8 * power',
     animate: true,
     sound: false,
 };
@@ -65,39 +65,3 @@ export const values = new Proxy(initialValues, {
         return success;
     }
 });
-
-// Genereates 10,000 points on a 4-d spiral and oscillates them
-// in the first 3 of the 6 planes of R^4. Use of tanh instead of sin in
-// the xy-plane causes the system to expand and contract at intervals.
-function defaultPipe() {
-    const d = 4;
-    const planes = (limit: number): [number, number][] => {
-        let ps = [];
-        for (let i = 0; i < d; i++) {
-            for (let j = i + 1; j < d; j++) {
-                if (ps.length < limit) {
-                    ps.push([i, j]);
-                } else {
-                    return ps;
-                }
-            }
-        }
-        return ps;
-    };
-
-    const f0s = {
-    };
-
-    const f1s = {
-        '[0,2]': 'sin',
-    };
-
-    const rotations = planes(3).map(plane => {
-        const key = JSON.stringify(plane);
-        const f0 = f0s[key] || 'cos';
-        const f1 = f1s[key] || 'tan';
-        return `R(theta, ${plane[0]}, ${plane[1]}, ${f0}, ${f1})`;
-    }).join('->');
-
-    return `10000->sphere(${d}, 1)->${rotations}->stereo(3)`;
-}

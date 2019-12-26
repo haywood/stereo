@@ -1,30 +1,30 @@
-import * as mic from './mic';
+import * as audio from './audio';
 import { Params } from '../core/pipe/types';
 import { Subject, interval } from 'rxjs';
 import { values } from './inputs';
-import { Music } from './mic/types';
 import { fps } from './constants';
+import { Audio } from './audio/types';
 
 const subject = new Subject<Params>();
 export const stream = subject;
 let t = 0;
 
-let music: Music;
-mic.stream.subscribe(
-    m => music = m,
+let music: Audio;
+audio.stream.subscribe(
+    a => music = a,
     err => subject.error(err),
 );
 
 const emit = () => {
-    const { eaudio, daudio } = music;
+    const { power, chroma } = music;
     stream.next({
         pipe: values.pipe,
         theta: values.theta,
         h: values.h,
         l: values.l,
         t,
-        eaudio: eaudio,
-        daudio: daudio,
+        power,
+        chroma,
     });
     t += 1 / fps;
 };
