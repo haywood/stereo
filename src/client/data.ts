@@ -6,6 +6,7 @@ import { startPool, runPipeline } from '../core/pipe/pool';
 import * as params from './params';
 import { getLogger } from 'loglevel';
 import { pp } from '../core/pp';
+import { error } from './error';
 
 const logger = getLogger('Data');
 logger.setDefaultLevel('info');
@@ -45,11 +46,11 @@ const webWorkerSource = async (): Promise<Source> => {
       try {
         subject.next(await inFlight);
       } catch (err) {
-        subject.error(err);
+        error(err);
       } finally {
         inFlight = null;
       }
     },
-    err => subject.error(err),
+    err => error(err),
   );
 })();

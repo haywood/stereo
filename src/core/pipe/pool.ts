@@ -22,12 +22,6 @@ export const startPool = async (size: number) => {
         promises.push(pool.queue(async () => { }));
     }
     await Promise.all(promises);
-
-    pool.events().subscribe((event: any) => {
-        if (event.error) {
-            logger.error('received error event from worker pool', event);
-        }
-    });
 };
 
 export const stopPool = async (): Promise<void> => {

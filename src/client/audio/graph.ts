@@ -3,6 +3,7 @@ import { Audio } from './types';
 import { Spectrum } from "./spectrum";
 import { binCount } from "./constants";
 import processorUrl from './power.worklet';
+import { error } from '../error';
 
 export class AudioGraph {
 
@@ -24,7 +25,7 @@ export class AudioGraph {
             channelCount: 1,
         });
         power.port.onmessage = (msg) => subject.next(msg.data as Audio);
-        power.onprocessorerror = (err) => subject.error(err);
+        power.onprocessorerror = (err) => error(err);
         power.connect(ctx.destination);
 
         for (let k = 0; k < binCount; k++) {
