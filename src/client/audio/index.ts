@@ -2,12 +2,12 @@ import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { getLogger } from 'loglevel';
 import * as inputs from '../inputs';
 import { Audio } from './types';
-import { SILENCE } from './constants';
+import { NO_AUDIO } from './constants';
 import { AudioGraph } from './graph';
 
 const logger = getLogger('Audio');
 
-const subject = new BehaviorSubject<Audio>(SILENCE);
+const subject = new BehaviorSubject<Audio>(NO_AUDIO);
 export const stream = subject.asObservable();
 let graph: AudioGraph;
 

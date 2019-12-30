@@ -1,8 +1,11 @@
 import { Audio } from "./types";
 
-export const SILENCE: Audio = {
-    power: 0,
-    chroma: 0,
+/**
+ * This defines the values used for power and chroma when audio is not enabled.
+ */
+export const NO_AUDIO: Audio = {
+    power: 0.5,
+    chroma: 0.5,
 };
 
 export const chromaCount = 12;
