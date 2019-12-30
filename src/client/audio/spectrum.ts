@@ -8,8 +8,20 @@ export class Spectrum {
         });
     };
 
-    processFrame = (frame: number[]): number =>
-        5 * math.mean(math.abs(frame));
+    /**
+     * Computes the inverse of the RMS of the log intensities of the frame after
+     * offsetting each log by -1. The goal is to map the intensities onto a
+     * logarithmic scale with the same inputs, since this is closer to how humans
+     * hear.
+     */
+    processFrame = (frame: number[]): number => {
+        const intensities = math.abs(frame); // silent=0, loud=1
+        const logIntensities = math.log10(intensities); // silent=-Infinity, loud=0
+        const offsetLogIntensities = math.subtract(logIntensities, 1); // silent=-Infinity, loud=-1
+        const bottom = math.norm(offsetLogIntensities); // silent=Infinity, loud=√frame.length
+        const power = math.sqrt(frame.length) / bottom; // silent=0, loud=1
+        return power;
+    };
 
     static ocatave = (k: number) => math.floor(k / chromaCount);
 
