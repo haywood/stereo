@@ -1,13 +1,10 @@
 import { pp } from '../core/pp';
+import * as log from 'loglevel';
 
-export const error = (err: any) => {
+export const error = async (err: any) => {
     if (err instanceof Error) {
-        alert(`Error:
-${err.message}
-
-${err.stack}`);
+        log.error(err);
     } else {
-        alert(`Error:
-${pp(err)}`);
+        log.error(pp(err));
     }
 };
