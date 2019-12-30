@@ -1,25 +1,30 @@
-import { chromaCount } from './constants';
+import { chromaCount, binCount } from './constants';
 import assert from 'assert';
 import { Spectrum } from './spectrum';
-import { log2 } from 'mathjs';
 
 class Processor extends AudioWorkletProcessor {
     private readonly spectrum = new Spectrum();
 
+    constructor(options) {
+        super({
+            ...options,
+            numberOfOutputs: binCount,
+            channelCount: 1,
+        });
+    }
+
     process(inputs: Float32Array[][], outputs: Float32Array[][]) {
-        assert.equal(inputs.length, 1, `Expected exactly 1 input, not ${inputs.length}`);
-        const channels = inputs[0];
-        assert.equal(channels.length, 1, `Expected input to have exactly 1 channel, not ${channels.length}`);
-        const frame = channels[0];
+        inputs.forEach((channels, i) => {
+            assert.equal(channels.length, 1, `Expected input ${i} to have exactly 1 channel, not ${channels.length}`);
+        });
 
-        this.spectrum.process(frame);
+        const frames = inputs.map(channels => channels[0]);
+        const powers = this.spectrum.process(frames);
+        const power = powers.reduce((t, p) => t + p, 0) / powers.length;
+        const chroma = Spectrum.chroma(argmax(powers)) / (chromaCount - 1);
 
-        if (this.spectrum.ready) {
-            const powers = this.spectrum.getPowersAndReset();
-            const power = powers.reduce((t, p) => t + p, 0) / powers.length;
-            const chroma = (log2(this.spectrum.f(argmax(powers))) % chromaCount) / (chromaCount - 1);
-            this.port.postMessage({ power, chroma });
-        }
+        this.port.postMessage({ power, chroma });
+
         return true;
     };
 }

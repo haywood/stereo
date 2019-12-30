@@ -2,7 +2,7 @@ import { Observable, Subject } from 'rxjs';
 
 const initialValues = {
     pipe: '10000->sphere(4, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
-    theta: 'pi * t / 20 + pi * power / 20',
+    theta: 'pi * (t + power) / 20',
     h: 'chroma * i / n',
     l: '0.2 + 0.8 * power',
     animate: true,

@@ -5,9 +5,9 @@ export const SILENCE: Audio = {
     chroma: 0,
 };
 
-export const chromaCount = 6;
+export const chromaCount = 12;
 export const octaveMin = 0;
 export const octaveMax = 8;
 export const octaveCount = octaveMax - octaveMin;
 export const frameSize = 128;
-export const noteCount = octaveCount * chromaCount;
+export const binCount = octaveCount * chromaCount;

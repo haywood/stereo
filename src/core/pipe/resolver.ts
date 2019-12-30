@@ -36,7 +36,7 @@ export class Resolver {
         }
 
         const [init, iter] = this.buildComposites(links);
-        return { n, chain: links, init, iter };
+        return { n, init, iter };
     };
 
     private buildComposites = (links: Link[]) => {
