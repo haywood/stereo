@@ -20,11 +20,11 @@ fun_arg = id / arith
 arith =
   s:scalar op:arith_op a:arith { return {op, operands: [s, a]}; }
   / scalar
-  / lparen a:arith rparen { return a; }
 
 scalar =
   value:number { return {value}; }
   / id
+  / lparen a:arith rparen { return a; }
 
 id = id:identifier { return {id}; }
 

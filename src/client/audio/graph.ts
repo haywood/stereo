@@ -32,7 +32,7 @@ export class AudioGraph {
             const filter = new BiquadFilterNode(ctx, {
                 type: 'bandpass',
                 frequency: f,
-                Q: f / binCount,
+                Q: binCount / f,
             });
             source.connect(filter).connect(power, 0, k);
         }

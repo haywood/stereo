@@ -5,14 +5,6 @@ import { Spectrum } from './spectrum';
 class Processor extends AudioWorkletProcessor {
     private readonly spectrum = new Spectrum();
 
-    constructor(options) {
-        super({
-            ...options,
-            numberOfOutputs: binCount,
-            channelCount: 1,
-        });
-    }
-
     process(inputs: Float32Array[][], outputs: Float32Array[][]) {
         inputs.forEach((channels, i) => {
             assert.equal(channels.length, 1, `Expected input ${i} to have exactly 1 channel, not ${channels.length}`);
