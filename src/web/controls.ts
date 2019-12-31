@@ -12,12 +12,6 @@ export class Controls {
 
         this.setupInputs();
         this.setupKeyboardShortcuts();
-
-        document.onclick = (event) => {
-            if (!this.domElement.contains(event.target as Node)) {
-                inputs.animate.value = !inputs.animate.value;
-            }
-        };
     }
 
     show = () => this.domElement.style.opacity = '1';
