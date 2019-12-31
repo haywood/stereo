@@ -84,6 +84,10 @@ export class Controls {
                 case ' ':
                     inputs.animate.value = !inputs.animate.value;
                     break;
+                case 'm':
+                case 'M':
+                    inputs.mic.value = !inputs.mic.value;
+                    break;
                 case 'Enter':
                     inputs.fullscreen.value = !inputs.fullscreen.value;
                     break;
