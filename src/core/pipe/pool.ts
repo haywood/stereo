@@ -55,7 +55,7 @@ const getKey = (params: Params) => JSON.stringify({
     pipe: params.pipe,
     theta: params.theta,
     h: params.h,
-    l: params.l,
+    l: params.v,
 });
 
 const getOrInitialize = async (params: Params, n: number, d0: number, d: number): Promise<SharedArrayBuffer> => {

@@ -5,7 +5,7 @@ export type Params = {
     pipe: string;
     theta?: string;
     h?: string;
-    l?: string;
+    v?: string;
     t?: number;
     power?: number;
     chroma?: number;
@@ -15,7 +15,7 @@ export type NormalizedParams = {
     pipe: string;
     theta: string;
     h: string;
-    l: string;
+    v: string;
     t: number;
     power: number;
     chroma: number;
@@ -31,9 +31,9 @@ export type Scope = {
     theta?: number;
 };
 
-export type HL = {
+export type HV = {
     h: EvalFunction;
-    l: EvalFunction;
+    v: EvalFunction;
 };
 
 export type Substitutions = {

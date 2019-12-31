@@ -52,6 +52,7 @@ export class Controls {
         assert(el, `Did not find element for input #${text.id}`);
 
         el.onchange = () => text.value = el.value;
+        el.oninput = () => el.size = el.value.length;
 
         text.stream.subscribe(({ newValue }) => {
             el.value = newValue;

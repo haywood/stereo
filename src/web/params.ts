@@ -12,7 +12,7 @@ const params = (t: number, { power, chroma }: Audio) => {
         pipe: inputs.pipe.value,
         theta: inputs.theta.value,
         h: inputs.h.value,
-        l: inputs.l.value,
+        v: inputs.v.value,
         t,
         power,
         chroma,

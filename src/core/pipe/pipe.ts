@@ -1,6 +1,6 @@
 import * as math from 'mathjs';
 import { getLogger } from 'loglevel';
-import { Params, Scope, NormalizedParams, CompiledAST, HL, Chunk } from './types';
+import { Params, Scope, NormalizedParams, CompiledAST, HV, Chunk } from './types';
 import { Compiler } from './compiler';
 import { Evaluator } from './evaluator';
 
@@ -33,7 +33,7 @@ export class Pipe {
             pipe: params.pipe,
             theta: params.theta || 't',
             h: params.h || '1',
-            l: params.l || '0.5',
+            v: params.v || '0.5',
             t: params.t || 0,
             power: params.power || 0,
             chroma: params.chroma || 0,
@@ -48,10 +48,10 @@ export class Pipe {
         return scope;
     };
 
-    private static compileHL = (params: NormalizedParams): HL => {
+    private static compileHL = (params: NormalizedParams): HV => {
         return {
-            h: math.compile(`360 * (${params.h})`),
-            l: math.compile(`100 * (${params.l})`),
+            h: math.compile(`359 * (${params.h})`),
+            v: math.compile(`100 * (${params.v})`),
         };
     };
 }

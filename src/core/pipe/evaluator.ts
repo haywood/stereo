@@ -1,11 +1,12 @@
 import { CompositeFn } from "../fn/fn";
-import { CompiledAST, Scope, HL, Chunk } from "./types";
+import { CompiledAST, Scope, HV, Chunk } from "./types";
 import { Data, Vector } from "../data";
 import { pp } from "../pp";
 import { getLogger } from "loglevel";
 import { round } from "mathjs";
 import assert from 'assert';
 import { Color } from "three";
+import { hsv } from 'color-convert';
 
 const logger = getLogger('Evaluator');
 
@@ -19,7 +20,7 @@ export class Evaluator {
     constructor(
         private readonly scope: Scope,
         ast: CompiledAST,
-        private readonly hl: HL,
+        private readonly hv: HV,
         chunk: Chunk,
     ) {
         const { n, init, iter } = ast;
@@ -74,16 +75,19 @@ export class Evaluator {
 
     private computeColors = (data: Vector) => {
         logger.debug(`computing colors`);
-        const { d, scope, hl, offset, limit } = this;
+        const { d, scope, hv, offset, limit } = this;
         const position = Data.position(data);
         const color = Data.color(data);
 
         for (let i = offset; i < limit; i++) {
             const p = Data.get(position, i, d);
             const colorScope = { ...scope, p, i };
-            const hue = round(hl.h.evaluate(colorScope), 0);
-            const lightness = round(hl.l.evaluate(colorScope), 0);
-            const c = new Color(`hsl(${hue}, 100%, ${lightness}%)`);
+            const [h, s, l] = hsv.hsl([
+                round(hv.h.evaluate(colorScope), 0),
+                100,
+                round(hv.v.evaluate(colorScope), 0),
+            ]);
+            const c = new Color(`hsl(${h}, ${s}%, ${l}%)`);
 
             Data.set(color, [c.r, c.g, c.b], i, 3);
         }

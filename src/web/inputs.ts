@@ -13,8 +13,6 @@ const hash = (() => {
     return new URLSearchParams(temp ? atob(temp) : '');
 })();
 
-type TextInputId = 'pipe' | 'theta' | 'h' | 'l';
-
 export abstract class Input<T> {
     private readonly subject: Subject<Change<T>>;
 
@@ -70,6 +68,8 @@ export abstract class Input<T> {
 
     };
 }
+
+type TextInputId = 'pipe' | 'theta' | 'h' | 'v';
 
 export class TextInput extends Input<string> {
     readonly disabled = false;
@@ -146,7 +146,7 @@ export const inputs = {
     ),
     theta: new TextInput('theta', 'pi * (t + power) / 20'),
     h: new TextInput('h', 'chroma * i / n'),
-    l: new TextInput('l', 'power'),
+    v: new TextInput('v', 'power'),
     animate: new ToggleInput('animate', true, 'play', 'pause', false, true),
     mic: new ToggleInput('mic', false, 'mic', 'mic_off', false, false),
     fullscreen: new ToggleInput(
