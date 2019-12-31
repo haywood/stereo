@@ -4,15 +4,21 @@ import { Spectrum } from './spectrum';
 import * as math from 'mathjs';
 
 class Processor extends AudioWorkletProcessor {
-    private readonly spectrum = new Spectrum();
+    static get parameterDescriptors() {
+        return [
+            { name: 'dbMin', maxValue: 0 },
+            { name: 'dbMax', maxValue: 0 }
+        ];
+    }
 
-    process(inputs: Float32Array[][], outputs: Float32Array[][]) {
+    process(inputs: Float32Array[][], outputs: Float32Array[][], parameters: PowerWorkletParams) {
         inputs.forEach((channels, i) => {
             assert.equal(channels.length, 1, `Expected input ${i} to have exactly 1 channel, not ${channels.length}`);
         });
 
         const frames = inputs.map(channels => channels[0]);
-        const powers = this.spectrum.process(frames);
+        const { dbMin, dbMax } = parameters;
+        const powers = new Spectrum(dbMin[0], dbMax[0]).process(frames);
         const power = math.mean(powers);
         const chroma = this.chroma(powers);
 

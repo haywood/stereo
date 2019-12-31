@@ -2,6 +2,11 @@ import { chromaCount } from './constants';
 import * as math from 'mathjs';
 
 export class Spectrum {
+    constructor(
+        public dbMin: number,
+        public dbMax: number,
+    ) { }
+
     static octave = (k: number) => math.floor(k / chromaCount);
 
     static chroma = (k: number) => k % chromaCount;
@@ -32,9 +37,11 @@ export class Spectrum {
     private dbs = amp => 10 * math.log2(amp);
 
     private thresholdAndShift = dbs => {
-        const min = -60;
-        const max = -30;
-        dbs = math.min(max, math.max(min, dbs));
-        return (dbs - max) / (dbs - min) - 1;
+        if (this.dbMax === this.dbMin) {
+            return dbs === this.dbMax ? -1 : -Infinity;
+        }
+
+        dbs = math.min(this.dbMax, math.max(this.dbMin, dbs));
+        return (dbs - this.dbMax) / (dbs - this.dbMin) - 1;
     };
 }

@@ -6,10 +6,15 @@ declare module './grammar.pegjs' {
     }): Arithmetic;
 }
 
-abstract class AudioWorkletProcessor {
+type PowerWorkletParams = {
+    dbMin: Float32Array;
+    dbMax: Float32Array;
+};
+
+abstract class AudioWorkletProcessor<P = never> {
     constructor(options: AudioWorkletNodeOptions);
 
-    process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean;
+    process(inputs: Float32Array[][], outputs: Float32Array[][], parameters?: P): boolean;
 
     protected readonly port: MessagePort;
 }
