@@ -6,6 +6,7 @@ import multirange from 'multirange';
 
 export class Controls {
     readonly domElement = document.createElement('div');
+    private hasHover = false;
 
     constructor() {
         this.domElement.id = 'controls';
@@ -13,15 +14,19 @@ export class Controls {
 
         this.setupInputs();
         this.setupKeyboardShortcuts();
+
+        this.domElement.onmouseover = () => this.hasHover = true;
+        this.domElement.onmouseout = () => this.hasHover = false;
     }
+
+    hasAttention = () =>
+        this.hasHover || this.contains(document.activeElement);
 
     show = () => this.domElement.style.opacity = '1';
 
-    hide = () => {
-        if (!this.domElement.contains(document.activeElement)) {
-            this.domElement.style.opacity = '0';
-        }
-    };
+    hide = () => this.domElement.style.opacity = '0';
+
+    private contains = (node: Node) => this.domElement.contains(node);
 
     private setupInputs = () => {
         for (const input of Object.values(inputs)) {

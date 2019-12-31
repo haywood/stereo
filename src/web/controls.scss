@@ -19,6 +19,10 @@
         padding-bottom: 8px;
     }
 
+    h2[title], label[title] {
+        cursor: help;
+    }
+
     section {
         align-items: flex-end;
         display: flex;

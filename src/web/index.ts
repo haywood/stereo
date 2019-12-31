@@ -12,25 +12,27 @@ import 'multirange/multirange.css';
   const renderer = new Renderer();
   const controls = new Controls();
 
-  let cursorInactiveTimeout, lastMouseMove = 0;
+  const cursorInactiveTimeout = 1000;
+  let setCursorInactiveHandle, lastMouseMove = 0;
 
-  const maybeSetCursorInactive = () => {
-    if (Date.now() > lastMouseMove + 1000) {
-      document.body.classList.add('cursor-inactive');
-      controls.hide();
-    }
+  const maybeSetCursorInactive = (event?) => {
+    if (Date.now() < lastMouseMove + cursorInactiveTimeout) return;
+    if (controls.hasAttention()) return;
+
+    document.body.classList.add('cursor-inactive');
+    controls.hide();
   };
 
-  document.body.onmousemove = () => {
-    lastMouseMove = Date.now();
+  document.body.onmousemove = (event) => {
     controls.show();
 
     if (document.body.classList.contains('cursor-inactive')) {
       document.body.classList.remove('cursor-inactive');
     }
 
-    clearTimeout(cursorInactiveTimeout);
-    cursorInactiveTimeout = setTimeout(maybeSetCursorInactive, 1000);
+    lastMouseMove = Date.now();
+    setTimeout(
+      () => maybeSetCursorInactive(event), cursorInactiveTimeout);
   };
 
   document.onreadystatechange = (): void => {

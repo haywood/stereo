@@ -1,26 +1,41 @@
 <div id="inputs">
     <section>
-        <h2>Point Generation</h2>
+        <h2 title="Settings for point generation.">
+            Point Generation
+        </h2>
         <span>
-            <label for="pipe">Pipe</label>
+            <label for="pipe"
+                title="A sequence of operations that determines how the points are initialized and change over time.">
+                Pipe
+            </label>
             <input id="pipe" />
         </span>
 
         <span>
-            <label for="theta">Theta</label>
+            <label for="theta"
+                title="Intended for use in functions of an angle (e.g. sin, cos, tan, R) to avoid repeating the same expression in multiple places.">
+                Theta
+            </label>
             <input id="theta" />
         </span>
     </section>
 
     <section>
-        <h2>Color</h2>
+        <h2 title="Settings for point color, represented in HSV.">
+            Color
+        </h2>
+
         <span>
-            <label for="h">Hue</label>
+            <label for="h" title="An expression to determine the HSV hue of a point.">
+                Hue
+            </label>
             <input id="h" />
         </span>
 
         <span>
-            <label for="v">Value</label>
+            <label for="v" title="An expression to determine the HSV value of a point.">
+                Value
+            </label>
             <input id="v" />
         </span>
     </section>
