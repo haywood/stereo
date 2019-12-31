@@ -20,7 +20,7 @@ module.exports = {
     rules: [
       {
         test: /\.worklet\.ts$/,
-        use: 'worklet-loader',
+        loader: 'worklet-loader',
       },
       {
         // Include ts, tsx, js, and jsx files.
@@ -31,6 +31,10 @@ module.exports = {
       {
         test: /\.pegjs$/,
         loader: 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith',
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        loader: 'file-loader',
       },
     ]
   },
