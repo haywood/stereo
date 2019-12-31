@@ -116,6 +116,29 @@ export class ToggleInput extends Input<boolean> {
     }
 }
 
+
+type RangeInputId = 'allowed_dbs';
+
+export class RangeInput extends Input<[number, number]> {
+    constructor(
+        readonly id: RangeInputId,
+        _value: [number, number],
+        readonly disabled: boolean = false,
+        persistent: boolean = true,
+    ) {
+        super(id, _value, persistent);
+    }
+
+    parse(str: string): [number, number] {
+        const [min, max] = str.split(/,/);
+        return [parseInt(min), parseInt(max)];
+    }
+
+    stringify([min, max]) {
+        return `${min},${max}`;
+    }
+}
+
 export const inputs = {
     pipe: new TextInput(
         'pipe',
@@ -134,6 +157,7 @@ export const inputs = {
         !document.fullscreenEnabled,
         false,
     ),
+    allowedDbs: new RangeInput('allowed_dbs', [-60, -30]),
 };
 export type Inputs = typeof inputs;
 

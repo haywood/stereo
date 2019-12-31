@@ -36,6 +36,19 @@
     }
 }
 
+#allowed_dbs {
+    align-items: center;
+    display: flex;
+    flex-flow: row;
+}
+
+#allowed_dbs_input {
+    align-items: center;
+    display: flex;
+    flex-flow: row;
+    margin: 0 8px;
+}
+
 .spacer {
     flex: 1;
 }

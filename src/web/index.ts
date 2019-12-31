@@ -1,4 +1,5 @@
 import './global.scss';
+import 'multirange/multirange.css';
 
 (async () => {
   const { Renderer } = await import('./renderer');

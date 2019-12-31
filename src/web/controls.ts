@@ -1,7 +1,8 @@
-import { inputs, ToggleInput, TextInput } from './inputs';
+import { inputs, ToggleInput, TextInput, RangeInput } from './inputs';
 import html from './controls.html';
 import './controls.scss';
 import assert from 'assert';
+import multirange from 'multirange';
 
 export class Controls {
     readonly domElement = document.createElement('div');
@@ -30,6 +31,8 @@ export class Controls {
                 this.setupText(input);
             } else if (input instanceof ToggleInput) {
                 this.setupToggle(input);
+            } else if (input instanceof RangeInput) {
+                this.setupRange(input);
             }
         }
 
@@ -72,6 +75,29 @@ export class Controls {
                 on.style.display = 'inline';
                 off.style.display = 'none';
             }
+        });
+    };
+
+    private setupRange = (range: RangeInput) => {
+        const el = this.querySelector<HTMLInputElement>(`#${range.id}`);
+        const input = el.querySelector<HTMLInputElement>('input');
+        multirange(input);
+        const minEl = el.querySelector<HTMLElement>('.min');
+        const maxEl = el.querySelector<HTMLElement>('.max');
+
+        input.onchange = () => {
+            range.value = [+input.valueLow, +input.valueHigh];
+        };
+
+        el.querySelector<HTMLInputElement>('input.ghost').oninput = input.oninput = () => {
+            minEl.innerText = input.valueLow;
+            maxEl.innerText = input.valueHigh;
+        };
+
+        range.stream.subscribe(({ newValue }) => {
+            input.value = range.stringify(newValue);
+            minEl.innerText = input.valueLow;
+            maxEl.innerText = input.valueHigh;
         });
     };
 
