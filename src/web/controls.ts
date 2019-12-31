@@ -5,14 +5,12 @@ import assert from 'assert';
 
 export class Controls {
     readonly domElement = document.createElement('div');
-    private hasMouse: boolean = false;
 
     constructor() {
         this.domElement.id = 'controls';
         this.domElement.innerHTML = html;
 
         this.setupInputs();
-        this.setupShowHideHandlers();
         this.setupKeyboardShortcuts();
 
         document.onclick = (event) => {
@@ -21,6 +19,14 @@ export class Controls {
             }
         };
     }
+
+    show = () => this.domElement.style.opacity = '1';
+
+    hide = () => {
+        if (!this.domElement.contains(document.activeElement)) {
+            this.domElement.style.opacity = '0';
+        }
+    };
 
     private setupInputs = () => {
         for (const input of Object.values(inputs)) {
@@ -75,36 +81,19 @@ export class Controls {
         });
     };
 
-    private setupShowHideHandlers = () => {
-        document.onmousemove = this.onmousemove;
-
-        this.domElement.onmouseover = () => this.hasMouse = true;
-        this.domElement.onmouseout = () => this.hasMouse = false;
-    };
-
     private setupKeyboardShortcuts = () => {
         document.onkeydown = (event: KeyboardEvent) => {
             if (event.repeat) return;
             if (this.domElement.contains(event.target as Node)) return;
 
-            if (event.key === ' ') {
-                inputs.animate.value = !inputs.animate.value;
+            switch (event.key) {
+                case ' ':
+                    inputs.animate.value = !inputs.animate.value;
+                    break;
+                case 'Enter':
+                    inputs.fullscreen.value = !inputs.fullscreen.value;
+                    break;
             }
         };
-    };
-
-    private onmousemove = () => {
-        if (this.domElement.style.opacity == '1') {
-            setTimeout(this.maybeHide, 1000);
-        } else {
-            this.domElement.style.opacity = '1';
-        }
-    };
-
-    private maybeHide = () => {
-        if (this.hasMouse) return;
-        if (this.domElement.contains(document.activeElement)) return;
-
-        this.domElement.style.opacity = '0';
     };
 }

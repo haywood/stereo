@@ -58,7 +58,7 @@ export class Renderer {
     this.renderer.render(this.scene, this.camera);
   };
 
-  updatePoints = ({ d, position, color }: Data) => {
+  update = ({ d, position, color }: Data) => {
     const { points } = this;
     const geometry = points.geometry as BufferGeometry;
     assert.equal(position.length % d, 0);
