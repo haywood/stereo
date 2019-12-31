@@ -1,6 +1,7 @@
 import { chromaCount, binCount, octaveCount } from './constants';
 import assert from 'assert';
 import { Spectrum } from './spectrum';
+import * as math from 'mathjs';
 
 class Processor extends AudioWorkletProcessor {
     private readonly spectrum = new Spectrum();
@@ -12,8 +13,11 @@ class Processor extends AudioWorkletProcessor {
 
         const frames = inputs.map(channels => channels[0]);
         const powers = this.spectrum.process(frames);
-        const power = powers.reduce((t, p) => t + p, 0) / powers.length;
+        const power = math.mean(powers);
         const chroma = this.chroma(powers);
+
+        assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
+        assert(0 <= chroma && chroma <= 1, `chroma: Expected 0 <= ${chroma} <= 1`);
 
         this.port.postMessage({ power, chroma });
 
@@ -34,7 +38,7 @@ class Processor extends AudioWorkletProcessor {
     chroma = (powers: number[]) => {
         const k = argmax(powers);
         const chroma = Spectrum.chroma(k);
-        const octave = Spectrum.chroma(k);
+        const octave = Spectrum.octave(k);
         const chromaStep = 1 / chromaCount;
         const octaveStep = chromaStep / octaveCount;
         return chroma * chromaStep + octave * octaveStep;
