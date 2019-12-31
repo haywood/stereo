@@ -38,7 +38,7 @@ const webWorkerSource = async (): Promise<Source> => {
       if (inFlight) return;
       logger.debug('requesting data with params', params);
       if (Date.now() - logged >= 1000) {
-        logger.info(`sending request for data with params ${pp(params)}`);
+        logger.debug(`sending request for data with params ${pp(params)}`);
         logged = Date.now();
       }
       // TODO i feel like there's a more rx-y way to do this

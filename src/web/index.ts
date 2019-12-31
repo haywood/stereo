@@ -1,3 +1,5 @@
+import './global.scss';
+
 (async () => {
   const { Renderer } = await import('./renderer');
   const data = await import('./data');

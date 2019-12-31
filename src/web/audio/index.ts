@@ -1,6 +1,6 @@
 import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { getLogger } from 'loglevel';
-import * as inputs from '../inputs';
+import { inputs } from '../inputs';
 import { Audio } from './types';
 import { NO_AUDIO } from './constants';
 import { AudioGraph } from './graph';
@@ -8,20 +8,19 @@ import { AudioGraph } from './graph';
 const logger = getLogger('Audio');
 
 const subject = new BehaviorSubject<Audio>(NO_AUDIO);
-export const stream = subject.asObservable();
+export const audioStream = subject.asObservable();
 let graph: AudioGraph;
 
-inputs.streams.sound.subscribe(async ({ newValue, event }) => {
-    if (newValue && event) {
+inputs.mic.stream.subscribe(async ({ newValue, event }) => {
+    if (newValue) {
         logger.info('getting user media');
         const stream = await navigator.mediaDevices
             .getUserMedia({ audio: true });
         logger.info('starting new audio graph');
         graph = await AudioGraph.create(stream, subject);
-    } else if (!newValue && graph) {
-        logger.info('closing audio graph');
-        graph.close();
     } else {
-        logger.warn(`inputs.streams.sound changed, but there was nothing to do: `, event);
+        logger.info('closing audio graph');
+        if (graph) await graph.close();
+        subject.next(NO_AUDIO);
     }
 });

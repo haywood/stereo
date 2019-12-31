@@ -1,116 +1,110 @@
-import { values, streams, Inputs } from './inputs';
-import enterFullscreenImage from './fullscreen.png';
-import exitFullscreenImage from './fullscreen_exit.png';
+import { inputs, ToggleInput, TextInput } from './inputs';
+import html from './controls.html';
+import './controls.scss';
+import assert from 'assert';
 
 export class Controls {
     readonly domElement = document.createElement('div');
+    private hasMouse: boolean = false;
 
     constructor() {
-        this.domElement.style.boxSizing = 'border-box';
-        this.domElement.style.position = 'absolute';
-        this.domElement.style.top = '0';
-        this.domElement.style.right = '0';
-        this.domElement.style.padding = '16px';
-        this.domElement.style.color = 'white';
-        this.domElement.style.display = 'flex';
-        this.domElement.style.flexFlow = 'column wrap';
-        this.domElement.style.justifyContent = 'flex-start';
-        this.domElement.style.alignItems = 'flex-end';
-        this.domElement.style.zIndex = '1';
-        this.domElement.style.opacity = '0';
+        this.domElement.id = 'controls';
+        this.domElement.innerHTML = html;
 
-        this.domElement.onmouseover = () => {
-            this.domElement.style.opacity = '1';
-        };
+        this.setupInputs();
+        this.setupShowHideHandlers();
+        this.setupKeyboardShortcuts();
 
-        this.domElement.onmouseout = () => {
-            this.domElement.style.opacity = '0';
-        };
-
-        for (const name in values) {
-            if (!(name in displayNames)) continue;
-
-            const type = typeof values[name] === 'boolean' ? 'checkbox' : 'text';
-            const input = new Control(name, type);
-            this.domElement.appendChild(input.domElement);
-        }
-
-        if (document.fullscreenEnabled) {
-            const button = document.createElement('input');
-            button.type = 'image';
-            button.src = enterFullscreenImage;
-            button.style.padding = '8px';
-            button.onclick = () => {
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                    button.src = enterFullscreenImage;
-                } else {
-                    document.body.requestFullscreen();
-                    button.src = exitFullscreenImage;
-                }
-            };
-            this.domElement.appendChild(button);
-        }
-    }
-
-    append(...children: { domElement: Element; }[]) {
-        children.forEach(c => this.domElement.appendChild(c.domElement));
-    }
-}
-
-type DisplayNames = {
-    [P in keyof Inputs]?: string;
-};
-const displayNames: DisplayNames = {
-    pipe: 'Pipe Spec',
-    theta: 'Theta',
-    h: 'Hue',
-    l: 'Lightness',
-    animate: 'Animate',
-    sound: '🎙️',
-};
-
-class Control {
-    readonly domElement = document.createElement('span');
-
-    constructor(readonly name: string, readonly type: 'text' | 'checkbox') {
-        const input: HTMLInputElement = document.createElement('input');
-        const value = values[name];
-
-        this.domElement.style.padding = '8px';
-
-        input.name = name;
-        input.type = type;
-        if (type === 'checkbox') {
-            input.checked = value;
-        } else {
-            input.value = value;
-            input.size = value.length;
-        }
-        input.style.margin = '0px 8px';
-        input.onchange = () => {
-            if (type === 'checkbox') {
-                values[name] = input.checked;
-            } else {
-                values[name] = input.value;
-                input.size = input.value.length;
+        document.onclick = (event) => {
+            if (!this.domElement.contains(event.target as Node)) {
+                inputs.animate.value = !inputs.animate.value;
             }
         };
+    }
 
-        const label = document.createElement('label');
-        label.innerText = displayNames[name];
-        if (type === 'checkbox') label.style.cursor = 'pointer';
+    private setupInputs = () => {
+        for (const input of Object.values(inputs)) {
+            if (input.disabled) continue;
 
-        this.domElement.appendChild(label).appendChild(input);
+            if (input instanceof TextInput) {
+                this.setupText(input);
+            } else if (input instanceof ToggleInput) {
+                this.setupToggle(input);
+            }
+        }
 
-        streams[name].subscribe(({ event, newValue }) => {
-            if (event) return;
-            if (type === 'checkbox') {
-                input.checked = newValue;
+        if (!inputs.fullscreen.disabled) {
+            inputs.fullscreen.stream.subscribe(({ newValue }) => {
+                if (newValue) document.body.requestFullscreen();
+                else if (document.fullscreenElement) document.exitFullscreen();
+            });
+        }
+    };
+
+    private querySelector = <E extends Element = HTMLElement>(selector: string) =>
+        this.domElement.querySelector<E>(selector);
+
+    private setupText = (text: TextInput) => {
+        const el = this.querySelector<HTMLInputElement>(`#${text.id}`);
+        assert(el, `Did not find element for input #${text.id}`);
+
+        el.onchange = () => text.value = el.value;
+
+        text.stream.subscribe(({ newValue }) => {
+            el.value = newValue;
+            el.size = newValue.length;
+        });
+    };
+
+    private setupToggle = (toggle: ToggleInput) => {
+        const on = this.querySelector(`#${toggle.on}`);
+        const off = this.querySelector(`#${toggle.off}`);
+
+        on.onclick = () => toggle.value = true;
+
+        off.onclick = () => toggle.value = false;
+
+        toggle.stream.subscribe(({ newValue }) => {
+            if (newValue) {
+                on.style.display = 'none';
+                off.style.display = 'inline';
             } else {
-                input.value = newValue.toString();
-                input.size = newValue.length;
+                on.style.display = 'inline';
+                off.style.display = 'none';
             }
         });
-    }
+    };
+
+    private setupShowHideHandlers = () => {
+        document.onmousemove = this.onmousemove;
+
+        this.domElement.onmouseover = () => this.hasMouse = true;
+        this.domElement.onmouseout = () => this.hasMouse = false;
+    };
+
+    private setupKeyboardShortcuts = () => {
+        document.onkeydown = (event: KeyboardEvent) => {
+            if (event.repeat) return;
+            if (this.domElement.contains(event.target as Node)) return;
+
+            if (event.key === ' ') {
+                inputs.animate.value = !inputs.animate.value;
+            }
+        };
+    };
+
+    private onmousemove = () => {
+        if (this.domElement.style.opacity == '1') {
+            setTimeout(this.maybeHide, 1000);
+        } else {
+            this.domElement.style.opacity = '1';
+        }
+    };
+
+    private maybeHide = () => {
+        if (this.hasMouse) return;
+        if (this.domElement.contains(document.activeElement)) return;
+
+        this.domElement.style.opacity = '0';
+    };
 }

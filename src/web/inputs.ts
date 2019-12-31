@@ -1,67 +1,140 @@
-import { Observable, Subject } from 'rxjs';
-
-const initialValues = {
-    pipe: '10000->sphere(4, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
-    theta: 'pi * (t + power) / 20',
-    h: 'chroma * i / n',
-    l: 'power',
-    animate: true,
-    sound: false,
-};
-export type Inputs = typeof initialValues;
+import { Subject, BehaviorSubject } from 'rxjs';
 
 type Change<T> = {
     newValue: T;
     oldValue?: T;
     event?: Event;
 };
-const subjects: { [P in keyof Inputs]?: Subject<Change<Inputs[P]>> } = {};
-
-export const streams: { [P in keyof Inputs]?: Observable<Change<Inputs[P]>> } = {};
-
-const persistence: { [P in keyof Inputs]: boolean } = {
-    pipe: true,
-    theta: true,
-    h: true,
-    l: true,
-    animate: false,
-    sound: false,
-};
-
-const persist = () => {
-    for (const [key, value] of Object.entries(values)) {
-        if (persistence[key]) {
-            localStorage.setItem(`inputs.${key}`, value.toString());
-        };
-    }
-};
-
-const restore = () => {
-    // TODO (maybe): also support override from window.location.hash
-    for (const [key, saved] of Object.entries(persistence)) {
-        if (saved) {
-            const value = localStorage.getItem(`inputs.${key}`);
-            if (value) initialValues[key] = value;
-        };
-    }
-};
 
 const query = new URLSearchParams(window.location.search);
-if (query.get('restore') !== '0') {
-    restore();
-}
+const persistenceEnabled = query.get('p') != '0';
+const hash = (() => {
+    const temp = window.location.hash.substr(1);
+    return new URLSearchParams(temp ? atob(temp) : '');
+})();
 
-for (const key in initialValues) {
-    subjects[key] = new Subject();
-    streams[key] = subjects[key].asObservable();
-}
+type TextInputId = 'pipe' | 'theta' | 'h' | 'l';
 
-export const values = new Proxy(initialValues, {
-    set(target, property, value) {
-        const oldValue = target[property];
-        const success = Reflect.set(target, property, value);
-        if (query.get('persist') !== '0') persist();
-        subjects[property].next({ newValue: value, event: window.event, oldValue });
-        return success;
+export abstract class Input<T> {
+    private readonly subject: Subject<Change<T>>;
+
+    constructor(
+        readonly id: string,
+        private _value: T,
+        private readonly persistent: boolean
+    ) {
+        if (persistenceEnabled) {
+            this.initFromOrWriteToHash();
+        } else {
+            this.persistent = false;
+        }
+        this.subject = this.newSubject();
     }
-});
+
+    initFromOrWriteToHash = () => {
+        if (this.persistent && hash.has(this.id)) {
+            this._value = this.parse(hash.get(this.id));
+        } else if (this.persistent) {
+            this.updateHash();
+        }
+    };
+
+    newSubject = () => new BehaviorSubject({ newValue: this._value });
+
+    protected abstract parse(str: string): T;
+    protected abstract stringify(value: T): string;
+
+    get stream() {
+        return this.subject.asObservable();
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(newValue: T) {
+        const oldValue = this.value;
+        this._value = newValue;
+        this.subject.next({ newValue, oldValue, event: window.event });
+        if (this.persistent) {
+            const str = this.stringify(newValue);
+            localStorage.setItem(`inputs.${this.id}`, str);
+            this.updateHash();
+        }
+    }
+
+    private updateHash = () => {
+        const str = this.stringify(this.value);
+        hash.set(this.id, str);
+        document.location.hash = btoa(hash.toString());
+
+    };
+}
+
+export class TextInput extends Input<string> {
+    readonly disabled = false;
+
+    constructor(
+        readonly id: TextInputId,
+        _value: string,
+        persistent: boolean = true,
+    ) {
+        super(id, _value, persistent);
+    }
+
+    protected parse(str: string) {
+        return str;
+    }
+
+    protected stringify(text: string) {
+        return text;
+    }
+}
+
+type ToggleInputId = 'animate' | 'mic' | 'fullscreen';
+
+export class ToggleInput extends Input<boolean> {
+    constructor(
+        readonly id: ToggleInputId,
+        _value: boolean,
+        readonly on: string,
+        readonly off: string,
+        readonly disabled: boolean = false,
+        persistent: boolean = true,
+    ) {
+        super(id, _value, persistent);
+    }
+
+    protected parse(str: string) {
+        if (/1|true/i.test(str)) return true;
+        else if (/0|false/i.test(str)) return false;
+        else throw new Error(`invalid boolean value for input ${this.id}: ${str}`);
+    };
+
+    protected stringify(bool: boolean) {
+        return bool ? '1' : '0';
+    }
+}
+
+export const inputs = {
+    pipe: new TextInput(
+        'pipe',
+        '10000->sphere(4, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
+    ),
+    theta: new TextInput('theta', 'pi * (t + power) / 20'),
+    h: new TextInput('h', 'chroma * i / n'),
+    l: new TextInput('l', 'power'),
+    animate: new ToggleInput('animate', true, 'play', 'pause', false, true),
+    mic: new ToggleInput('mic', false, 'mic', 'mic_off', false, false),
+    fullscreen: new ToggleInput(
+        'fullscreen',
+        false,
+        'enter_fullscreen',
+        'exit_fullscreen',
+        !document.fullscreenEnabled,
+        false,
+    ),
+};
+export type Inputs = typeof inputs;
+
+window.inputs = inputs;

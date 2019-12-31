@@ -1,36 +1,35 @@
-import * as audio from './audio';
+import { audioStream } from './audio';
 import { Params } from '../core/pipe/types';
-import { Subject, interval } from 'rxjs';
-import { values } from './inputs';
+import { interval, BehaviorSubject } from 'rxjs';
+import { inputs } from './inputs';
 import { fps } from './constants';
 import { Audio } from './audio/types';
 import { error } from './error';
+import { NO_AUDIO } from './audio/constants';
 
-const subject = new Subject<Params>();
-export const stream = subject;
-let t = 0;
-
-let music: Audio;
-audio.stream.subscribe(
-    a => music = a,
-    err => error(err),
-);
-
-const emit = () => {
-    const { power, chroma } = music;
-    stream.next({
-        pipe: values.pipe,
-        theta: values.theta,
-        h: values.h,
-        l: values.l,
+const params = (t: number, { power, chroma }: Audio) => {
+    return {
+        pipe: inputs.pipe.value,
+        theta: inputs.theta.value,
+        h: inputs.h.value,
+        l: inputs.l.value,
         t,
         power,
         chroma,
-    });
-    t += 1 / fps;
+    };
 };
 
-interval(1000 / fps).subscribe(
-    () => values.animate && emit(),
-    err => error(err),
-);
+const subject = new BehaviorSubject<Params>(params(0, NO_AUDIO));
+export const stream = subject;
+let count = 0;
+
+let audio: Audio;
+audioStream.subscribe(a => audio = a, error);
+
+const maybeEmit = () => {
+    if (inputs.animate.value) {
+        stream.next(params(count++ / fps, audio));
+    }
+};
+
+interval(1000 / fps).subscribe(maybeEmit, error);
