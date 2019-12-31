@@ -145,7 +145,7 @@ export const inputs = {
         '10000->sphere(4, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
     ),
     theta: new TextInput('theta', 'pi * (t + power) / 20'),
-    h: new TextInput('h', 'chroma * i / n'),
+    h: new TextInput('h', 'chroma * (i + 1) / n'),
     v: new TextInput('v', 'power'),
     animate: new ToggleInput('animate', true, 'play', 'pause', false, true),
     mic: new ToggleInput('mic', false, 'mic', 'mic_off', false, false),
@@ -157,7 +157,7 @@ export const inputs = {
         !document.fullscreenEnabled,
         false,
     ),
-    allowedDbs: new RangeInput('allowed_dbs', [-60, -30]),
+    allowedDbs: new RangeInput('allowed_dbs', [-70, -30]),
 };
 export type Inputs = typeof inputs;
 
