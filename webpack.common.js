@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ThreadsPlugin = require('threads-plugin');
 
-const src = path.resolve(__dirname, 'src/client');
+const src = path.resolve(__dirname, 'src/web');
 
 module.exports = {
   target: 'web',
