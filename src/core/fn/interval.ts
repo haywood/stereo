@@ -1,4 +1,3 @@
-import { floor } from 'mathjs';
 import { Fn } from './fn';
 import assert from 'assert';
 import { Vector } from '../data';
@@ -13,7 +12,7 @@ export default class Interval implements Fn {
   }
 
   static nPerLevel = (d: number, n: number) => {
-    return floor(Math.pow(n, 1 / d));
+    return Math.round(Math.pow(n, 1 / d));
   };
 
   static n = (d: number, n: number) => Interval.nPerLevel(d, n) ** d;
