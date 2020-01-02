@@ -1,7 +1,7 @@
 import { chromaCount, binCount, octaveCount, frameSize } from './constants';
 import assert from 'assert';
 import { Spectrum } from './spectrum';
-import * as math from 'mathjs';
+import { mean } from 'mathjs';
 import CircularBuffer from 'circular-buffer';
 
 class Processor extends AudioWorkletProcessor {
@@ -25,7 +25,7 @@ class Processor extends AudioWorkletProcessor {
         for (let i = 0; i < binCount; i++) {
             // Create a buffer with enough room for ~10ms worth of frames
             // in order to target 10ms resolution for signal power.
-            this.history[i] = new CircularBuffer(math.floor(fpcs));
+            this.history[i] = new CircularBuffer(Math.floor(fpcs));
         }
     }
 
@@ -38,7 +38,7 @@ class Processor extends AudioWorkletProcessor {
         const { dbMin, dbMax } = parameters;
         const powers = new Spectrum(dbMin[0], dbMax[0]).process(frames);
         powers.forEach((p, i) => this.history[i].push(p));
-        const power = math.mean(this.history.map(h => math.mean(h.toarray())));
+        const power = mean(this.history.map(h => mean(h.toarray())));
         const chroma = this.chroma(powers);
 
         assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
