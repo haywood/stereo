@@ -1,6 +1,6 @@
 import { NormalizedParams } from './types';
 import { Parser } from './parser';
-import { PipeNode, ArithNode, Operand, StepNode, FnNode, IdNode } from './ast';
+import { PipeNode, ArithNode, Scalar, StepNode, FnNode, IdNode, AccessNode } from './ast';
 
 export class Compiler {
     private readonly simplifier: Simplifier;
@@ -23,7 +23,7 @@ export class Compiler {
 }
 
 type Substitutions = {
-    [id: string]: Operand;
+    [id: string]: Scalar;
 };
 
 export class Simplifier {
@@ -41,7 +41,7 @@ export class Simplifier {
     };
 
     simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
-        const [a, b] = operands.map(this.simplifyOperand);
+        const [a, b] = operands.map(this.simplifyScalar);
         return { kind, op, operands: [a, b] };
     };
 
@@ -49,14 +49,15 @@ export class Simplifier {
         return {
             kind,
             type: fn,
-            args: args.map(this.simplifyOperand),
+            args: args.map(this.simplifyScalar),
         };
     };
 
-    private simplifyOperand = (node: Operand): Operand => {
+    private simplifyScalar = (node: Scalar): Scalar => {
         switch (node.kind) {
             case 'number': return node;
             case 'fn': return this.simplifyFnNode(node);
+            case 'access': return this.simplifyAccessNode(node);
             case 'id': return this.simplifyIdNode(node);
             case 'arith': return this.simplifyArithNode(node);
         }
@@ -66,14 +67,18 @@ export class Simplifier {
         return {
             kind,
             name,
-            args: args.map(this.simplifyOperand),
+            args: args.map(this.simplifyIdNode),
         };
     };
 
-    private simplifyIdNode = (node: IdNode): Operand => {
+    private simplifyAccessNode = ({ kind, id, index }: AccessNode): AccessNode => {
+        return { kind, id, index: this.simplifyScalar(index) };
+    };
+
+    private simplifyIdNode = (node: IdNode): Scalar => {
         const { id } = node;
         if (id in this.substitutions) {
-            return this.simplifyOperand(this.substitutions[id]);
+            return this.simplifyScalar(this.substitutions[id]);
         } else {
             return node;
         }

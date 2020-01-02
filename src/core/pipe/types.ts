@@ -1,5 +1,5 @@
 import { Fn, CompositeFn } from '../fn/fn';
-import { Operand } from './ast';
+import { Scalar } from './ast';
 
 export type Params = {
     pipe: string;
@@ -28,14 +28,15 @@ export type Scope = {
     t: number;
     power: number;
     chroma: number;
+    inf: number;
     n?: number;
     p?: Float32Array;
     i?: number;
 };
 
 export type HV = {
-    h: Operand;
-    v: Operand;
+    h: Scalar;
+    v: Scalar;
 };
 
 export type Link = {

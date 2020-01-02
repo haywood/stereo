@@ -3,6 +3,7 @@ import { Params, NormalizedParams, HV, Chunk } from './types';
 import { Compiler } from './compiler';
 import { Evaluator } from './evaluator';
 import { PipeNode } from './ast';
+import { inf } from '../constants';
 
 const logger = getLogger('Pipe');
 logger.setLevel('info');
@@ -41,7 +42,7 @@ export class Pipe {
 
     private static scopeForNormal = (params: NormalizedParams, n: number) => {
         const { power, t, chroma } = params;
-        return { t, power, chroma, n };
+        return { t, power, chroma, n, inf };
     };
 
     private static compileHV = (params: NormalizedParams, compiler: Compiler): HV => {

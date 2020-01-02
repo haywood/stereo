@@ -1,5 +1,5 @@
 import { Scope, UnaryOperator, Link } from './types';
-import { Value, PipeNode, StepNode, ArithNode, Operand, NumberNode, IdNode, FnNode } from "./ast";
+import { Value, PipeNode, StepNode, ArithNode, Scalar, NumberNode, AccessNode, FnNode } from "./ast";
 import assert from 'assert';
 import { pp } from '../pp';
 import { Fn, CompositeFn } from '../fn/fn';
@@ -22,11 +22,12 @@ export type Resolution = {
 export class Resolver {
     constructor(private readonly scope: Scope) { }
 
-    resolve = (node: PipeNode | Operand, extraScope: object = {}) => {
+    resolve = (node: PipeNode | Scalar, extraScope: object = {}) => {
         switch (node.kind) {
             case 'pipe': return this.resolvePipe(node);
             case 'number': return node.value;
             case 'fn': return this.resolveFn(node, extraScope);
+            case 'access': return this.resolveAccess(node, extraScope);
             case 'id': return this.resolveIdToNumber(node.id, extraScope);
             case 'arith': return this.resolveArith(node, extraScope);
         }
@@ -70,7 +71,7 @@ export class Resolver {
     };
 
     private resolveFirstStep = (d: number, { type, args }: StepNode) => {
-        const fn = funs[type](d, ...args.map(a => this.resolveOperand(a)));
+        const fn = funs[type](d, ...args.map(a => this.resolveScalar(a)));
         const isDynamic = args.some(isNodeDynamic);
 
         return { fn, isDynamic };
@@ -78,16 +79,17 @@ export class Resolver {
 
     private resolveStep = (prev: Fn, { type, args }: StepNode): Link => {
         const d = ranges[type](prev.d);
-        const fn = funs[type](d, ...args.map(a => this.resolveOperand(a)));
+        const fn = funs[type](d, ...args.map(a => this.resolveScalar(a)));
         const isDynamic = args.some(isNodeDynamic);
 
         return { fn, isDynamic };
     };
 
-    private resolveOperand = (arg: Operand, extraScope: object = {}): Value => {
+    private resolveScalar = (arg: Scalar, extraScope: object = {}): Value => {
         switch (arg.kind) {
             case 'number': return arg.value;
             case 'fn': return this.resolveFn(arg, extraScope);
+            case 'access': return this.resolveAccess(arg, extraScope);
             case 'id': return this.resolveId(arg.id, extraScope);
             case 'arith': return this.resolveArith(arg, extraScope);
         }
@@ -96,7 +98,14 @@ export class Resolver {
     private resolveFn = ({ name, args }: FnNode, extraScope: object): number => {
         const fn = Math[name];
         assert(typeof fn === 'function', `Expected ${name} to be a Math function in ${pp({ name, args })}`);
-        return fn(...args.map(a => this.resolveOperand(a, extraScope)));
+        return fn(...args.map(a => this.resolveScalar(a, extraScope)));
+    };
+
+    private resolveAccess = ({ id, index }: AccessNode, extraScope: object): number => {
+        const scope = { ...this.scope, ...extraScope };
+        const target = scope[id];
+        assert(target, `Unable to resolve ${id} in scope ${pp(scope, 2)}`);
+        return target[this.resolveScalar(index, extraScope) as number];
     };
 
     private resolveId = (id: string, extraScope: object): Value => {
@@ -116,21 +125,21 @@ export class Resolver {
         } else if (idu in Math && typeof Math[idu] === 'number') {
             return Math[idu];
         } else {
-            assert.fail(`unable to resolve id ${id}`);
+            assert.fail(`unable to resolve id ${id} in scope ${pp({ ...this.scope, ...extraScope }, 2)}`);
         }
     };
 
     private resolveArith = ({ op, operands }: ArithNode, extraScope: object) => {
-        const [a, b] = operands.map(a => this.resolveOperand(a, extraScope));
+        const [a, b] = operands.map(a => this.resolveScalar(a, extraScope));
         if (typeof a === 'number' && typeof b === 'number') {
             return ops[op](a, b);
         }
-        assert.fail(`One or more arithmetic operands evaluate to a non-number in ${pp({ op, operands })}`);
+        assert.fail(`One or more arithmetic operands evaluate to a non-number in ${pp({ op, operands }, 2)}`);
 
     };
 }
 
-const isNodeDynamic = (node: Operand): boolean => {
+const isNodeDynamic = (node: Scalar): boolean => {
     switch (node.kind) {
         case 'fn': return node.args.some(isNodeDynamic);
         case 'id': return ['t', 'power', 'chroma'].includes(node.id);

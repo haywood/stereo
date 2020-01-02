@@ -28,6 +28,7 @@ scalar =
   / name:identifier lparen args:fn_args rparen {
     return {kind: 'fn', name: name.toLowerCase(), args};
   }
+  / id:identifier '[' index:scalar ']' { return {kind: 'access', id, index}; }
   / id:identifier { return {kind: 'id', id: id.toLowerCase()}; }
   / lparen a:arith rparen { return a; }
 

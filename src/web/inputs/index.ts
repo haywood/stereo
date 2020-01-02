@@ -202,6 +202,7 @@ export class ActionInput extends AbstractInput<void> {
     constructor(
         id: string,
         private readonly action: (ev: MouseEvent, el: HTMLElement) => void,
+        readonly disabled: boolean = false,
     ) {
         super(id, null, false);
     }

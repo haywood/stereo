@@ -7,16 +7,15 @@ export type PipeNode = {
 export type StepNode = {
     kind: 'step';
     type: string;
-    args: Operand[];
+    args: Scalar[];
 };
 
-
-export type Operand = ArithNode | NumberNode | FnNode | IdNode;
+export type Scalar = ArithNode | NumberNode | FnNode | AccessNode | IdNode;
 
 export type ArithNode = {
     kind: 'arith';
     op: string;
-    operands: [Operand, Operand];
+    operands: [Scalar, Scalar];
 };
 
 export type NumberNode = {
@@ -27,7 +26,13 @@ export type NumberNode = {
 export type FnNode = {
     kind: 'fn';
     name: string;
-    args: Operand[];
+    args: Scalar[];
+};
+
+export type AccessNode = {
+    kind: 'access';
+    id: string;
+    index: Scalar;
 };
 
 export type IdNode = {

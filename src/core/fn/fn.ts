@@ -1,5 +1,6 @@
 import { Vector } from "../data";
 import assert from 'assert';
+import { inf } from "../constants";
 
 export const cos = Math.cos;
 export const sin = Math.sin;
@@ -86,7 +87,7 @@ export class CompositeFn implements Fn {
       x.set(y);
     }
     for (let i = 0; i < y.length; i++) {
-      if (!isFinite(y[i])) y[i] = Math.sign(y[i]) * (2 ** 32 - 1);
+      if (!isFinite(y[i])) y[i] = Math.sign(y[i]) * inf;
     }
   };
 
