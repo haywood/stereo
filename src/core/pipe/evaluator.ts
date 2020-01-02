@@ -1,13 +1,12 @@
 import { CompositeFn } from "../fn/fn";
-import { CompiledAST, Scope, HV, Chunk } from "./types";
+import { Scope, HV, Chunk } from "./types";
 import { Data, Vector } from "../data";
 import { pp } from "../pp";
 import { getLogger } from "loglevel";
-import { round } from "mathjs";
 import assert from 'assert';
 import { Color } from "three";
 import { hsv } from 'color-convert';
-import { Resolver } from "./resolver";
+import { Resolver, Resolution } from "./resolver";
 import { PipeNode } from "./ast";
 
 const logger = getLogger('Evaluator');
@@ -27,7 +26,7 @@ export class Evaluator {
         chunk: Chunk,
     ) {
         const resolver = new Resolver(scope);
-        const { n, staticFn, dynamicFn } = resolver.resolve(ast) as CompiledAST;
+        const { n, staticFn, dynamicFn } = resolver.resolve(ast) as Resolution;
         const offset = chunk.offset;
         const size = chunk.size;
         const limit = offset + size;
@@ -87,9 +86,9 @@ export class Evaluator {
         for (let i = offset; i < limit; i++) {
             const p = Data.get(position, i, d);
             const [h, s, l] = hsv.hsl([
-                round(resolver.resolve(hv.h, { p, i }), 0),
+                Math.round(resolver.resolve(hv.h, { p, i }) as number),
                 100,
-                round(resolver.resolve(hv.v, { p, i }), 0),
+                Math.round(resolver.resolve(hv.v, { p, i }) as number),
             ]);
             const c = new Color(`hsl(${h}, ${s}%, ${l}%)`);
 

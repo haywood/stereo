@@ -3,6 +3,7 @@ import { Operand } from './ast';
 
 export type Params = {
     pipe: string;
+    // TODO replace with more general concept of user-defined variables
     theta?: string;
     h?: string;
     v?: string;
@@ -35,12 +36,6 @@ export type Scope = {
 export type HV = {
     h: Operand;
     v: Operand;
-};
-
-export type CompiledAST = {
-    n: number;
-    staticFn: CompositeFn;
-    dynamicFn: CompositeFn;
 };
 
 export type Link = {

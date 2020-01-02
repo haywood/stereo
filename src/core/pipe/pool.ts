@@ -2,9 +2,8 @@ import { spawn, Worker, Pool, ModuleThread } from "threads";
 import { getLogger } from 'loglevel';
 import { Params, PipelineWorker, Chunk } from './types';
 import { Pipe } from "./pipe";
-import { ceil } from "mathjs";
 import { Data } from "../data";
-import { Resolver } from "./resolver";
+import { Resolver, Resolution } from "./resolver";
 
 const logger = getLogger('PipelinePool');
 let pool: Pool<ModuleThread<PipelineWorker>>;
@@ -70,7 +69,7 @@ const getOrInitialize = async (params: Params, n: number, d0: number, d: number)
 };
 
 const forkJoin = async (n: number, op: (chunk: Chunk) => Promise<void>) => {
-    const size = ceil(n / poolSize);
+    const size = Math.ceil(n / poolSize);
     let promises = [];
     for (let offset = 0; offset < n; offset += size) {
         const chunk = { offset, size: Math.min(n - offset, size) };
@@ -90,7 +89,7 @@ const timing = (label: string) => async<T>(op: () => Promise<T>) => {
 export const runPipeline = async (params: Params): Promise<SharedArrayBuffer> => {
     const ast = Pipe.compile(params);
     const resolver = new Resolver(Pipe.scopeFor(params, ast.n));
-    const { n, staticFn, dynamicFn } = resolver.resolve(ast);
+    const { n, staticFn, dynamicFn } = resolver.resolve(ast) as Resolution;
     const buffer = await getOrInitialize(params, n, staticFn.d, dynamicFn.d);
     await iterate(params, n, buffer);
 

@@ -1,9 +1,7 @@
-import * as math from 'mathjs';
 import { getLogger } from 'loglevel';
-import { Params, Scope, NormalizedParams, CompiledAST, HV, Chunk } from './types';
+import { Params, NormalizedParams, HV, Chunk } from './types';
 import { Compiler } from './compiler';
 import { Evaluator } from './evaluator';
-import { Parser } from './parser';
 import { PipeNode } from './ast';
 
 const logger = getLogger('Pipe');

@@ -1,4 +1,4 @@
-import { Scope, CompiledAST, UnaryOperator, Link } from './types';
+import { Scope, UnaryOperator, Link } from './types';
 import { Value, PipeNode, StepNode, ArithNode, Operand, NumberNode, IdNode, FnNode } from "./ast";
 import assert from 'assert';
 import { pp } from '../pp';
@@ -12,7 +12,12 @@ import Stereo from '../fn/stereo';
 import Rotator from '../fn/rotator';
 import Interval from '../fn/interval';
 import { Identity } from '../fn/identity';
-import * as math from 'mathjs';
+
+export type Resolution = {
+    n: number;
+    staticFn: CompositeFn;
+    dynamicFn: CompositeFn;
+};
 
 export class Resolver {
     constructor(private readonly scope: Scope) { }
@@ -27,7 +32,7 @@ export class Resolver {
         }
     };
 
-    resolvePipe = (pipe: PipeNode): CompiledAST => {
+    resolvePipe = (pipe: PipeNode): Resolution => {
         const chain = pipe.chain;
         const links: Link[] = [];
         const fun = chain.shift();
@@ -102,11 +107,14 @@ export class Resolver {
         }
     };
 
-    private resolveIdToNumber = (id: string, extraScope: object): Value => {
-        if (id in Math && typeof Math[id] === 'function') {
-            return Math[id];
-        } else if (id) {
-            return math.evaluate(id, { ...this.scope, ...extraScope });
+    private resolveIdToNumber = (id: string, extraScope: object): number => {
+        const idu = id.toUpperCase();
+        if (id in extraScope) {
+            return extraScope[id];
+        } else if (id in this.scope) {
+            return this.scope[id];
+        } else if (idu in Math && typeof Math[idu] === 'number') {
+            return Math[idu];
         } else {
             assert.fail(`unable to resolve id ${id}`);
         }
