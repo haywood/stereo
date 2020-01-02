@@ -1,5 +1,5 @@
 import { parse } from './grammar.pegjs';
-import { PipeNode, ArithNode } from './types';
+import { PipeNode, ArithNode } from "./ast";
 import { pp } from '../pp';
 import { getLogger } from 'loglevel';
 

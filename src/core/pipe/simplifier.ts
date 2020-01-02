@@ -1,7 +1,4 @@
-import * as math from 'mathjs';
-import { Scope, Substitutions, PipeNode, StepNode, ScalarNode, ArithNode, Operand, FnNode } from './types';
-import assert from 'assert';
-import { pp } from '../pp';
+import { PipeNode, StepNode, ScalarNode, Substitutions, Operand, FnNode, ArithNode } from "./ast";
 
 export class Simplifier {
     constructor(
@@ -27,19 +24,13 @@ export class Simplifier {
         };
     };
 
-    private simplifyArithNode = (node: Operand): Operand => {
-        if (node.kind === 'arith') {
-            const [a, b] = node.operands.map(this.simplifyOperand);
-            return {
-                kind: node.kind,
-                op: node.op,
-                operands: [a, b],
-            };
-        } else if (node.kind === 'fn') {
-            return this.simplifyFnNode(node);
-        } else {
-            return this.simplifyScalarNode(node);
-        }
+    private simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
+        const [a, b] = operands.map(this.simplifyOperand);
+        return {
+            kind,
+            op,
+            operands: [a, b],
+        };
     };
 
     private simplifyOperand = (node: Operand): Operand => {

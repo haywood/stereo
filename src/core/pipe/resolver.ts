@@ -1,4 +1,5 @@
-import { Scope, CompiledAST, Value, UnaryOperator, Link, ASTNode, PipeNode, StepNode, ScalarNode, ArithNode, Operand } from './types';
+import { Scope, CompiledAST, UnaryOperator, Link } from './types';
+import { Value, ASTNode, PipeNode, StepNode, ScalarNode, ArithNode, Operand } from "./ast";
 import assert from 'assert';
 import { pp } from '../pp';
 import { Fn, CompositeFn } from '../fn/fn';
