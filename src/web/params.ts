@@ -20,7 +20,7 @@ const params = (t: number, { power, chroma }: Audio) => {
 };
 
 const subject = new BehaviorSubject<Params>(params(0, NO_AUDIO));
-export const stream = subject;
+export const paramsStream = subject.asObservable();
 let count = 0;
 
 let audio: Audio;
@@ -28,7 +28,7 @@ audioStream.subscribe(a => audio = a, error);
 
 const maybeEmit = () => {
     if (inputs.animate.value) {
-        stream.next(params(count++ / fps, audio));
+        subject.next(params(count++ / fps, audio));
     }
 };
 

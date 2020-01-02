@@ -4,7 +4,7 @@ import debug from './debug';
 
 (async () => {
   const { Renderer } = await import('./renderer');
-  const data = await import('./data');
+  const { dataStream } = await import('./data');
   const { Controls } = await import('./controls');
   const { setDefaultLevel } = await import('loglevel');
 
@@ -41,10 +41,10 @@ import debug from './debug';
       document.body.appendChild(renderer.domElement);
       document.body.appendChild(controls.domElement);
 
-      data.stream.subscribe(
+      dataStream.subscribe(
         (data) => {
           renderer.update(data);
-          debug.data = data;
+          debug('data', data);
           document.body.classList.add('data');
           maybeSetCursorInactive();
         },

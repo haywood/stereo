@@ -222,4 +222,4 @@ export const inputs = {
 };
 export type Inputs = typeof inputs;
 
-debug.inputs = inputs;
+debug('inputs', inputs);
