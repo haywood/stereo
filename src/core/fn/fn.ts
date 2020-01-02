@@ -85,6 +85,9 @@ export class CompositeFn implements Fn {
       f.fn(x.subarray(0, f.domain), y.subarray(0, f.d));
       x.set(y);
     }
+    for (let i = 0; i < y.length; i++) {
+      if (!isFinite(y[i])) y[i] = Math.sign(y[i]) * (2 ** 32 - 1);
+    }
   };
 
   static Builder = class {

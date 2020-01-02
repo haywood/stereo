@@ -64,14 +64,11 @@ export class Renderer {
     assert.equal(position.length % d, 0);
     assert.equal(color.length % 3, 0);
 
-    for (let i = 0; i < position.length; i++) {
-      const p = position[i];
-      if (isNaN(p) || !isFinite(p)) {
-        position[i] = 2 ** 32 - 1;
-        if (!isNaN(p)) position[i] *= Math.sign(p);
-        console.warn(`found value ${p} at index ${i}; setting to ${position[i]} for rendering`);
+    position.forEach((p, i) => {
+      if (isNaN(p)) {
+        console.warn(`found NaN value at index ${i}`);
       }
-    }
+    });
 
     geometry.setAttribute('position', new BufferAttribute(position, d));
     geometry.setAttribute('color', new BufferAttribute(color, 3));
