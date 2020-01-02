@@ -14,8 +14,12 @@ export class Controls {
         this.setupInputs();
         this.setupKeyboardShortcuts();
 
-        this.domElement.onmouseover = () => this.hasHover = true;
-        this.domElement.onmouseout = () => this.hasHover = false;
+        this.domElement
+            .querySelectorAll<HTMLElement>('input, label, i, h2, h1')
+            .forEach(el => {
+                el.onmouseover = () => this.hasHover = true;
+                el.onmouseout = () => this.hasHover = false;
+            });
     }
 
     hasAttention = () =>
