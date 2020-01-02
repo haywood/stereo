@@ -146,7 +146,7 @@ const funs: {
     fucked_up_torus: (d, r: number, t: number) =>
         new FuckedUpTorus(d, r, t),
     rotate,
-    R: rotate,
+    r: rotate,
     stereo: (d, to) => new Stereo(d, to),
 };
 
@@ -163,6 +163,6 @@ const ranges: Ranges = {
     torus: (domain) => domain + 1,
     fucked_up_torus: (domain) => domain + 1,
     rotate: (domain) => domain,
-    R: (domain) => domain,
+    r: (domain) => domain,
     stereo: (domain) => domain,
 };
