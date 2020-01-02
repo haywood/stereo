@@ -1,7 +1,5 @@
-import { equal } from 'mathjs';
 import Rotator from './rotator';
 import Cube from './cube';
-import { tau, zeros } from 'mathjs';
 import { Fn, components, CompositeFn } from './fn';
 import { TypedArray } from 'three';
 import { Vector } from '../data';

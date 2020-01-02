@@ -1,7 +1,6 @@
 import { Fn, exp, components } from './fn';
 import Cube from './cube';
 import Sphere from './sphere';
-import { tau, sum, multiply } from 'mathjs';
 import assert from 'assert';
 import { Vector } from '../data';
 
