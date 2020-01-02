@@ -12,10 +12,8 @@ step =
   fn:identifier lparen args:step_args rparen { return {kind: 'step', fn, args} }
 
 step_args =
-  head:step_arg comma tail:step_args { return [head, ...tail]; }
-  / a:step_arg { return [a]; }
-
-step_arg = id / arith
+  head:arith comma tail:step_args { return [head, ...tail]; }
+  / arg:arith { return [arg]; }
 
 arith =
   s:scalar op:arith_op a:arith {
