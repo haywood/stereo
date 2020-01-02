@@ -1,4 +1,4 @@
-import { Scope, CompiledAST, Value, UnaryOperator, Link, ASTNode } from './types';
+import { Scope, CompiledAST, Value, UnaryOperator, Link, ASTNode, PipeNode, StepNode, ScalarNode, ArithNode, Operand } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
 import { Fn, CompositeFn } from '../fn/fn';
@@ -15,23 +15,19 @@ import { Identity } from '../fn/identity';
 export class Resolver {
     constructor(private readonly scope: Scope) { }
 
-    resolve = (pipe: ASTNode): CompiledAST => {
-        return this.resolvePipeNode(pipe);
-    };
-
-    private resolvePipeNode = (pipe: ASTNode): CompiledAST => {
-        const chain = assertDefInNode('chain', pipe);
+    resolve = (pipe: PipeNode): CompiledAST => {
+        const chain = pipe.chain;
         const links: Link[] = [];
         const fun = chain.shift();
-        const d = fun.args.shift().value as number;
-        const link = this.resolveFirstFunNode(d, fun);
-        const n = Interval.n(link.fn.domain, assertNumberInNode('n', pipe));
+        const d = (fun.args.shift() as ScalarNode).value as number;
+        const link = this.resolveFirstStep(d, fun);
+        const n = Interval.n(link.fn.domain, pipe.n);
 
         links.push(link);
 
         for (let i = 0; i < chain.length; i++) {
             const fun = chain[i];
-            const link = this.resolveFunNode(links[i].fn, fun);
+            const link = this.resolveStep(links[i].fn, fun);
             links.push(link);
         }
 
@@ -56,46 +52,51 @@ export class Resolver {
         return [init, iter];
     };
 
-    private resolveFirstFunNode = (d: number, fun: ASTNode) => {
-        const name: string = assertDefInNode('fn', fun);
-        const args = assertDefInNode('args', fun);
-        const fn = funs[name](d, ...args.map(this.resolveFunArgNode));
+    private resolveFirstStep = (d: number, fun: StepNode) => {
+        const name = fun.fn;
+        const args = fun.args;
+        const fn = funs[name](d, ...args.map(this.resolveStepArg));
         const isTemporal = args.some(isNodeTemporal);
 
         return { fn, isTemporal };
     };
 
-    private resolveFunNode = (prev: Fn, fun: ASTNode): Link => {
-        const name: string = assertDefInNode('fn', fun);
-        const args = assertDefInNode('args', fun);
+    private resolveStep = (prev: Fn, fun: StepNode): Link => {
+        const name = fun.fn;
+        const args = fun.args;
         const d = ranges[name](prev.d);
-        const fn = funs[name](d, ...args.map(this.resolveFunArgNode));
+        const fn = funs[name](d, ...args.map(this.resolveStepArg));
         const isTemporal = args.some(isNodeTemporal);
 
         return { fn, isTemporal };
     };
 
-    private resolveFunArgNode = (arg: ASTNode): Value => {
-        if (arg.id) {
-            return this.resolveVarNode(arg);
-        } else {
-            return this.resolveArithNode(arg);
+    private resolveStepArg = (arg: Operand): Value => {
+        switch (arg.kind) {
+            case 'scalar': return arg.id ?
+                this.resolveVarNode(arg)
+                : this.resolveNumberNode(arg);
+            case 'arith': return this.resolveArithOperand(arg);
         }
     };
 
-    private resolveArithNode = (node: ASTNode): number => {
-        if (node.op != null) {
+    private resolveArithOperand = (node: Operand): number => {
+        if (node.kind === 'arith') {
             const op = ops[node.op];
-            const [a, b] = assertDefInNode('operands', node)
-                .map(this.resolveArithNode);
+            const [a, b] = node.operands.map(this.resolveArithOperand);
             const c = op(a, b);
             return c;
+        } else if (node.kind === 'fn') {
+            const { name, args } = node;
+            const fn = Math[name];
+            assert(typeof fn === 'function', `Expected ${name} to be a Math function in ${pp(node)}`);
+            return fn(...args.map(this.resolveArithOperand));
         } else {
             return this.resolveNumberNode(node);
         }
     };
 
-    private resolveVarNode = (node: ASTNode): Value => {
+    private resolveVarNode = (node: ScalarNode): Value => {
         const { value } = node;
         if (typeof value === 'function') {
             return value;
@@ -104,7 +105,7 @@ export class Resolver {
         }
     };
 
-    private resolveNumberNode = (node: ASTNode): number => {
+    private resolveNumberNode = (node: ScalarNode): number => {
         const { value } = node;
         if (typeof value === 'number') {
             return value;
@@ -114,27 +115,13 @@ export class Resolver {
     };
 }
 
-const assertDefInNode = (name: string, node: ASTNode) => {
-    const x = node[name];
-    assertCondInNode(x != null, name, 'to be defined', node);
-    return x;
-};
-
-const assertNumberInNode = (name: string, node: ASTNode): number => {
-    const x = node[name];
-    assertCondInNode(typeof x === 'number', name, 'a number', node);
-    return x as number;
-};
-
-const assertCondInNode = (cond: boolean, name: string, expected: string, node: ASTNode) => {
-    assert(cond, `Expected ${name} to be ${expected} in ${pp(node)}`);
-};
-
 const isNodeTemporal = (node: ASTNode): boolean => {
-    if (node.id === 't') return true;
-    else if (node.args) return node.args.some(isNodeTemporal);
-    else if (node.operands) return node.operands.some(isNodeTemporal);
-    else return false;
+    switch (node.kind) {
+        case 'scalar': return node.id === 't';
+        case 'step': return node.args.some(isNodeTemporal);
+        case 'arith': return node.operands.some(isNodeTemporal);
+        default: return false;
+    }
 };
 
 const ops: {

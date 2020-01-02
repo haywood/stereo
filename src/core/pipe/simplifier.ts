@@ -1,5 +1,5 @@
 import * as math from 'mathjs';
-import { Scope, Substitutions, ASTNode } from './types';
+import { Scope, Substitutions, PipeNode, StepNode, ScalarNode, ArithNode, Operand, FnNode } from './types';
 import assert from 'assert';
 import { pp } from '../pp';
 
@@ -9,86 +9,70 @@ export class Simplifier {
         private readonly substitutions: Substitutions,
     ) { }
 
-    simplify = (pipe: ASTNode): ASTNode => {
-        return this.simplifyPipeNode(pipe);
-    };
-
-    private simplifyPipeNode = (pipe: ASTNode): ASTNode => {
-        const n = assertNumberInNode('n', pipe);
-        const chain = assertDefInNode('chain', pipe);
+    simplify = (pipe: PipeNode): PipeNode => {
+        const n = pipe.n;
+        const chain = pipe.chain;
 
         return {
+            kind: pipe.kind,
             n,
-            chain: chain.map(this.simplifyFunNode),
+            chain: chain.map(this.simplifyStepNode),
         };
     };
 
-    private simplifyFunNode = (fun: ASTNode): ASTNode => {
-        const fn = assertDefInNode('fn', fun);
-        const args = assertDefInNode('args', fun);
-
+    private simplifyStepNode = ({ kind, fn, args }: StepNode): StepNode => {
         return {
+            kind,
             fn,
-            args: args.map(this.simplifyFunArgNode),
+            args: args.map(this.simplifyOperand),
         };
     };
 
-    private simplifyFunArgNode = (arg: ASTNode): ASTNode => {
-        if (arg.id) {
-            return this.simplifyVarNode(arg);
+    private simplifyArithNode = (node: Operand): Operand => {
+        if (node.kind === 'arith') {
+            const [a, b] = node.operands.map(this.simplifyOperand);
+            return {
+                kind: node.kind,
+                op: node.op,
+                operands: [a, b],
+            };
+        } else if (node.kind === 'fn') {
+            return this.simplifyFnNode(node);
         } else {
-            return this.simplifyArithNode(arg);
+            return this.simplifyScalarNode(node);
         }
     };
 
-    private simplifyArithNode = (arith: ASTNode): ASTNode => {
-        if (arith.op != null) {
-            const operands = assertDefInNode('operands', arith);
-            return { op: arith.op, operands: operands.map(this.simplifyArithNode) };
-        } else {
-            return this.simplifyNumberNode(arith);
+    private simplifyOperand = (node: Operand): Operand => {
+        switch (node.kind) {
+            case 'scalar': return this.simplifyScalarNode(node);
+            case 'arith': return this.simplifyArithNode(node);
+            case 'fn': return this.simplifyFnNode(node);
         }
     };
 
-    private simplifyVarNode = (node: ASTNode): ASTNode => {
-        const id = node.id;
-        if (id in this.substitutions) {
-            return this.simplifyArithNode(this.substitutions[id]);
-        } else if (id in Math && typeof Math[id] === 'function') {
-            return { id, value: Math[id] };
-        } else {
-            return { id, value: math.evaluate(id, this.scope) };
-        }
-    };
-
-    private simplifyNumberNode = (scalar: ASTNode): ASTNode => {
-        const { id, value } = scalar;
+    private simplifyScalarNode = (node: ScalarNode): Operand => {
+        const { id, value } = node;
         if (value != null) {
-            return scalar;
+            return node;
         } else if (id in this.substitutions) {
             return this.simplifyArithNode(this.substitutions[id]);
+        } else if (id in Math && typeof Math[id] === 'function') {
+            return { kind: node.kind, id, value: Math[id] };
         } else if (id) {
             const result = math.evaluate(id, this.scope);
             assert.equal(typeof result, 'number', `Expected evaluation of ${pp(id)} to produce a number`);
-            return { id, value: result };
+            return { kind: 'scalar', id, value: result };
         } else {
-            return scalar;
+            return node;
         }
     };
+
+    private simplifyFnNode = ({ kind, name, args }: FnNode): FnNode => {
+        return {
+            kind,
+            name,
+            args: args.map(this.simplifyOperand),
+        };
+    };
 }
-
-const assertDefInNode = (name: string, node: ASTNode) => {
-    const x = node[name];
-    assertCondInNode(x != null, name, 'to be defined', node);
-    return x;
-};
-
-const assertNumberInNode = (name: string, node: ASTNode): number => {
-    const x = node[name];
-    assertCondInNode(typeof x === 'number', name, 'a number', node);
-    return x as number;
-};
-
-const assertCondInNode = (cond: boolean, name: string, expected: string, node: ASTNode) => {
-    assert(cond, `Expected ${name} to be ${expected} in ${pp(node)}`);
-};

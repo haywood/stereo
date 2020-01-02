@@ -1,5 +1,5 @@
 import { parse } from './grammar.pegjs';
-import { ASTNode } from './types';
+import { PipeNode, ArithNode } from './types';
 import { pp } from '../pp';
 import { getLogger } from 'loglevel';
 
@@ -10,7 +10,7 @@ type Options = {
     startRule: 'arith';
 };
 
-const loggingParse: typeof parse = (expr: string, options?: Options): ASTNode => {
+const loggingParse: typeof parse = <T>(expr: string, options?: Options): T => {
     try {
         const node = parse(expr, options);
         logger.debug(`parsed ${expr} into node ${pp(node)}`);
@@ -22,7 +22,7 @@ const loggingParse: typeof parse = (expr: string, options?: Options): ASTNode =>
 };
 
 export class Parser {
-    static parsePipe = (pipe: string) => loggingParse(pipe);
+    static parsePipe = (pipe: string): PipeNode => loggingParse(pipe);
 
-    static parseArith = (expr: string) => loggingParse(expr, { startRule: 'arith' });
+    static parseArith = (expr: string): ArithNode => loggingParse(expr, { startRule: 'arith' });
 }
