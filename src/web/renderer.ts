@@ -11,7 +11,7 @@ import {
 import { Data } from '../core/data';
 import assert from 'assert';
 
-export class Renderer {
+class Renderer {
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
@@ -84,3 +84,5 @@ export class Renderer {
     requestAnimationFrame(this.render);
   };
 }
+
+export const renderer = new Renderer();

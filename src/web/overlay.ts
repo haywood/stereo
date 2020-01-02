@@ -3,7 +3,7 @@ import html from './overlay.html';
 import './overlay.scss';
 import assert from 'assert';
 
-export class Controls {
+class Overlay {
     readonly domElement = document.createElement('div');
     private hasHover = false;
 
@@ -70,3 +70,5 @@ export class Controls {
         };
     };
 }
+
+export const overlay = new Overlay();

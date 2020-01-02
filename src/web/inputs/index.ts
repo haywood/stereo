@@ -1,7 +1,8 @@
 import { Subject, BehaviorSubject } from 'rxjs';
-import { poolSize } from '../core/pipe/pool';
-import debug from './debug';
+import { poolSize } from '../../core/pipe/pool';
+import debug from '../debug';
 import multirange from 'multirange';
+import { renderer } from '../renderer';
 
 type Change<T> = {
     newValue: T;
@@ -16,7 +17,7 @@ const hash = (() => {
     return new URLSearchParams(temp ? atob(temp) : '');
 })();
 
-export abstract class Input<T, E = HTMLElement> {
+export abstract class AbstractInput<T, E = HTMLElement> {
     private readonly subject: Subject<Change<T>>;
     protected el?: E;
 
@@ -50,8 +51,12 @@ export abstract class Input<T, E = HTMLElement> {
 
     protected abstract _setup(): void;
 
-    protected abstract parse(str: string): T;
-    protected abstract stringify(value: T): string;
+    protected parse(str: string): T {
+        throw new Error('parse unsupported');
+    };
+    protected stringify(value: T): string {
+        throw new Error('stringify unsupported');
+    };
 
     get stream() {
         return this.subject.asObservable();
@@ -78,7 +83,7 @@ export abstract class Input<T, E = HTMLElement> {
 
 type TextInputId = 'pipe' | 'theta' | 'h' | 'v';
 
-export class TextInput extends Input<string, HTMLInputElement> {
+export class TextInput extends AbstractInput<string, HTMLInputElement> {
     readonly disabled = false;
 
     constructor(
@@ -110,12 +115,10 @@ export class TextInput extends Input<string, HTMLInputElement> {
 
 type ToggleInputId = 'animate' | 'mic' | 'fullscreen';
 
-export class ToggleInput extends Input<boolean> {
+export class ToggleInput extends AbstractInput<boolean> {
     constructor(
         readonly id: ToggleInputId,
         _value: boolean,
-        readonly on: string,
-        readonly off: string,
         readonly disabled: boolean = false,
         persistent: boolean = true,
     ) {
@@ -151,10 +154,9 @@ export class ToggleInput extends Input<boolean> {
     }
 }
 
-
 type RangeInputId = 'allowed_db_range';
 
-export class RangeInput extends Input<[number, number]> {
+export class RangeInput extends AbstractInput<[number, number]> {
     constructor(
         readonly id: RangeInputId,
         _value: [number, number],
@@ -186,14 +188,27 @@ export class RangeInput extends Input<[number, number]> {
         });
     };
 
-    parse(str: string): [number, number] {
+    protected parse(str: string): [number, number] {
         const [min, max] = str.split(/,/);
         return [parseInt(min), parseInt(max)];
     }
 
-    stringify([min, max]) {
+    protected stringify([min, max]) {
         return `${min},${max}`;
+    };
+}
+
+export class ActionInput extends AbstractInput<void> {
+    constructor(
+        id: string,
+        private readonly action: (ev: MouseEvent, el: HTMLElement) => void,
+    ) {
+        super(id, null, false);
     }
+
+    protected _setup = () => {
+        this.el.onclick = (ev) => this.action(ev, this.el);
+    };
 }
 
 // Points generation is done in parallel, so pick n such
@@ -208,17 +223,29 @@ export const inputs = {
     theta: new TextInput('theta', 'pi * (t + power) / 20'),
     h: new TextInput('h', 'chroma * i / (n - 1)'),
     v: new TextInput('v', 'power'),
-    animate: new ToggleInput('animate', true, 'play', 'pause', false, true),
-    mic: new ToggleInput('mic', false, 'mic', 'mic_off', false, false),
+    animate: new ToggleInput('animate', true, false, true),
+    mic: new ToggleInput('mic', false, false, false),
     fullscreen: new ToggleInput(
         'fullscreen',
         false,
-        'enter_fullscreen',
-        'exit_fullscreen',
         !document.fullscreenEnabled,
         false,
     ),
     allowedDbs: new RangeInput('allowed_db_range', [-100, -30]),
+    save: new ActionInput('save', async (_, el) => {
+        const canvas = renderer.domElement;
+        renderer.render();
+        const blob = await new Promise(resolve => canvas.toBlob(resolve));
+        const url = URL.createObjectURL(blob);
+        try {
+            const a = document.createElement('a');
+            a.download = `stereo${document.location.hash}`;
+            a.href = url;
+            a.click();
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    }),
 };
 export type Inputs = typeof inputs;
 

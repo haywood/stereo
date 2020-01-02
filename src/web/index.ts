@@ -3,29 +3,26 @@ import 'multirange/multirange.css';
 import debug from './debug';
 
 (async () => {
-  const { Renderer } = await import('./renderer');
+  const { renderer } = await import('./renderer');
   const { dataStream } = await import('./data');
-  const { Controls } = await import('./overlay');
+  const { overlay } = await import('./overlay');
   const { setDefaultLevel } = await import('loglevel');
 
   setDefaultLevel('info');
 
-  const renderer = new Renderer();
-  const controls = new Controls();
-
   const cursorInactiveTimeout = 1000;
-  let setCursorInactiveHandle, lastMouseMove = 0;
+  let lastMouseMove = 0;
 
   const maybeSetCursorInactive = (event?) => {
     if (Date.now() < lastMouseMove + cursorInactiveTimeout) return;
-    if (controls.hasAttention()) return;
+    if (overlay.hasAttention()) return;
 
     document.body.classList.add('cursor-inactive');
-    controls.hide();
+    overlay.hide();
   };
 
   document.body.onmousemove = (event) => {
-    controls.show();
+    overlay.show();
 
     if (document.body.classList.contains('cursor-inactive')) {
       document.body.classList.remove('cursor-inactive');
@@ -39,7 +36,7 @@ import debug from './debug';
   document.onreadystatechange = (): void => {
     if (document.readyState === 'complete') {
       document.body.appendChild(renderer.domElement);
-      document.body.appendChild(controls.domElement);
+      document.body.appendChild(overlay.domElement);
 
       dataStream.subscribe(
         (data) => {
