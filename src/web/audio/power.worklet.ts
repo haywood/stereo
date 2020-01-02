@@ -1,7 +1,6 @@
 import { chromaCount, binCount, octaveCount, frameSize } from './constants';
 import assert from 'assert';
 import { Spectrum } from './spectrum';
-import { mean } from 'mathjs';
 import CircularBuffer from 'circular-buffer';
 
 class Processor extends AudioWorkletProcessor {
@@ -69,6 +68,8 @@ class Processor extends AudioWorkletProcessor {
         return chroma * chromaStep + octave * octaveStep;
     };
 }
+
+const mean = (x: Array<number>) => x.reduce((a, b) => a + b, 0) / x.length;
 
 const argmax = (x: ArrayLike<number>) => {
     let arg = -1, max = -Infinity;
