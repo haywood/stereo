@@ -74,7 +74,7 @@
   "license": "ISC",
   "scripts": {
     "deploy": "npm run dist && gh-pages -d stereo",
-    "dev": "webpack --watch --config webpack.dev.js",
+    "dev": "webpack-dev-server --config webpack.dev.js",
     "dist": "webpack --config webpack.prod.js",
     "serve": "serve"
   }
