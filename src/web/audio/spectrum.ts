@@ -1,5 +1,4 @@
 import { chromaCount } from './constants';
-import { nthRoot } from 'mathjs';
 
 export class Spectrum {
     constructor(
@@ -16,7 +15,7 @@ export class Spectrum {
         const chroma = Spectrum.chroma(k);
         const c0 = 16.35; // c0 per https://pages.mtu.edu/~suits/notefreqs.html
 
-        return c0 * 2 ** octave * nthRoot(2, chromaCount) ** chroma;
+        return c0 * 2 ** octave * Math.pow(2, 1 / chromaCount) ** chroma;
     };
 
     process = (frames: Float32Array[]): number[] => {
