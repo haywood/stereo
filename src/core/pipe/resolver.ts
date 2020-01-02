@@ -1,5 +1,5 @@
 import { Scope, CompiledAST, UnaryOperator, Link } from './types';
-import { Value, ASTNode, PipeNode, StepNode, ScalarNode, ArithNode, Operand } from "./ast";
+import { Value, ASTNode, PipeNode, StepNode, ArithNode, Operand, NumberNode, IdNode, FnNode } from "./ast";
 import assert from 'assert';
 import { pp } from '../pp';
 import { Fn, CompositeFn } from '../fn/fn';
@@ -21,7 +21,7 @@ export class Resolver {
         const chain = pipe.chain;
         const links: Link[] = [];
         const fun = chain.shift();
-        const d = (fun.args.shift() as ScalarNode).value as number;
+        const d = (fun.args.shift() as NumberNode).value;
         const link = this.resolveFirstStep(d, fun);
         const n = Interval.n(link.fn.domain, pipe.n);
 
@@ -55,79 +55,62 @@ export class Resolver {
     };
 
     private resolveFirstStep = (d: number, fun: StepNode) => {
-        const name = fun.fn;
+        const name = fun.type;
         const args = fun.args;
-        const fn = funs[name](d, ...args.map(this.resolveStepArg));
+        const fn = funs[name](d, ...args.map(this.resolveOperand));
         const isTemporal = args.some(isNodeTemporal);
 
         return { fn, isTemporal };
     };
 
     private resolveStep = (prev: Fn, fun: StepNode): Link => {
-        const name = fun.fn;
+        const name = fun.type;
         const args = fun.args;
         const d = ranges[name](prev.d);
-        const fn = funs[name](d, ...args.map(this.resolveStepArg));
+        const fn = funs[name](d, ...args.map(this.resolveOperand));
         const isTemporal = args.some(isNodeTemporal);
 
         return { fn, isTemporal };
     };
 
-    private resolveStepArg = (arg: Operand): Value => {
+    private resolveOperand = (arg: Operand): Value => {
         switch (arg.kind) {
-            case 'scalar': return arg.id ?
-                this.resolveVarNode(arg)
-                : this.resolveNumberNode(arg);
-            case 'arith': return this.resolveArithOperand(arg);
+            case 'number': return arg.value;
+            case 'fn': return this.resolveFn(arg);
+            case 'id': return this.resolveId(arg);
+            case 'arith': return this.resolveArith(arg);
         }
     };
 
-    private resolveArithOperand = (node: Operand): number => {
-        if (node.kind === 'arith') {
-            const op = ops[node.op];
-            const [a, b] = node.operands.map(this.resolveArithOperand);
-            const c = op(a, b);
-            return c;
-        } else if (node.kind === 'fn') {
-            const { name, args } = node;
-            const fn = Math[name];
-            assert(typeof fn === 'function', `Expected ${name} to be a Math function in ${pp(node)}`);
-            return fn(...args.map(this.resolveArithOperand));
-        } else {
-            return this.resolveNumberNode(node);
-        }
+    private resolveFn = ({ name, args }: FnNode): number => {
+        const fn = Math[name];
+        assert(typeof fn === 'function', `Expected ${name} to be a Math function in ${pp({ name, args })}`);
+        return fn(...args.map(this.resolveOperand));
     };
 
-    private resolveVarNode = (node: ScalarNode): Value => {
-        const { id } = node;
+    private resolveId = ({ id }: IdNode): Value => {
         if (id in Math && typeof Math[id] === 'function') {
             return Math[id];
         } else if (id) {
-            const result = math.evaluate(id, this.scope);
-            assert.equal(typeof result, 'number', `Expected evaluation of ${pp(node)} to produce a number`);
-            return result;
+            return math.evaluate(id, this.scope);
         } else {
-            assert.fail(`don't know how to hand var node ${pp(node)}`);
+            assert.fail(`unable to resolve id ${id}`);
         }
     };
 
-    private resolveNumberNode = (node: ScalarNode): number => {
-        const { id, value } = node;
-        if (id) {
-            const result = math.evaluate(id, this.scope);
-            assert.equal(typeof result, 'number', `Expected evaluation of ${pp(node)} to produce a number`);
-            return result;
-        } else if (typeof value === 'number') {
-            return value;
-        } else {
-            assert.fail(`don't know how to handle number node ${pp(node)}`);
+    private resolveArith = ({ op, operands }: ArithNode) => {
+        const [a, b] = operands.map(this.resolveOperand);
+        if (typeof a === 'number' && typeof b === 'number') {
+            return ops[op](a, b);
         }
+        assert.fail(`One or more arithmetic operands evaluate to a non-number in ${pp({ op, operands })}`);
+
     };
 }
 
-const isNodeTemporal = (node: ASTNode): boolean => {
+const isNodeTemporal = (node: StepNode | Operand): boolean => {
     switch (node.kind) {
-        case 'scalar': return node.id === 't';
+        case 'id': return node.id === 't';
         case 'step': return node.args.some(isNodeTemporal);
         case 'arith': return node.operands.some(isNodeTemporal);
         default: return false;

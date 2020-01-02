@@ -9,7 +9,7 @@ chain =
   / f:step { return [f]; }
 
 step =
-  fn:identifier lparen args:step_args rparen { return {kind: 'step', fn, args} }
+  type:identifier lparen args:step_args rparen { return {kind: 'step', type, args} }
 
 step_args =
   head:arith comma tail:step_args { return [head, ...tail]; }
@@ -22,16 +22,12 @@ arith =
   / scalar
 
 scalar =
-  value:number { return {kind: 'scalar', value}; }
-  / fn
-  / id
+  value:number { return {kind: 'number', value}; }
+  / name:identifier lparen args:fn_args rparen {
+    return {kind: 'fn', name, args};
+  }
+  / id:identifier { return {kind: 'id', id}; }
   / lparen a:arith rparen { return a; }
-
-id = id:identifier { return {kind: 'scalar', id}; }
-
-fn = name:identifier lparen args:fn_args rparen {
-  return {kind: 'fn', name, args};
-}
 
 fn_args =
   head:arith comma tail:fn_args { return [head, ...tail]; }

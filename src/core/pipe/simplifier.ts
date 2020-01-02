@@ -1,4 +1,8 @@
-import { PipeNode, StepNode, ScalarNode, Substitutions, Operand, FnNode, ArithNode } from "./ast";
+import { PipeNode, StepNode, Operand, FnNode, ArithNode, IdNode } from "./ast";
+
+type Substitutions = {
+    [id: string]: ArithNode;
+};
 
 export class Simplifier {
     constructor(
@@ -16,39 +20,20 @@ export class Simplifier {
         };
     };
 
-    private simplifyStepNode = ({ kind, fn, args }: StepNode): StepNode => {
+    private simplifyStepNode = ({ kind, type: fn, args }: StepNode): StepNode => {
         return {
             kind,
-            fn,
+            type: fn,
             args: args.map(this.simplifyOperand),
-        };
-    };
-
-    private simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
-        const [a, b] = operands.map(this.simplifyOperand);
-        return {
-            kind,
-            op,
-            operands: [a, b],
         };
     };
 
     private simplifyOperand = (node: Operand): Operand => {
         switch (node.kind) {
-            case 'scalar': return this.simplifyScalarNode(node);
-            case 'arith': return this.simplifyArithNode(node);
+            case 'number': return node;
             case 'fn': return this.simplifyFnNode(node);
-        }
-    };
-
-    private simplifyScalarNode = (node: ScalarNode): Operand => {
-        const { id, value } = node;
-        if (value != null) {
-            return node;
-        } else if (id in this.substitutions) {
-            return this.simplifyArithNode(this.substitutions[id]);
-        } else {
-            return node;
+            case 'id': return this.simplifyIdNode(node);
+            case 'arith': return this.simplifyArithNode(node);
         }
     };
 
@@ -57,6 +42,24 @@ export class Simplifier {
             kind,
             name,
             args: args.map(this.simplifyOperand),
+        };
+    };
+
+    private simplifyIdNode = (node: IdNode): Operand => {
+        const { id } = node;
+        if (id in this.substitutions) {
+            return this.simplifyArithNode(this.substitutions[id]);
+        } else {
+            return node;
+        }
+    };
+
+    private simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
+        const [a, b] = operands.map(this.simplifyOperand);
+        return {
+            kind,
+            op,
+            operands: [a, b],
         };
     };
 }
