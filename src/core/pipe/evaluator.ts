@@ -12,8 +12,8 @@ const logger = getLogger('Evaluator');
 
 export class Evaluator {
     private readonly n: number;
-    private readonly init: CompositeFn;
-    private readonly iter: CompositeFn;
+    private readonly staticFn: CompositeFn;
+    private readonly dynaicFn: CompositeFn;
     private readonly offset: number;
     private readonly limit: number;
 
@@ -23,7 +23,7 @@ export class Evaluator {
         private readonly hv: HV,
         chunk: Chunk,
     ) {
-        const { n, init, iter } = ast;
+        const { n, staticFn, dynamicFn } = ast;
         const offset = chunk.offset;
         const size = chunk.size;
         const limit = offset + size;
@@ -31,20 +31,20 @@ export class Evaluator {
         assert(limit <= n, `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`);
 
         this.n = n;
-        this.init = init;
-        this.iter = iter;
+        this.staticFn = staticFn;
+        this.dynaicFn = dynamicFn;
         this.offset = offset;
         this.limit = limit;
     }
 
 
     private get d() {
-        return this.iter.d;
+        return this.dynaicFn.d;
     }
 
     initialize = (buffer: SharedArrayBuffer): void => {
         const data = new Float32Array(buffer);
-        const { n, init, offset, limit } = this;
+        const { n, staticFn: init, offset, limit } = this;
         const input = Data.input(data);
         let i = offset;
         for (const y of init.sample(n, offset, limit)) {
@@ -54,7 +54,7 @@ export class Evaluator {
 
     iterate = (buffer: SharedArrayBuffer): void => {
         const data = new Float32Array(buffer);
-        const { init, iter, scope, n, offset, limit } = this;
+        const { staticFn: init, dynaicFn: iter, scope, n, offset, limit } = this;
         const input = Data.input(data);
         const position = Data.position(data);
         const start = Date.now();

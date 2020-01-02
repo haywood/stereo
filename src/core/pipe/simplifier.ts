@@ -1,7 +1,7 @@
 import { PipeNode, StepNode, Operand, FnNode, ArithNode, IdNode } from "./ast";
 
 type Substitutions = {
-    [id: string]: ArithNode;
+    [id: string]: Operand;
 };
 
 export class Simplifier {
@@ -48,7 +48,7 @@ export class Simplifier {
     private simplifyIdNode = (node: IdNode): Operand => {
         const { id } = node;
         if (id in this.substitutions) {
-            return this.simplifyArithNode(this.substitutions[id]);
+            return this.simplifyOperand(this.substitutions[id]);
         } else {
             return node;
         }

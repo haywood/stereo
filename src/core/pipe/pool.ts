@@ -87,8 +87,8 @@ const timing = (label: string) => async<T>(op: () => Promise<T>) => {
 };
 
 export const runPipeline = async (params: Params): Promise<SharedArrayBuffer> => {
-    const { n, init, iter } = Pipe.compile(params);
-    const buffer = await getOrInitialize(params, n, init.d, iter.d);
+    const { n, staticFn, dynamicFn } = Pipe.compile(params);
+    const buffer = await getOrInitialize(params, n, staticFn.d, dynamicFn.d);
     await iterate(params, n, buffer);
 
     return buffer.slice(0);

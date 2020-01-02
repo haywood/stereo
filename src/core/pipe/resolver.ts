@@ -33,13 +33,13 @@ export class Resolver {
             links.push(link);
         }
 
-        const [init, iter] = this.buildComposites(links);
-        return { n, init, iter };
+        const [staticFn, dynamicFn] = this.buildComposites(links);
+        return { n, staticFn, dynamicFn };
     };
 
     private buildComposites = (links: Link[]) => {
         let builder = new CompositeFn.Builder();
-        while (links.length && !links[0].isTemporal) {
+        while (links.length && !links[0].isDynamic) {
             builder.add(links.shift().fn);
         }
 
@@ -54,23 +54,19 @@ export class Resolver {
         return [init, iter];
     };
 
-    private resolveFirstStep = (d: number, fun: StepNode) => {
-        const name = fun.type;
-        const args = fun.args;
-        const fn = funs[name](d, ...args.map(this.resolveOperand));
-        const isTemporal = args.some(isNodeTemporal);
+    private resolveFirstStep = (d: number, { type, args }: StepNode) => {
+        const fn = funs[type](d, ...args.map(this.resolveOperand));
+        const isDynamic = args.some(isNodeDynamic);
 
-        return { fn, isTemporal };
+        return { fn, isDynamic };
     };
 
-    private resolveStep = (prev: Fn, fun: StepNode): Link => {
-        const name = fun.type;
-        const args = fun.args;
-        const d = ranges[name](prev.d);
-        const fn = funs[name](d, ...args.map(this.resolveOperand));
-        const isTemporal = args.some(isNodeTemporal);
+    private resolveStep = (prev: Fn, { type, args }: StepNode): Link => {
+        const d = ranges[type](prev.d);
+        const fn = funs[type](d, ...args.map(this.resolveOperand));
+        const isDynamic = args.some(isNodeDynamic);
 
-        return { fn, isTemporal };
+        return { fn, isDynamic };
     };
 
     private resolveOperand = (arg: Operand): Value => {
@@ -108,11 +104,11 @@ export class Resolver {
     };
 }
 
-const isNodeTemporal = (node: StepNode | Operand): boolean => {
+const isNodeDynamic = (node: Operand): boolean => {
     switch (node.kind) {
-        case 'id': return node.id === 't';
-        case 'step': return node.args.some(isNodeTemporal);
-        case 'arith': return node.operands.some(isNodeTemporal);
+        case 'fn': return node.args.some(isNodeDynamic);
+        case 'id': return ['t', 'power', 'chroma'].includes(node.id);
+        case 'arith': return node.operands.some(isNodeDynamic);
         default: return false;
     }
 };

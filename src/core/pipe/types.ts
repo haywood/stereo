@@ -38,13 +38,13 @@ export type HV = {
 
 export type CompiledAST = {
     n: number;
-    init: CompositeFn;
-    iter: CompositeFn;
+    staticFn: CompositeFn;
+    dynamicFn: CompositeFn;
 };
 
 export type Link = {
     fn: Fn;
-    isTemporal: boolean;
+    isDynamic: boolean;
 };
 
 export type Chunk = {
