@@ -17,7 +17,7 @@ export class Compiler {
         const substitutions = {
             theta: Parser.parseArith(params.theta),
         };
-        const simplifier = new Simplifier(this.scope, substitutions);
+        const simplifier = new Simplifier(substitutions);
         const resolver = new Resolver(this.scope);
         return resolver.resolve(simplifier.simplify(ast));
     };

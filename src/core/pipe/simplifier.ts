@@ -5,7 +5,6 @@ import { pp } from '../pp';
 
 export class Simplifier {
     constructor(
-        private readonly scope: Scope,
         private readonly substitutions: Substitutions,
     ) { }
 
@@ -57,12 +56,6 @@ export class Simplifier {
             return node;
         } else if (id in this.substitutions) {
             return this.simplifyArithNode(this.substitutions[id]);
-        } else if (id in Math && typeof Math[id] === 'function') {
-            return { kind: node.kind, id, value: Math[id] };
-        } else if (id) {
-            const result = math.evaluate(id, this.scope);
-            assert.equal(typeof result, 'number', `Expected evaluation of ${pp(id)} to produce a number`);
-            return { kind: 'scalar', id, value: result };
         } else {
             return node;
         }

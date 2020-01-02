@@ -11,6 +11,7 @@ import Stereo from '../fn/stereo';
 import Rotator from '../fn/rotator';
 import Interval from '../fn/interval';
 import { Identity } from '../fn/identity';
+import * as math from 'mathjs';
 
 export class Resolver {
     constructor(private readonly scope: Scope) { }
@@ -97,17 +98,25 @@ export class Resolver {
     };
 
     private resolveVarNode = (node: ScalarNode): Value => {
-        const { value } = node;
-        if (typeof value === 'function') {
-            return value;
+        const { id } = node;
+        if (id in Math && typeof Math[id] === 'function') {
+            return Math[id];
+        } else if (id) {
+            const result = math.evaluate(id, this.scope);
+            assert.equal(typeof result, 'number', `Expected evaluation of ${pp(node)} to produce a number`);
+            return result;
         } else {
-            return this.resolveNumberNode(node);
+            assert.fail(`don't know how to hand var node ${pp(node)}`);
         }
     };
 
     private resolveNumberNode = (node: ScalarNode): number => {
-        const { value } = node;
-        if (typeof value === 'number') {
+        const { id, value } = node;
+        if (id) {
+            const result = math.evaluate(id, this.scope);
+            assert.equal(typeof result, 'number', `Expected evaluation of ${pp(node)} to produce a number`);
+            return result;
+        } else if (typeof value === 'number') {
             return value;
         } else {
             assert.fail(`don't know how to handle number node ${pp(node)}`);
