@@ -5,7 +5,7 @@ import debug from './debug';
 (async () => {
   const { Renderer } = await import('./renderer');
   const { dataStream } = await import('./data');
-  const { Controls } = await import('./controls');
+  const { Controls } = await import('./overlay');
   const { setDefaultLevel } = await import('loglevel');
 
   setDefaultLevel('info');

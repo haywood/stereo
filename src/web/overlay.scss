@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 
-#controls {
+#overlay {
     opacity: 0;
 
     [title] {
@@ -62,4 +62,17 @@
 
 .spacer {
     flex: 1;
+}
+
+a.help {
+    font-size: small;
+    vertical-align: super;
+
+    &::before {
+        content: "?";
+    }
+
+    &:link, &:visited, &:hover, &:active {
+        color: white;
+    }
 }

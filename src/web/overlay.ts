@@ -1,6 +1,6 @@
 import { inputs, ToggleInput, TextInput, RangeInput } from './inputs';
-import html from './controls.html';
-import './controls.scss';
+import html from './overlay.html';
+import './overlay.scss';
 import assert from 'assert';
 
 export class Controls {
@@ -8,14 +8,14 @@ export class Controls {
     private hasHover = false;
 
     constructor() {
-        this.domElement.id = 'controls';
+        this.domElement.id = 'overlay';
         this.domElement.innerHTML = html;
 
         this.setupInputs();
         this.setupKeyboardShortcuts();
 
         this.domElement
-            .querySelectorAll<HTMLElement>('input, label, i, h2, h1')
+            .querySelectorAll<HTMLElement>('input, label, i, h2, h1, #allowed_db_range')
             .forEach(el => {
                 el.onmouseover = () => this.hasHover = true;
                 el.onmouseout = () => this.hasHover = false;
