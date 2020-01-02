@@ -1,5 +1,5 @@
 import { Fn, CompositeFn } from '../fn/fn';
-import { EvalFunction } from 'mathjs';
+import { Operand } from './ast';
 
 export type Params = {
     pipe: string;
@@ -28,12 +28,13 @@ export type Scope = {
     power: number;
     chroma: number;
     n?: number;
-    theta?: number;
+    p?: Float32Array;
+    i?: number;
 };
 
 export type HV = {
-    h: EvalFunction;
-    v: EvalFunction;
+    h: Operand;
+    v: Operand;
 };
 
 export type CompiledAST = {

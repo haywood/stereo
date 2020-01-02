@@ -7,6 +7,7 @@ import { round } from "mathjs";
 import assert from 'assert';
 import { Color } from "three";
 import { hsv } from 'color-convert';
+import { Resolver } from "./resolver";
 
 const logger = getLogger('Evaluator');
 
@@ -81,11 +82,11 @@ export class Evaluator {
 
         for (let i = offset; i < limit; i++) {
             const p = Data.get(position, i, d);
-            const colorScope = { ...scope, p, i };
+            const resolver = new Resolver({ ...scope, p, i });
             const [h, s, l] = hsv.hsl([
-                round(hv.h.evaluate(colorScope), 0),
+                round(resolver.resolveNumericExpression(hv.h), 0),
                 100,
-                round(hv.v.evaluate(colorScope), 0),
+                round(resolver.resolveNumericExpression(hv.v), 0),
             ]);
             const c = new Color(`hsl(${h}, ${s}%, ${l}%)`);
 

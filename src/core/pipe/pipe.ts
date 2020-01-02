@@ -3,6 +3,7 @@ import { getLogger } from 'loglevel';
 import { Params, Scope, NormalizedParams, CompiledAST, HV, Chunk } from './types';
 import { Compiler } from './compiler';
 import { Evaluator } from './evaluator';
+import { Parser } from './parser';
 
 const logger = getLogger('Pipe');
 logger.setLevel('info');
@@ -17,9 +18,10 @@ export class Pipe {
 
     private static evaluatorForNormal = (params: NormalizedParams, chunk?: Chunk) => {
         const ast = Pipe.compileNormal(params);
-        const scope = Pipe.finalScope(params, ast);
-        const hl = Pipe.compileHL(params);
-        return new Evaluator(scope, ast, hl, chunk);
+        const { power, t, chroma } = params;
+        const scope = { t, power, chroma, n: ast.n };
+        const hv = Pipe.compileHV(params);
+        return new Evaluator(scope, ast, hv, chunk);
     };
 
     private static compileNormal = (params: NormalizedParams): CompiledAST => {
@@ -40,18 +42,11 @@ export class Pipe {
         };
     };
 
-    private static finalScope = (params: NormalizedParams, ast: CompiledAST): Scope => {
-        const { power, t, chroma } = params;
-        const scope: Scope = { t, power, chroma, n: ast.n };
-        scope.theta = math.evaluate(params.theta, scope);
-
-        return scope;
-    };
-
-    private static compileHL = (params: NormalizedParams): HV => {
+    private static compileHV = (params: NormalizedParams): HV => {
+        // TODO refactor to simplify the parsed ast
         return {
-            h: math.compile(`359 * (${params.h})`),
-            v: math.compile(`100 * (${params.v})`),
+            h: Parser.parseArith(`359 * (${params.h})`),
+            v: Parser.parseArith(`100 * (${params.v})`),
         };
     };
 }

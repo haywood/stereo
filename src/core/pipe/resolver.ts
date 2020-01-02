@@ -37,6 +37,15 @@ export class Resolver {
         return { n, staticFn, dynamicFn };
     };
 
+    resolveNumericExpression = (node: Operand) => {
+        switch (node.kind) {
+            case 'number': return node.value;
+            case 'fn': return this.resolveFn(node);
+            case 'id': return this.resolveIdToNumber(node.id);
+            case 'arith': return this.resolveArith(node);
+        }
+    };
+
     private buildComposites = (links: Link[]) => {
         let builder = new CompositeFn.Builder();
         while (links.length && !links[0].isDynamic) {
@@ -73,7 +82,7 @@ export class Resolver {
         switch (arg.kind) {
             case 'number': return arg.value;
             case 'fn': return this.resolveFn(arg);
-            case 'id': return this.resolveId(arg);
+            case 'id': return this.resolveId(arg.id);
             case 'arith': return this.resolveArith(arg);
         }
     };
@@ -84,7 +93,15 @@ export class Resolver {
         return fn(...args.map(this.resolveOperand));
     };
 
-    private resolveId = ({ id }: IdNode): Value => {
+    private resolveId = (id: string): Value => {
+        if (id in Math && typeof Math[id] === 'function') {
+            return Math[id];
+        } else {
+            return this.resolveIdToNumber(id);
+        }
+    };
+
+    private resolveIdToNumber = (id: string): Value => {
         if (id in Math && typeof Math[id] === 'function') {
             return Math[id];
         } else if (id) {

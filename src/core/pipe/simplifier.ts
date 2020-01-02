@@ -5,9 +5,7 @@ type Substitutions = {
 };
 
 export class Simplifier {
-    constructor(
-        private readonly substitutions: Substitutions,
-    ) { }
+    constructor(private readonly substitutions: Substitutions) { }
 
     simplify = (pipe: PipeNode): PipeNode => {
         const n = pipe.n;
@@ -56,10 +54,6 @@ export class Simplifier {
 
     private simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
         const [a, b] = operands.map(this.simplifyOperand);
-        return {
-            kind,
-            op,
-            operands: [a, b],
-        };
+        return { kind, op, operands: [a, b] };
     };
 }
