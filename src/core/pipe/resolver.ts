@@ -1,5 +1,5 @@
 import { Scope, CompiledAST, UnaryOperator, Link } from './types';
-import { Value, ASTNode, PipeNode, StepNode, ArithNode, Operand, NumberNode, IdNode, FnNode } from "./ast";
+import { Value, PipeNode, StepNode, ArithNode, Operand, NumberNode, IdNode, FnNode } from "./ast";
 import assert from 'assert';
 import { pp } from '../pp';
 import { Fn, CompositeFn } from '../fn/fn';
@@ -17,7 +17,17 @@ import * as math from 'mathjs';
 export class Resolver {
     constructor(private readonly scope: Scope) { }
 
-    resolve = (pipe: PipeNode): CompiledAST => {
+    resolve = (node: PipeNode | Operand, extraScope: object = {}) => {
+        switch (node.kind) {
+            case 'pipe': return this.resolvePipe(node);
+            case 'number': return node.value;
+            case 'fn': return this.resolveFn(node, extraScope);
+            case 'id': return this.resolveIdToNumber(node.id, extraScope);
+            case 'arith': return this.resolveArith(node, extraScope);
+        }
+    };
+
+    resolvePipe = (pipe: PipeNode): CompiledAST => {
         const chain = pipe.chain;
         const links: Link[] = [];
         const fun = chain.shift();
@@ -35,15 +45,6 @@ export class Resolver {
 
         const [staticFn, dynamicFn] = this.buildComposites(links);
         return { n, staticFn, dynamicFn };
-    };
-
-    resolveNumericExpression = (node: Operand) => {
-        switch (node.kind) {
-            case 'number': return node.value;
-            case 'fn': return this.resolveFn(node);
-            case 'id': return this.resolveIdToNumber(node.id);
-            case 'arith': return this.resolveArith(node);
-        }
     };
 
     private buildComposites = (links: Link[]) => {
@@ -64,7 +65,7 @@ export class Resolver {
     };
 
     private resolveFirstStep = (d: number, { type, args }: StepNode) => {
-        const fn = funs[type](d, ...args.map(this.resolveOperand));
+        const fn = funs[type](d, ...args.map(a => this.resolveOperand(a)));
         const isDynamic = args.some(isNodeDynamic);
 
         return { fn, isDynamic };
@@ -72,47 +73,47 @@ export class Resolver {
 
     private resolveStep = (prev: Fn, { type, args }: StepNode): Link => {
         const d = ranges[type](prev.d);
-        const fn = funs[type](d, ...args.map(this.resolveOperand));
+        const fn = funs[type](d, ...args.map(a => this.resolveOperand(a)));
         const isDynamic = args.some(isNodeDynamic);
 
         return { fn, isDynamic };
     };
 
-    private resolveOperand = (arg: Operand): Value => {
+    private resolveOperand = (arg: Operand, extraScope: object = {}): Value => {
         switch (arg.kind) {
             case 'number': return arg.value;
-            case 'fn': return this.resolveFn(arg);
-            case 'id': return this.resolveId(arg.id);
-            case 'arith': return this.resolveArith(arg);
+            case 'fn': return this.resolveFn(arg, extraScope);
+            case 'id': return this.resolveId(arg.id, extraScope);
+            case 'arith': return this.resolveArith(arg, extraScope);
         }
     };
 
-    private resolveFn = ({ name, args }: FnNode): number => {
+    private resolveFn = ({ name, args }: FnNode, extraScope: object): number => {
         const fn = Math[name];
         assert(typeof fn === 'function', `Expected ${name} to be a Math function in ${pp({ name, args })}`);
-        return fn(...args.map(this.resolveOperand));
+        return fn(...args.map(a => this.resolveOperand(a, extraScope)));
     };
 
-    private resolveId = (id: string): Value => {
+    private resolveId = (id: string, extraScope: object): Value => {
         if (id in Math && typeof Math[id] === 'function') {
             return Math[id];
         } else {
-            return this.resolveIdToNumber(id);
+            return this.resolveIdToNumber(id, extraScope);
         }
     };
 
-    private resolveIdToNumber = (id: string): Value => {
+    private resolveIdToNumber = (id: string, extraScope: object): Value => {
         if (id in Math && typeof Math[id] === 'function') {
             return Math[id];
         } else if (id) {
-            return math.evaluate(id, this.scope);
+            return math.evaluate(id, { ...this.scope, ...extraScope });
         } else {
             assert.fail(`unable to resolve id ${id}`);
         }
     };
 
-    private resolveArith = ({ op, operands }: ArithNode) => {
-        const [a, b] = operands.map(this.resolveOperand);
+    private resolveArith = ({ op, operands }: ArithNode, extraScope: object) => {
+        const [a, b] = operands.map(a => this.resolveOperand(a, extraScope));
         if (typeof a === 'number' && typeof b === 'number') {
             return ops[op](a, b);
         }

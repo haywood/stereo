@@ -8,6 +8,7 @@ import assert from 'assert';
 import { Color } from "three";
 import { hsv } from 'color-convert';
 import { Resolver } from "./resolver";
+import { PipeNode } from "./ast";
 
 const logger = getLogger('Evaluator');
 
@@ -17,14 +18,16 @@ export class Evaluator {
     private readonly dynaicFn: CompositeFn;
     private readonly offset: number;
     private readonly limit: number;
+    private readonly resolver: Resolver;
 
     constructor(
         private readonly scope: Scope,
-        ast: CompiledAST,
+        ast: PipeNode,
         private readonly hv: HV,
         chunk: Chunk,
     ) {
-        const { n, staticFn, dynamicFn } = ast;
+        const resolver = new Resolver(scope);
+        const { n, staticFn, dynamicFn } = resolver.resolve(ast) as CompiledAST;
         const offset = chunk.offset;
         const size = chunk.size;
         const limit = offset + size;
@@ -36,6 +39,7 @@ export class Evaluator {
         this.dynaicFn = dynamicFn;
         this.offset = offset;
         this.limit = limit;
+        this.resolver = resolver;
     }
 
 
@@ -76,17 +80,16 @@ export class Evaluator {
 
     private computeColors = (data: Vector) => {
         logger.debug(`computing colors`);
-        const { d, scope, hv, offset, limit } = this;
+        const { d, scope, hv, offset, limit, resolver } = this;
         const position = Data.position(data);
         const color = Data.color(data);
 
         for (let i = offset; i < limit; i++) {
             const p = Data.get(position, i, d);
-            const resolver = new Resolver({ ...scope, p, i });
             const [h, s, l] = hsv.hsl([
-                round(resolver.resolveNumericExpression(hv.h), 0),
+                round(resolver.resolve(hv.h, { p, i }), 0),
                 100,
-                round(resolver.resolveNumericExpression(hv.v), 0),
+                round(resolver.resolve(hv.v, { p, i }), 0),
             ]);
             const c = new Color(`hsl(${h}, ${s}%, ${l}%)`);
 

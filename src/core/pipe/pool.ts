@@ -4,6 +4,7 @@ import { Params, PipelineWorker, Chunk } from './types';
 import { Pipe } from "./pipe";
 import { ceil } from "mathjs";
 import { Data } from "../data";
+import { Resolver } from "./resolver";
 
 const logger = getLogger('PipelinePool');
 let pool: Pool<ModuleThread<PipelineWorker>>;
@@ -87,7 +88,9 @@ const timing = (label: string) => async<T>(op: () => Promise<T>) => {
 };
 
 export const runPipeline = async (params: Params): Promise<SharedArrayBuffer> => {
-    const { n, staticFn, dynamicFn } = Pipe.compile(params);
+    const ast = Pipe.compile(params);
+    const resolver = new Resolver(Pipe.scopeFor(params, ast.n));
+    const { n, staticFn, dynamicFn } = resolver.resolve(ast);
     const buffer = await getOrInitialize(params, n, staticFn.d, dynamicFn.d);
     await iterate(params, n, buffer);
 

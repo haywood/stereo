@@ -18,6 +18,11 @@ export class Simplifier {
         };
     };
 
+    simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
+        const [a, b] = operands.map(this.simplifyOperand);
+        return { kind, op, operands: [a, b] };
+    };
+
     private simplifyStepNode = ({ kind, type: fn, args }: StepNode): StepNode => {
         return {
             kind,
@@ -50,10 +55,5 @@ export class Simplifier {
         } else {
             return node;
         }
-    };
-
-    private simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
-        const [a, b] = operands.map(this.simplifyOperand);
-        return { kind, op, operands: [a, b] };
     };
 }

@@ -1,5 +1,3 @@
-export type ASTNode = PipeNode | StepNode | Operand | ArithNode | FnNode;
-
 export type PipeNode = {
     kind: 'pipe';
     n: number;
