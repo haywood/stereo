@@ -54,11 +54,7 @@ export abstract class Input<T> {
         const oldValue = this.value;
         this._value = newValue;
         this.subject.next({ newValue, oldValue, event: window.event });
-        if (this.persistent) {
-            const str = this.stringify(newValue);
-            localStorage.setItem(`inputs.${this.id}`, str);
-            this.updateHash();
-        }
+        if (this.persistent) this.updateHash();
     }
 
     private updateHash = () => {
