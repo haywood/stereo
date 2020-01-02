@@ -1,4 +1,4 @@
-import { inputs, ToggleInput, TextInput, RangeInput } from './inputs';
+import { inputs } from './inputs';
 import html from './overlay.html';
 import './overlay.scss';
 import assert from 'assert';
