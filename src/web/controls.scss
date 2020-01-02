@@ -2,6 +2,10 @@
 
 #controls {
     opacity: 0;
+
+    [title] {
+        cursor: help;
+    }
 }
 
 #inputs {
@@ -17,10 +21,6 @@
 
     span, i {
         padding-bottom: 8px;
-    }
-
-    h2[title], label[title] {
-        cursor: help;
     }
 
     section {
@@ -47,13 +47,13 @@
     }
 }
 
-#allowed_dbs {
+#allowed_db_range {
     align-items: center;
     display: flex;
     flex-flow: row;
 }
 
-#allowed_dbs_input {
+#allowed_db_range_input {
     align-items: center;
     display: flex;
     flex-flow: row;

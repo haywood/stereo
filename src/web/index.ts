@@ -1,5 +1,6 @@
 import './global.scss';
 import 'multirange/multirange.css';
+import debug from './debug';
 
 (async () => {
   const { Renderer } = await import('./renderer');
@@ -43,6 +44,7 @@ import 'multirange/multirange.css';
       data.stream.subscribe(
         (data) => {
           renderer.update(data);
+          debug.data = data;
           document.body.classList.add('data');
           maybeSetCursorInactive();
         },

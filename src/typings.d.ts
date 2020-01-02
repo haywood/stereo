@@ -1,3 +1,7 @@
+declare module '*.html' {
+    export default '';
+}
+
 declare module './grammar.pegjs' {
     export function parse(spec: string): AST;
 
@@ -6,12 +10,12 @@ declare module './grammar.pegjs' {
     }): Arithmetic;
 }
 
-type PowerWorkletParams = {
+declare type PowerWorkletParams = {
     dbMin: Float32Array;
     dbMax: Float32Array;
 };
 
-abstract class AudioWorkletProcessor<P = never> {
+declare abstract class AudioWorkletProcessor<P = never> {
     constructor(options: AudioWorkletNodeOptions);
 
     process(inputs: Float32Array[][], outputs: Float32Array[][], parameters?: P): boolean;
@@ -19,16 +23,23 @@ abstract class AudioWorkletProcessor<P = never> {
     protected readonly port: MessagePort;
 }
 
-function registerProcessor(name: string, ctor: new (options: AudioWorkletNodeOptions) => AudioWorkletProcessor);
+declare function registerProcessor(name: string, ctor: new (options: AudioWorkletNodeOptions) => AudioWorkletProcessor);
 
 /**
  * Defined on AudioWorkletGlobalScope. The sampling
  * rate of the AudioContext that created the worklet.
  */
-const sampleRate: number;
+declare readonly var sampleRate: number;
 
 /**
  * Defiend on AudioWorkletGlobalScope. The currentTime
  * of the AudioContext that created the worklet.
  */
-const currentTime: number;
+declare readonly var currentTime: number;
+
+declare var _debug: any;
+
+declare interface MultirangeHTMLInputElement extends HTMLInputElement {
+    valueLow: number;
+    valueHigh: number;
+}

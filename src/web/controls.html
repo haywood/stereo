@@ -42,21 +42,43 @@
 </div>
 
 <div id="media">
-    <i id="play" class="material-icons">play_arrow</i>
-    <i id="pause" class="material-icons">pause</i>
-    <i id="mic" class="material-icons">mic</i>
-    <i id="mic_off" class="material-icons">mic_off</i>
+    <span id="animate">
+        <i class="material-icons on">play_arrow</i>
+        <i class="material-icons off">pause</i>
+    </span>
 
-    <span id="allowed_dbs">
-        <div class="min"></div>dB
-        <div id="allowed_dbs_input">
-            <input type="range" multiple min="-100" max="0" />
+    <span id="mic">
+        <i title="Enable audio analysis. The page will use the browser's microphone to compute the value power and chroma, which describe the volume and musical note of the audio. Each value ranges from 0 to 1."
+            class="material-icons on">
+            mic
+        </i>
+        <i title="Disable audio analysis." class="material-icons off">
+            mic_off
+        </i>
+    </span>
+
+    <span id="allowed_db_range">
+        <div title="Minimum volume of analyzed sound. Values below this will be evaluated to 0.">
+            <span class="min"></span>dB
         </div>
-        <div class="max"></div>dB
+
+        <div id="allowed_db_range_input">
+            <input type="range" multiple min="-200" max="0" />
+        </div>
+
+        <div title="Maximum volumne of analyzed sound. Values above this will be evaluated to 1.">
+            <span class="max"></span>dB
+        </div>
     </span>
 
     <div class="spacer"></div>
 
-    <i id="enter_fullscreen" class="material-icons">fullscreen</i>
-    <i id="exit_fullscreen" class="material-icons">fullscreen_exit</i>
+    <span id="fullscreen">
+        <i title="Enter fullscreen." class="material-icons on">
+            fullscreen
+        </i>
+        <i title="Exit fullscreen." class="material-icons off">
+            fullscreen_exit
+        </i>
+    </span>
 </div>

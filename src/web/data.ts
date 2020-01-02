@@ -20,7 +20,7 @@ type Source = {
 
 const webWorkerSource = async (): Promise<Source> => {
   console.info('starting web worker data source');
-  await startPool(navigator.hardwareConcurrency);
+  await startPool();
 
   const getData = (params: Params) =>
     runPipeline(params).then(Data.fromBuffer);

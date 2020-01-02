@@ -1,4 +1,7 @@
 import { Subject, BehaviorSubject } from 'rxjs';
+import { poolSize } from '../core/pipe/pool';
+import debug from './debug';
+import multirange from 'multirange';
 
 type Change<T> = {
     newValue: T;
@@ -13,8 +16,9 @@ const hash = (() => {
     return new URLSearchParams(temp ? atob(temp) : '');
 })();
 
-export abstract class Input<T> {
+export abstract class Input<T, E = HTMLElement> {
     private readonly subject: Subject<Change<T>>;
+    protected el?: E;
 
     constructor(
         readonly id: string,
@@ -38,6 +42,13 @@ export abstract class Input<T> {
     };
 
     newSubject = () => new BehaviorSubject({ newValue: this._value });
+
+    setup = (el: E) => {
+        this.el = el;
+        this._setup();
+    };
+
+    protected abstract _setup(): void;
 
     protected abstract parse(str: string): T;
     protected abstract stringify(value: T): string;
@@ -67,7 +78,7 @@ export abstract class Input<T> {
 
 type TextInputId = 'pipe' | 'theta' | 'h' | 'v';
 
-export class TextInput extends Input<string> {
+export class TextInput extends Input<string, HTMLInputElement> {
     readonly disabled = false;
 
     constructor(
@@ -77,6 +88,16 @@ export class TextInput extends Input<string> {
     ) {
         super(id, _value, persistent);
     }
+
+    protected _setup = () => {
+        this.el.onchange = () => this.value = this.el.value;
+        this.el.oninput = () => this.el.size = this.el.value.length;
+
+        this.stream.subscribe(({ newValue }) => {
+            this.el.value = newValue;
+            this.el.size = newValue.length;
+        });
+    };
 
     protected parse(str: string) {
         return str;
@@ -101,6 +122,24 @@ export class ToggleInput extends Input<boolean> {
         super(id, _value, persistent);
     }
 
+    protected _setup = () => {
+        const on = this.el.querySelector<HTMLInputElement>('.on');
+        on.onclick = () => this.value = true;
+
+        const off = this.el.querySelector<HTMLInputElement>('.off');
+        off.onclick = () => this.value = false;
+
+        this.stream.subscribe(({ newValue }) => {
+            if (newValue) {
+                on.style.display = 'none';
+                off.style.display = 'inline';
+            } else {
+                on.style.display = 'inline';
+                off.style.display = 'none';
+            }
+        });
+    };
+
     protected parse(str: string) {
         if (/1|true/i.test(str)) return true;
         else if (/0|false/i.test(str)) return false;
@@ -113,7 +152,7 @@ export class ToggleInput extends Input<boolean> {
 }
 
 
-type RangeInputId = 'allowed_dbs';
+type RangeInputId = 'allowed_db_range';
 
 export class RangeInput extends Input<[number, number]> {
     constructor(
@@ -125,6 +164,28 @@ export class RangeInput extends Input<[number, number]> {
         super(id, _value, persistent);
     }
 
+    protected _setup = () => {
+        const input = this.el.querySelector<MultirangeHTMLInputElement>('input');
+        multirange(input);
+        const minEl = this.el.querySelector<HTMLElement>('.min');
+        const maxEl = this.el.querySelector<HTMLElement>('.max');
+
+        input.onchange = () => {
+            this.value = [+input.valueLow, +input.valueHigh];
+        };
+
+        this.el.querySelector<HTMLInputElement>('input.ghost').oninput = input.oninput = () => {
+            minEl.innerText = input.valueLow.toString();
+            maxEl.innerText = input.valueHigh.toString();
+        };
+
+        this.stream.subscribe(({ newValue }) => {
+            input.value = this.stringify(newValue);
+            minEl.innerText = input.valueLow.toString();
+            maxEl.innerText = input.valueHigh.toString();
+        });
+    };
+
     parse(str: string): [number, number] {
         const [min, max] = str.split(/,/);
         return [parseInt(min), parseInt(max)];
@@ -135,13 +196,17 @@ export class RangeInput extends Input<[number, number]> {
     }
 }
 
+// Points generation is done in parallel, so pick n such
+// that each chunk is size 1000
+const n = 1000 * poolSize;
+
 export const inputs = {
     pipe: new TextInput(
         'pipe',
-        '10000->sphere(4, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)',
+        `${n}->sphere(4, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
     ),
     theta: new TextInput('theta', 'pi * (t + power) / 20'),
-    h: new TextInput('h', 'chroma * (i + 1) / n'),
+    h: new TextInput('h', 'chroma * i / (n - 1)'),
     v: new TextInput('v', 'power'),
     animate: new ToggleInput('animate', true, 'play', 'pause', false, true),
     mic: new ToggleInput('mic', false, 'mic', 'mic_off', false, false),
@@ -153,8 +218,8 @@ export const inputs = {
         !document.fullscreenEnabled,
         false,
     ),
-    allowedDbs: new RangeInput('allowed_dbs', [-70, -30]),
+    allowedDbs: new RangeInput('allowed_db_range', [-100, -30]),
 };
 export type Inputs = typeof inputs;
 
-window.inputs = inputs;
+debug.inputs = inputs;

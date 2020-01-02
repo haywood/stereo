@@ -9,16 +9,16 @@ const logger = getLogger('PipelinePool');
 let pool: Pool<ModuleThread<PipelineWorker>>;
 let data: Map<string, SharedArrayBuffer>;
 logger.setLevel('info');
-let poolSize = 0;
 
-export const startPool = async (size: number) => {
+export const poolSize = 2 * navigator.hardwareConcurrency;
+
+export const startPool = async () => {
     logger.info('starting worker pool');
     let i = 0;
-    pool = Pool(() => spawn(new Worker('./pipe.worker', { name: `pipe${i++}` })), size);
-    poolSize = size;
+    pool = Pool(() => spawn(new Worker('./pipe.worker', { name: `pipe${i++}` })), poolSize);
     data = new Map();
     let promises = [];
-    for (let i = 0; i < size; i++) {
+    for (let i = 0; i < poolSize; i++) {
         // pre-load scripts so the first task doesn't take forever
         promises.push(pool.queue(async () => { }));
     }
@@ -70,7 +70,7 @@ const getOrInitialize = async (params: Params, n: number, d0: number, d: number)
 };
 
 const forkJoin = async (n: number, op: (chunk: Chunk) => Promise<void>) => {
-    const size = Math.ceil(n / poolSize);
+    const size = Math.round(n / poolSize);
     let promises = [];
     for (let offset = 0; offset < n; offset += size) {
         const chunk = { offset, size: Math.min(n - offset, size) };
