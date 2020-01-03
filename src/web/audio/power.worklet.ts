@@ -2,6 +2,18 @@ import { chromaCount, binCount, octaveCount, frameSize } from './constants';
 import assert from 'assert';
 import { Spectrum } from './spectrum';
 import CircularBuffer from 'circular-buffer';
+import { Audio } from './types';
+
+// Remember ~10ms worth of frames in order to target
+// 10ms resolution for signal power.
+const memory = (() => {
+    // Number of frames collected per second
+    const fps = sampleRate / frameSize;
+    // Number of frames collected per 10ms
+    const fpcs = fps / 100;
+    return Math.floor(fpcs);
+})();
+const middle = Math.floor(memory / 2) + 1;
 
 class Processor extends AudioWorkletProcessor {
     static get parameterDescriptors() {
@@ -11,24 +23,19 @@ class Processor extends AudioWorkletProcessor {
         ];
     }
 
-    private readonly history = new Array<CircularBuffer>(binCount);
+    private readonly history = new Array<CircularBuffer<number>>(binCount);
 
     constructor(options) {
         super(options);
 
-        // Number of frames collected per second
-        const fps = sampleRate / frameSize;
-        // Number of frames collected per 10ms
-        const fpcs = fps / 100;
-
         for (let i = 0; i < binCount; i++) {
-            // Create a buffer with enough room for ~10ms worth of frames
-            // in order to target 10ms resolution for signal power.
-            this.history[i] = new CircularBuffer(Math.floor(fpcs));
+            this.history[i] = new CircularBuffer(memory);
+        }
+        for (let i = 0; i < chromaCount; i++) {
         }
     }
 
-    process(inputs: Float32Array[][], outputs: Float32Array[][], parameters: PowerWorkletParams) {
+    process(inputs: Float32Array[][], _: Float32Array[][], parameters: PowerWorkletParams) {
         inputs.forEach((channels, i) => {
             assert.equal(channels.length, 1, `Expected input ${i} to have exactly 1 channel, not ${channels.length}`);
         });
@@ -37,13 +44,22 @@ class Processor extends AudioWorkletProcessor {
         const { dbMin, dbMax } = parameters;
         const powers = new Spectrum(dbMin[0], dbMax[0]).process(frames);
         powers.forEach((p, i) => this.history[i].push(p));
+
         const power = mean(this.history.map(h => mean(h.toarray())));
         const chroma = this.chroma(powers);
+        const onset = this.history.reduce((count, h) => {
+            if (h.size() === h.capacity() &&
+                h.toarray().every(p => p <= h.get(middle))) {
+                return count + 1;
+            } else {
+                return count;
+            }
+        }, 0) >= 4 ? 1 : 0;
 
         assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
         assert(0 <= chroma && chroma <= 1, `chroma: Expected 0 <= ${chroma} <= 1`);
 
-        this.port.postMessage({ power, chroma });
+        this.port.postMessage({ power, chroma, onset } as Audio);
 
         return true;
     };

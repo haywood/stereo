@@ -7,7 +7,7 @@ import { Audio } from './audio/types';
 import { error } from './error';
 import { NO_AUDIO } from './audio/constants';
 
-const params = (t: number, { power, chroma }: Audio) => {
+const params = (t: number, { power, chroma, onset }: Audio) => {
     return {
         pipe: inputs.pipe.value,
         theta: inputs.theta.value,
@@ -16,6 +16,7 @@ const params = (t: number, { power, chroma }: Audio) => {
         t,
         power,
         chroma,
+        onset,
     };
 };
 

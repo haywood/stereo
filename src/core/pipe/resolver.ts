@@ -142,7 +142,7 @@ export class Resolver {
 const isNodeDynamic = (node: Scalar): boolean => {
     switch (node.kind) {
         case 'fn': return node.args.some(isNodeDynamic);
-        case 'id': return ['t', 'power', 'chroma'].includes(node.id);
+        case 'id': return ['t', 'power', 'chroma', 'onset'].includes(node.id);
         case 'arith': return node.operands.some(isNodeDynamic);
         default: return false;
     }
