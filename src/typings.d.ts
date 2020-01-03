@@ -10,6 +10,18 @@ declare module './grammar.pegjs' {
     }): Arithmetic;
 }
 
+declare module 'circular-buffer' {
+    export default class CircularBuffer<T> {
+        constructor(capacity: number);
+        capacity(): number;
+        get(index: number): T;
+        get(start: number, end: number): Array<T>;
+        push(t: T): void;
+        size(): number;
+        toarray(): Array<T>;
+    }
+}
+
 declare type PowerWorkletParams = {
     dbMin: Float32Array;
     dbMax: Float32Array;
