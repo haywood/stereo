@@ -37,6 +37,8 @@ export class Note {
   }
 
   private onset(window: Float32Array): 0|1 {
+    // This only sort of works right now, but it doesn't
+    // look terrible so here it is.
     const dt = 10;
     const delta = new Float32Array(Math.round(window.length / dt));
     for (let k = 0; k < delta.length; k++) {
