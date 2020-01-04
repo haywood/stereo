@@ -1,7 +1,7 @@
 import CircularBuffer from 'circular-buffer';
 
 export type Analysis = {
-  power: number; onset: 0 | 1;
+  power: number;
 }
 
 export class Note {
@@ -12,12 +12,12 @@ export class Note {
 
   analyze(frame: Float32Array): Analysis {
     if (frame.length === 0) {
-      return {power: 0, onset: 0};
+      return {power: 0};
     }
 
     this.frames.push(frame);
     if (this.frames.size() < this.frames.capacity()) {
-      return {power: 0, onset: 0};
+      return {power: 0};
     }
 
     const window = new Float32Array(this.frames.size() * frame.length);
@@ -27,43 +27,12 @@ export class Note {
     this.normalize(window);
 
     const power = this.power(window);
-    const onset = this.onset(window);
 
-    return {power, onset};
+    return {power};
   }
 
   private power(window: Float32Array): number {
     return window.reduce((memo, x) => memo + x, 0) / window.length;
-  }
-
-  private onset(window: Float32Array): 0|1 {
-    // This only sort of works right now, but it doesn't
-    // look terrible so here it is.
-    const dt = 10;
-    const delta = new Float32Array(Math.round(window.length / dt));
-    for (let k = 0; k < delta.length; k++) {
-      const offset = 1 + k * dt;
-      const limit = Math.min(offset + dt, window.length);
-      for (let j = offset; j < limit; j++) {
-        delta[k] += Math.abs(window[j] - window[j - 1]);
-      }
-      delta[k] /= (limit - offset);
-    }
-
-    const dk = 10;
-    for (let k = dk; k < delta.length - dk; k++) {
-      if (this.isLocalMax(delta, k, dk)) return 1;
-    }
-
-    return 0;
-  }
-
-  private isLocalMax(window: Float32Array, k: number, dk: number): boolean {
-    const r = Math.round(dk / 2);
-    for (let j = k - r; j < k + r; j++) {
-      if (window[j] > 0) return false;
-    }
-    return true;
   }
 
   private normalize(window: Float32Array): void {

@@ -33,13 +33,12 @@ class Processor extends AudioWorkletProcessor {
     const frames = inputs.map(channels => channels[0]);
     const dbMin = parameters.dbMin[0];
     const dbMax = parameters.dbMax[0];
-    let power = 0, kMax = -1, powerMax = -Infinity, onsets = 0;
+    let power = 0, kMax = -1, powerMax = -Infinity;
     this.notes.forEach((n, k) => {
       n.dbMin = dbMin;
       n.dbMax = dbMax;
       const analysis = n.analyze(frames[k]);
       power += analysis.power;
-      onsets += analysis.onset;
       if (analysis.power > powerMax) {
         powerMax = analysis.power;
         kMax = k;
@@ -47,7 +46,7 @@ class Processor extends AudioWorkletProcessor {
     });
     power /= binCount;
     const chroma = this.chroma(kMax);
-    const onset = onsets > 4 ? 1 : 0;
+    const onset = 0;
 
     assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
     assert(0 <= chroma && chroma <= 1, `chroma: Expected 0 <= ${chroma} <= 1`);

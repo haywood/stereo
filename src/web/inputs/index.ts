@@ -223,7 +223,7 @@ export const inputs = {
       'pipe',
       `${n}->torus(4, 1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
       ),
-  theta: new TextInput('theta', 'pi * (t + onset) / 20'),
+  theta: new TextInput('theta', 'pi * t / 20'),
   h: new TextInput('h', 'chroma * abs(p[0])'),
   v: new TextInput('v', 'power'),
   animate: new ToggleInput('animate', true, false, true),
