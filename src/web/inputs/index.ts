@@ -231,7 +231,7 @@ export const inputs = {
     !document.fullscreenEnabled,
     false,
   ),
-  allowedDbs: new RangeInput('allowed_db_range', [-100, -30]),
+  allowedDbs: new RangeInput('allowed_db_range', [-130, -30]),
   save: new ActionInput('save', async () => {
     const canvas = renderer.domElement;
     renderer.render();

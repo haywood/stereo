@@ -11,7 +11,6 @@ export type Params = {
   t?: number;
   power?: number;
   chroma?: number;
-  onset?: 0 | 1;
 };
 
 export type NormalizedParams = {
@@ -22,7 +21,6 @@ export type NormalizedParams = {
   t: number;
   power: number;
   chroma: number;
-  onset: 0 | 1;
 };
 
 export type UnaryOperator = (x: number) => number;
@@ -31,7 +29,6 @@ export type Scope = {
   t: number;
   power: number;
   chroma: number;
-  onset: 0 | 1;
   inf: number;
   n?: number;
   p?: Float32Array;

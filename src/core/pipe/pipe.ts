@@ -40,13 +40,12 @@ export class Pipe {
       t: params.t || 0,
       power: params.power || 0,
       chroma: params.chroma || 0,
-      onset: params.onset || 0,
     };
   };
 
   private static scopeForNormal = (params: NormalizedParams, n: number) => {
-    const { power, t, chroma, onset } = params;
-    return { t, power, chroma, n, inf, onset };
+    const { power, t, chroma } = params;
+    return { t, power, chroma, n, inf };
   };
 
   private static compileHV = (

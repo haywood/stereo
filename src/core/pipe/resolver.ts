@@ -175,7 +175,7 @@ const isNodeDynamic = (node: Scalar): boolean => {
     case 'fn':
       return node.args.some(isNodeDynamic);
     case 'id':
-      return ['t', 'power', 'chroma', 'onset'].includes(node.id);
+      return ['t', 'power', 'chroma'].includes(node.id);
     case 'arith':
       return node.operands.some(isNodeDynamic);
     default:
