@@ -1,36 +1,22 @@
 import assert from 'assert';
-import CircularBuffer from 'circular-buffer';
 
 import {binCount, chromaCount, frameSize, octaveCount} from './constants';
-import {Power} from './power';
+import {Note} from './note';
 import {Spectrum} from './spectrum';
 import {Audio} from './types';
-
-// Remember ~10ms worth of frames in order to target
-// 10ms resolution for signal power.
-const memory = (() => {
-  // Number of frames collected per second
-  const fps = sampleRate / frameSize;
-  // Number of frames collected per 10ms
-  const fpcs = fps / 100;
-  return Math.floor(fpcs);
-})();
-const middle = Math.floor(memory / 2) + 1;
 
 class Processor extends AudioWorkletProcessor {
   static get parameterDescriptors() {
     return [{name: 'dbMin', maxValue: 0}, {name: 'dbMax', maxValue: 0}];
   }
 
-  private readonly history = new Array<CircularBuffer<number>>(binCount);
+  private readonly notes = new Array(binCount);
 
   constructor(options) {
     super(options);
 
     for (let i = 0; i < binCount; i++) {
-      this.history[i] = new CircularBuffer(memory);
-    }
-    for (let i = 0; i < chromaCount; i++) {
+      this.notes[i] = new Note();
     }
   }
 
@@ -45,20 +31,23 @@ class Processor extends AudioWorkletProcessor {
     });
 
     const frames = inputs.map(channels => channels[0]);
-    const {dbMin, dbMax} = parameters;
-    const powers = new Power(dbMin[0], dbMax[0]).process(frames);
-    powers.forEach((p, i) => this.history[i].push(p));
-
-    const power = mean(this.history.map(h => mean(h.toarray())));
-    const chroma = this.chroma(powers);
-    const onset = this.history.reduce((count, h) => {
-      if (h.size() === h.capacity() &&
-          h.toarray().every(p => p <= h.get(middle))) {
-        return count + 1;
-      } else {
-        return count;
+    const dbMin = parameters.dbMin[0];
+    const dbMax = parameters.dbMax[0];
+    let power = 0, kMax = -1, powerMax = -Infinity, onsets = 0;
+    this.notes.forEach((n, k) => {
+      n.dbMin = dbMin;
+      n.dbMax = dbMax;
+      const analysis = n.analyze(frames[k]);
+      power += analysis.power;
+      onsets += analysis.onset;
+      if (analysis.power > powerMax) {
+        powerMax = analysis.power;
+        kMax = k;
       }
-    }, 0) >= 4 ? 1 : 0;
+    });
+    power /= binCount;
+    const chroma = this.chroma(kMax);
+    const onset = onsets > 4 ? 1 : 0;
 
     assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
     assert(0 <= chroma && chroma <= 1, `chroma: Expected 0 <= ${chroma} <= 1`);
@@ -79,8 +68,7 @@ class Processor extends AudioWorkletProcessor {
    * of the audio. Probably some kind of rolling average instead of
    * per-frame max power.
    */
-  chroma = (powers: number[]) => {
-    const k = argmax(powers);
+  chroma = (k: number) => {
     const chroma = Spectrum.chroma(k);
     const octave = Spectrum.octave(k);
     const chromaStep = 1 / chromaCount;
@@ -88,18 +76,5 @@ class Processor extends AudioWorkletProcessor {
     return chroma * chromaStep + octave * octaveStep;
   };
 }
-
-const mean = (x: Array<number>) => x.reduce((a, b) => a + b, 0) / x.length;
-
-const argmax = (x: ArrayLike<number>) => {
-  let arg = -1, max = -Infinity;
-  for (let i = 0; i < x.length; i++) {
-    if (x[i] > max) {
-      max = x[i];
-      arg = i;
-    }
-  }
-  return arg;
-};
 
 registerProcessor('power', Processor);
