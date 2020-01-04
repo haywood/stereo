@@ -1,9 +1,9 @@
 import multirange from 'multirange';
-import {BehaviorSubject, Subject} from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
-import {poolSize} from '../../core/pipe/pool';
+import { poolSize } from '../../core/pipe/pool';
 import debug from '../debug';
-import {renderer} from '../renderer';
+import { renderer } from '../renderer';
 
 type Change<T> = {
   newValue: T;
@@ -23,8 +23,10 @@ export abstract class AbstractInput<T, E = HTMLElement> {
   protected el?: E;
 
   constructor(
-      readonly id: string, private _value: T,
-      private readonly persistent: boolean) {
+    readonly id: string,
+    private _value: T,
+    private readonly persistent: boolean,
+  ) {
     if (persistenceEnabled) {
       this.initFromOrWriteToHash();
     } else {
@@ -41,7 +43,7 @@ export abstract class AbstractInput<T, E = HTMLElement> {
     }
   };
 
-  newSubject = () => new BehaviorSubject({newValue: this._value});
+  newSubject = () => new BehaviorSubject({ newValue: this._value });
 
   setup = (el: E) => {
     this.el = el;
@@ -52,10 +54,11 @@ export abstract class AbstractInput<T, E = HTMLElement> {
 
   protected parse(str: string): T {
     throw new Error('parse unsupported');
-  };
+  }
+
   protected stringify(value: T): string {
     throw new Error('stringify unsupported');
-  };
+  }
 
   get stream() {
     return this.subject.asObservable();
@@ -68,7 +71,7 @@ export abstract class AbstractInput<T, E = HTMLElement> {
   set value(newValue: T) {
     const oldValue = this.value;
     this._value = newValue;
-    this.subject.next({newValue, oldValue, event: window.event});
+    this.subject.next({ newValue, oldValue, event: window.event });
     if (this.persistent) this.updateHash();
   }
 
@@ -79,24 +82,20 @@ export abstract class AbstractInput<T, E = HTMLElement> {
   };
 }
 
-type TextInputId = 'pipe'|'theta'|'h'|'v';
+type TextInputId = 'pipe' | 'theta' | 'h' | 'v';
 
 export class TextInput extends AbstractInput<string, HTMLInputElement> {
   readonly disabled = false;
 
-  constructor(
-      readonly id: TextInputId,
-      _value: string,
-      persistent: boolean = true,
-  ) {
+  constructor(readonly id: TextInputId, _value: string, persistent = true) {
     super(id, _value, persistent);
   }
 
   protected _setup = () => {
-    this.el.onchange = () => this.value = this.el.value;
-    this.el.oninput = () => this.el.size = this.el.value.length;
+    this.el.onchange = () => (this.value = this.el.value);
+    this.el.oninput = () => (this.el.size = this.el.value.length);
 
-    this.stream.subscribe(({newValue}) => {
+    this.stream.subscribe(({ newValue }) => {
       this.el.value = newValue;
       this.el.size = newValue.length;
     });
@@ -111,26 +110,26 @@ export class TextInput extends AbstractInput<string, HTMLInputElement> {
   }
 }
 
-type ToggleInputId = 'animate'|'mic'|'fullscreen';
+type ToggleInputId = 'animate' | 'mic' | 'fullscreen';
 
 export class ToggleInput extends AbstractInput<boolean> {
   constructor(
-      readonly id: ToggleInputId,
-      _value: boolean,
-      readonly disabled: boolean = false,
-      persistent: boolean = true,
+    readonly id: ToggleInputId,
+    _value: boolean,
+    readonly disabled: boolean = false,
+    persistent = true,
   ) {
     super(id, _value, persistent);
   }
 
   protected _setup = () => {
     const on = this.el.querySelector<HTMLInputElement>('.on');
-    on.onclick = () => this.value = true;
+    on.onclick = () => (this.value = true);
 
     const off = this.el.querySelector<HTMLInputElement>('.off');
-    off.onclick = () => this.value = false;
+    off.onclick = () => (this.value = false);
 
-    this.stream.subscribe(({newValue}) => {
+    this.stream.subscribe(({ newValue }) => {
       if (newValue) {
         on.style.display = 'none';
         off.style.display = 'inline';
@@ -142,13 +141,10 @@ export class ToggleInput extends AbstractInput<boolean> {
   };
 
   protected parse(str: string) {
-    if (/1|true/i.test(str))
-      return true;
-    else if (/0|false/i.test(str))
-      return false;
-    else
-      throw new Error(`invalid boolean value for input ${this.id}: ${str}`);
-  };
+    if (/1|true/i.test(str)) return true;
+    else if (/0|false/i.test(str)) return false;
+    else throw new Error(`invalid boolean value for input ${this.id}: ${str}`);
+  }
 
   protected stringify(bool: boolean) {
     return bool ? '1' : '0';
@@ -159,10 +155,10 @@ type RangeInputId = 'allowed_db_range';
 
 export class RangeInput extends AbstractInput<[number, number]> {
   constructor(
-      readonly id: RangeInputId,
-      _value: [number, number],
-      readonly disabled: boolean = false,
-      persistent: boolean = true,
+    readonly id: RangeInputId,
+    _value: [number, number],
+    readonly disabled: boolean = false,
+    persistent = true,
   ) {
     super(id, _value, persistent);
   }
@@ -177,13 +173,14 @@ export class RangeInput extends AbstractInput<[number, number]> {
       this.value = [+input.valueLow, +input.valueHigh];
     };
 
-    this.el.querySelector<HTMLInputElement>('input.ghost').oninput =
-        input.oninput = () => {
-          minEl.innerText = input.valueLow.toString();
-          maxEl.innerText = input.valueHigh.toString();
-        };
+    this.el.querySelector<HTMLInputElement>(
+      'input.ghost',
+    ).oninput = input.oninput = () => {
+      minEl.innerText = input.valueLow.toString();
+      maxEl.innerText = input.valueHigh.toString();
+    };
 
-    this.stream.subscribe(({newValue}) => {
+    this.stream.subscribe(({ newValue }) => {
       input.value = this.stringify(newValue);
       minEl.innerText = input.valueLow.toString();
       maxEl.innerText = input.valueHigh.toString();
@@ -197,20 +194,20 @@ export class RangeInput extends AbstractInput<[number, number]> {
 
   protected stringify([min, max]) {
     return `${min},${max}`;
-  };
+  }
 }
 
 export class ActionInput extends AbstractInput<void> {
   constructor(
-      id: string,
-      private readonly action: (ev: MouseEvent, el: HTMLElement) => void,
-      readonly disabled: boolean = false,
+    id: string,
+    private readonly action: (ev: MouseEvent) => void,
+    readonly disabled: boolean = false,
   ) {
     super(id, null, false);
   }
 
   protected _setup = () => {
-    this.el.onclick = (ev) => this.action(ev, this.el);
+    this.el.onclick = ev => this.action(ev);
   };
 }
 
@@ -220,37 +217,35 @@ const n = 2000 * poolSize;
 
 export const inputs = {
   pipe: new TextInput(
-      'pipe',
-      `${n}->torus(4, 1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
-      ),
+    'pipe',
+    `${n}->torus(4, 1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
+  ),
   theta: new TextInput('theta', 'pi * t / 20'),
   h: new TextInput('h', 'chroma * abs(p[0])'),
   v: new TextInput('v', 'power'),
   animate: new ToggleInput('animate', true, false, true),
   mic: new ToggleInput('mic', false, false, false),
   fullscreen: new ToggleInput(
-      'fullscreen',
-      false,
-      !document.fullscreenEnabled,
-      false,
-      ),
+    'fullscreen',
+    false,
+    !document.fullscreenEnabled,
+    false,
+  ),
   allowedDbs: new RangeInput('allowed_db_range', [-100, -30]),
-  save: new ActionInput(
-      'save',
-      async (_, el) => {
-        const canvas = renderer.domElement;
-        renderer.render();
-        const blob = await new Promise(resolve => canvas.toBlob(resolve));
-        const url = URL.createObjectURL(blob);
-        try {
-          const a = document.createElement('a');
-          a.download = `stereo${document.location.hash}`;
-          a.href = url;
-          a.click();
-        } finally {
-          URL.revokeObjectURL(url);
-        }
-      }),
+  save: new ActionInput('save', async () => {
+    const canvas = renderer.domElement;
+    renderer.render();
+    const blob = await new Promise(resolve => canvas.toBlob(resolve));
+    const url = URL.createObjectURL(blob);
+    try {
+      const a = document.createElement('a');
+      a.download = `stereo${document.location.hash}`;
+      a.href = url;
+      a.click();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }),
 };
 export type Inputs = typeof inputs;
 
