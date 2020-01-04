@@ -31,7 +31,7 @@ class Renderer {
       new PointsMaterial({
         vertexColors: VertexColors,
         size: 0.001,
-      })
+      }),
     );
 
     this.scene = new Scene();
@@ -39,7 +39,8 @@ class Renderer {
   }
 
   private setSize = () => {
-    const near = 0.01, far = 1000;
+    const near = 0.01,
+      far = 1000;
     const width = window.innerWidth;
     const height = window.innerHeight;
     const aspect = width / height;

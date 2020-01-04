@@ -2,7 +2,7 @@ import CircularBuffer from 'circular-buffer';
 
 export type Analysis = {
   power: number;
-}
+};
 
 export class Note {
   // the class uses a 3 frame (~10ms) window to analyze the audio
@@ -12,12 +12,12 @@ export class Note {
 
   analyze(frame: Float32Array): Analysis {
     if (frame.length === 0) {
-      return {power: 0};
+      return { power: 0 };
     }
 
     this.frames.push(frame);
     if (this.frames.size() < this.frames.capacity()) {
-      return {power: 0};
+      return { power: 0 };
     }
 
     const window = new Float32Array(this.frames.size() * frame.length);
@@ -28,7 +28,7 @@ export class Note {
 
     const power = this.power(window);
 
-    return {power};
+    return { power };
   }
 
   private power(window: Float32Array): number {
@@ -37,11 +37,11 @@ export class Note {
 
   private normalize(window: Float32Array): void {
     for (let i = 0; i < window.length; i++) {
-      let tmp = Math.abs(window[i]);  // [0, 1]
-      tmp = 10 * Math.log2(tmp);      // [-Inf, 0]
-      tmp = this.threshold(tmp);      // [-Inf, 0]
-      tmp--;                          // [-Inf, -1]
-      tmp = 1 / Math.abs(tmp);        // [0, 1]
+      let tmp = Math.abs(window[i]); // [0, 1]
+      tmp = 10 * Math.log2(tmp); // [-Inf, 0]
+      tmp = this.threshold(tmp); // [-Inf, 0]
+      tmp--; // [-Inf, -1]
+      tmp = 1 / Math.abs(tmp); // [0, 1]
 
       window[i] = tmp;
     }

@@ -1,6 +1,6 @@
-import Interval from "./interval";
-import { Fn } from "./fn";
-import { Vector } from "../data";
+import Interval from './interval';
+import { Fn } from './fn';
+import { Vector } from '../data';
 
 export default class Cube implements Fn {
   private readonly interval: Interval;
@@ -9,7 +9,7 @@ export default class Cube implements Fn {
     this.interval = new Interval(
       d,
       new Array(d).fill(-l / 2),
-      new Array(d).fill(l / 2)
+      new Array(d).fill(l / 2),
     );
   }
 

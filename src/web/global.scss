@@ -2,30 +2,30 @@ $font-family: 'FiraCode Nerd Font', FiraCode, Roboto, Helvetica;
 $font-size: 16px;
 
 body {
-    color: white;
-    cursor: wait;
-    font-family: $font-family;
-    font-size: $font-size;
-    margin: auto;
-    overflow: hidden;
+  color: white;
+  cursor: wait;
+  font-family: $font-family;
+  font-size: $font-size;
+  margin: auto;
+  overflow: hidden;
 
-    h1 {
-        left: 0;
-        margin: 8px;
-        position: absolute;
-        top: 0;
-    }
+  h1 {
+    left: 0;
+    margin: 8px;
+    position: absolute;
+    top: 0;
+  }
 
-    &.data {
-        cursor: auto;
-    }
+  &.data {
+    cursor: auto;
+  }
 
-    &.data.cursor-inactive {
-        cursor: none;
-    }
+  &.data.cursor-inactive {
+    cursor: none;
+  }
 }
 
 input {
-    font-family: $font-family;
-    font-size: $font-size;
+  font-family: $font-family;
+  font-size: $font-size;
 }

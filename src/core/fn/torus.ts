@@ -17,7 +17,7 @@ export default class Torus implements Fn {
     return this.d - 1;
   }
 
-  sample = function* (n: number, offset: number, limit: number) {
+  sample = function*(n: number, offset: number, limit: number) {
     const cube = new Cube(this.domain, 2 * Math.PI);
     for (const phi of cube.sample(n, offset, limit)) {
       yield this.fn(phi);
@@ -26,7 +26,11 @@ export default class Torus implements Fn {
 
   fn = (theta: Vector, y: Vector = new Float32Array(this.d)) => {
     const { cross, d, r } = this;
-    assert.equal(theta.length, d - 1, `torus expects an input of ${d - 1}; got ${theta.length}`);
+    assert.equal(
+      theta.length,
+      d - 1,
+      `torus expects an input of ${d - 1}; got ${theta.length}`,
+    );
     const rotator = new Rotator(d, theta[d - 2], 0, d - 1);
 
     cross.fn(theta.subarray(0, d - 2), y.subarray(0, d - 1));

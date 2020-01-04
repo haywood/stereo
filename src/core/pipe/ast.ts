@@ -1,43 +1,43 @@
 export type PipeNode = {
-    kind: 'pipe';
-    n: number;
-    chain: StepNode[];
+  kind: 'pipe';
+  n: number;
+  chain: StepNode[];
 };
 
 export type StepNode = {
-    kind: 'step';
-    type: string;
-    args: Scalar[];
+  kind: 'step';
+  type: string;
+  args: Scalar[];
 };
 
 export type Scalar = ArithNode | NumberNode | FnNode | AccessNode | IdNode;
 
 export type ArithNode = {
-    kind: 'arith';
-    op: string;
-    operands: [Scalar, Scalar];
+  kind: 'arith';
+  op: string;
+  operands: [Scalar, Scalar];
 };
 
 export type NumberNode = {
-    kind: 'number';
-    value: number;
+  kind: 'number';
+  value: number;
 };
 
 export type FnNode = {
-    kind: 'fn';
-    name: string;
-    args: Scalar[];
+  kind: 'fn';
+  name: string;
+  args: Scalar[];
 };
 
 export type AccessNode = {
-    kind: 'access';
-    id: string;
-    index: Scalar;
+  kind: 'access';
+  id: string;
+  index: Scalar;
 };
 
 export type IdNode = {
-    kind: 'id';
-    id: string;
+  kind: 'id';
+  id: string;
 };
 
 export type Value = number | Function;

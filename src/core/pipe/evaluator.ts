@@ -1,18 +1,18 @@
-import assert from "assert";
-import { hsv } from "color-convert";
-import { getLogger } from "loglevel";
-import { Color } from "three";
+import assert from 'assert';
+import { hsv } from 'color-convert';
+import { getLogger } from 'loglevel';
+import { Color } from 'three';
 
-import { inf } from "../constants";
-import { Data, Vector } from "../data";
-import { CompositeFn } from "../fn/fn";
-import { pp } from "../pp";
+import { inf } from '../constants';
+import { Data, Vector } from '../data';
+import { CompositeFn } from '../fn/fn';
+import { pp } from '../pp';
 
-import { PipeNode } from "./ast";
-import { Resolution, Resolver } from "./resolver";
-import { Chunk, HV, Scope } from "./types";
+import { PipeNode } from './ast';
+import { Resolution, Resolver } from './resolver';
+import { Chunk, HV, Scope } from './types';
 
-const logger = getLogger("Evaluator");
+const logger = getLogger('Evaluator');
 
 export class Evaluator {
   private readonly n: number;
@@ -26,7 +26,7 @@ export class Evaluator {
     private readonly scope: Scope,
     ast: PipeNode,
     private readonly hv: HV,
-    chunk: Chunk
+    chunk: Chunk,
   ) {
     const resolver = new Resolver(scope);
     const { n, staticFn, dynamicFn } = resolver.resolve(ast) as Resolution;
@@ -36,7 +36,7 @@ export class Evaluator {
     assert(offset >= 0, `offset must be non-negative; got ${offset}`);
     assert(
       limit <= n,
-      `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`
+      `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`,
     );
 
     this.n = n;
@@ -73,7 +73,7 @@ export class Evaluator {
     assert.equal(
       data[Data.positionOffset(data)],
       iter.d,
-      "d(data) != d(evaluator)"
+      'd(data) != d(evaluator)',
     );
 
     logger.debug(`iterating using ${pp(scope)}, ${pp(iter)}`);
@@ -101,7 +101,7 @@ export class Evaluator {
       const [h, s, l] = hsv.hsl([
         Math.round(resolver.resolve(hv.h) as number),
         100,
-        Math.round(resolver.resolve(hv.v) as number)
+        Math.round(resolver.resolve(hv.v) as number),
       ]);
       const c = new Color(`hsl(${h}, ${s}%, ${l}%)`);
 

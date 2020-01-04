@@ -1,27 +1,22 @@
 {
-    "compilerOptions": {
-        "incremental": true,
-        "target": "es6",
-        "module": "esnext",
-        "moduleResolution": "node",
-        "outDir": ".js-bin",
-        "rootDir": "src",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "downlevelIteration": true,
-        "noImplicitAny": false,
-        "skipLibCheck": true,
-        "sourceMap": true,
-        "tsBuildInfoFile": ".tsbuildinfo",
-        "allowJs": true,
-        "experimentalDecorators": true,
-        "lib": [
-            "dom",
-            "es6"
-        ],
-    },
-    "compileOnSave": true,
-    "include": [
-        "src/**/*"
-    ],
+  "compilerOptions": {
+    "incremental": true,
+    "target": "es6",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "outDir": ".js-bin",
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "lib": ["dom", "es6"]
+  },
+  "compileOnSave": true,
+  "include": ["src/**/*"]
 }

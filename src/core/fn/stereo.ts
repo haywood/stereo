@@ -20,7 +20,7 @@ export default class Stereo implements Fn {
     return this.to;
   }
 
-  sample = function* (n: number, offset: number, limit: number) {
+  sample = function*(n: number, offset: number, limit: number) {
     const cube = new Cube(this.domain, 2);
     for (const phi of cube.sample(n, offset, limit)) {
       yield this.fn(phi);
@@ -40,18 +40,12 @@ export default class Stereo implements Fn {
     fromTemp.set(x);
 
     while (from < to) {
-      Stereo.up(
-        fromTemp.subarray(0, from),
-        toTemp.subarray(0, ++from)
-      );
+      Stereo.up(fromTemp.subarray(0, from), toTemp.subarray(0, ++from));
       fromTemp.set(toTemp);
     }
 
     while (from > to) {
-      Stereo.down(
-        fromTemp.subarray(0, from),
-        toTemp.subarray(0, --from)
-      );
+      Stereo.down(fromTemp.subarray(0, from), toTemp.subarray(0, --from));
       fromTemp.set(toTemp);
     }
 

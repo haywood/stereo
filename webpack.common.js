@@ -30,7 +30,8 @@ module.exports = {
       },
       {
         test: /\.pegjs$/,
-        loader: 'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith',
+        loader:
+          'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith',
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,
@@ -60,9 +61,9 @@ module.exports = {
         test: /\.(html)$/,
         use: {
           loader: 'html-loader',
-        }
+        },
       },
-    ]
+    ],
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.pegjs'],

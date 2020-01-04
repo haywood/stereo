@@ -1,6 +1,6 @@
-import { Vector } from "../data";
+import { Vector } from '../data';
 import assert from 'assert';
-import { inf } from "../constants";
+import { inf } from '../constants';
 
 export const cos = Math.cos;
 export const sin = Math.sin;
@@ -8,7 +8,7 @@ export const tan = Math.tan;
 export const tanh = Math.tanh;
 export const exp = Math.exp;
 
-export const components = (d) => Array.from(new Array(d).keys());
+export const components = d => Array.from(new Array(d).keys());
 
 export interface Fn {
   readonly d: number;
@@ -26,7 +26,6 @@ export class CompositeFn implements Fn {
     const length = Math.max(this.domainMax, this.dMax);
     this.x = new Float32Array(length);
     this.y = new Float32Array(length);
-
   }
 
   get first() {
@@ -53,7 +52,7 @@ export class CompositeFn implements Fn {
     return this.fns.reduce((max, f) => Math.max(f.d, max), 0);
   }
 
-  sample = function* (n: number, offset: number, limit: number) {
+  sample = function*(n: number, offset: number, limit: number) {
     const { fns, d } = this;
     const [first, ...rest] = fns;
     if (fns.length == 0) return [];

@@ -21,7 +21,7 @@ import debug from './debug';
     overlay.hide();
   };
 
-  document.body.onmousemove = (event) => {
+  document.body.onmousemove = event => {
     overlay.show();
 
     if (document.body.classList.contains('cursor-inactive')) {
@@ -29,8 +29,7 @@ import debug from './debug';
     }
 
     lastMouseMove = Date.now();
-    setTimeout(
-      () => maybeSetCursorInactive(event), cursorInactiveTimeout);
+    setTimeout(() => maybeSetCursorInactive(event), cursorInactiveTimeout);
   };
 
   document.onreadystatechange = (): void => {
@@ -39,7 +38,7 @@ import debug from './debug';
       document.body.appendChild(overlay.domElement);
 
       dataStream.subscribe(
-        (data) => {
+        data => {
           renderer.update(data);
           debug('data', data);
           document.body.classList.add('data');

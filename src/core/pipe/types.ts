@@ -1,6 +1,6 @@
-import { Fn } from "../fn/fn";
+import { Fn } from '../fn/fn';
 
-import { Scalar } from "./ast";
+import { Scalar } from './ast';
 
 export type Params = {
   pipe: string;
