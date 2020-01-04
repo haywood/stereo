@@ -10,7 +10,7 @@ class Processor extends AudioWorkletProcessor {
     return [{name: 'dbMin', maxValue: 0}, {name: 'dbMax', maxValue: 0}];
   }
 
-  private readonly notes = new Array(binCount);
+  private readonly notes = new Array<Note>(binCount);
 
   constructor(options) {
     super(options);
@@ -33,23 +33,20 @@ class Processor extends AudioWorkletProcessor {
     const frames = inputs.map(channels => channels[0]);
     const dbMin = parameters.dbMin[0];
     const dbMax = parameters.dbMax[0];
-    let power = 0, kMax = -1, powerMax = -Infinity;
     this.notes.forEach((n, k) => {
       n.dbMin = dbMin;
       n.dbMax = dbMax;
-      const analysis = n.analyze(frames[k]);
-      power += analysis.power;
-      if (analysis.power > powerMax) {
-        powerMax = analysis.power;
-        kMax = k;
-      }
     });
-    power /= binCount;
-    const chroma = this.chroma(kMax);
+    const analyses = this.notes.map((n, k) => n.analyze(frames[k]));
+
+    const power = analyses.reduce((sum, {power}) => sum + power, 0) / binCount;
+    assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
+
+    const chroma = this.chroma(analyses.map(a => a.power));
+    assert(0 <= chroma && chroma <= 1, `chroma: Expected 0 <= ${chroma} <= 1`);
+
     const onset = 0;
 
-    assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
-    assert(0 <= chroma && chroma <= 1, `chroma: Expected 0 <= ${chroma} <= 1`);
 
     this.port.postMessage({power, chroma, onset} as Audio);
 
@@ -57,22 +54,15 @@ class Processor extends AudioWorkletProcessor {
   };
 
   /**
-   * Find the index of the maximal power and map it into color
-   * space ([0, 1]) by sending it to a segment of the interval
-   * based on its chroma, and then offsetting it based on its octave.
-   * Notes with the same chroma go to the same color region, and go
-   * further into that region the higher their octave.
-   *
-   * TODO: really would like to base color on a more wholistic picture
-   * of the audio. Probably some kind of rolling average instead of
-   * per-frame max power.
+   * Compute a chroma for the frame based on a power-weighted
+   * average across all the notes.
    */
-  chroma = (k: number) => {
-    const chroma = Spectrum.chroma(k);
-    const octave = Spectrum.octave(k);
-    const chromaStep = 1 / chromaCount;
-    const octaveStep = chromaStep / octaveCount;
-    return chroma * chromaStep + octave * octaveStep;
+  chroma = (powers: number[]) => {
+    return powers.reduce((sum, p, k) => {
+      const chroma = Spectrum.chroma(k);
+
+      return sum + p * chroma / (chromaCount - 1);
+    }) / powers.length;
   };
 }
 

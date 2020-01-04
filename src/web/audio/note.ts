@@ -7,8 +7,8 @@ export type Analysis = {
 export class Note {
   // the class uses a 3 frame (~10ms) window to analyze the audio
   private readonly frames = new CircularBuffer<Float32Array>(3);
-  private dbMin = -Infinity;
-  private dbMax = 0;
+  dbMin = -Infinity;
+  dbMax = 0;
 
   analyze(frame: Float32Array): Analysis {
     if (frame.length === 0) {
