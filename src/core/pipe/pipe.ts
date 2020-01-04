@@ -1,5 +1,5 @@
 import { getLogger } from 'loglevel';
-import { Params, NormalizedParams, HV, Chunk } from './types';
+import { Params, NormalizedParams, HV, Chunk, Scope } from './types';
 import { Compiler } from './compiler';
 import { Evaluator } from './evaluator';
 import { PipeNode } from './ast';
@@ -40,12 +40,17 @@ export class Pipe {
       t: params.t || 0,
       power: params.power || 0,
       chroma: params.chroma || 0,
+      tempo: params.tempo || 0,
+      onset: params.onset || 0,
     };
   };
 
-  private static scopeForNormal = (params: NormalizedParams, n: number) => {
-    const { power, t, chroma } = params;
-    return { t, power, chroma, n, inf };
+  private static scopeForNormal = (
+    params: NormalizedParams,
+    n: number,
+  ): Scope => {
+    const { power, t, chroma, tempo, onset } = params;
+    return { t, power, chroma, tempo, onset, n, inf };
   };
 
   private static compileHV = (

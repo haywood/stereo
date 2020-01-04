@@ -3,27 +3,21 @@ import { frameSize } from './constants';
 
 export type Analysis = {
   power: number;
+  dpower: number;
 };
 
 const NO_AUDIO: Analysis = {
   power: 0,
+  dpower: 0,
 };
 
 const { round, abs, log2, min, max } = Math;
 
 const memory = round(sampleRate / frameSize / 100); // enough for ~10ms of audio
 
-type Reducable<T> = {
-  reduce<M>(cb: (memo: M, t: T) => M, m0?: M): M;
-  length: number;
-};
-
-const mean = (xs: Reducable<number>) =>
-  xs.reduce((memo, x) => memo + x, 0) / xs.length;
-
 export class Note {
   private readonly frames = new CircularBuffer<Float32Array>(memory);
-  private readonly deltas = new CircularBuffer<number>(memory);
+  private prevPower = 0;
   dbMin = -Infinity;
   dbMax = 0;
 
@@ -44,28 +38,14 @@ export class Note {
     this.normalize(window);
 
     const power = this.power(window);
-    const dpower = this.dpower(window);
-    const deltas = this.deltas.toarray();
-    this.deltas.push(this.dpower(window));
+    const dpower = Math.abs(power - this.prevPower);
+    this.prevPower = power;
 
-    deltas.sort((a, b) => a - b);
-    const medianDelta = deltas[round(deltas.length / 2)];
-    const meanDelta = mean(deltas);
-    const onset = dpower > 0.5 * medianDelta + 0.5 * meanDelta ? 1 : 0;
-
-    return { power: power * onset };
+    return { power, dpower };
   }
 
   private power(window: Float32Array): number {
     return window.reduce((memo, x) => memo + x, 0) / window.length;
-  }
-
-  private dpower(window: Float32Array): number {
-    const delta = new Float32Array(window.length - 1);
-    for (let i = 0; i < delta.length; i++) {
-      delta[i] = abs(window[i] - window[i + 1]); // [0, 1]
-    }
-    return delta.reduce((memo, x) => memo + x, 0) / delta.length;
   }
 
   private normalize(window: Float32Array): void {

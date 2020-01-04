@@ -2,7 +2,7 @@ declare module '*.html' {
   export default '';
 }
 
-declare module './grammar.pegjs' {
+declare module '*.pegjs' {
   export function parse(spec: string): AST;
 
   export function parse(
@@ -65,3 +65,6 @@ declare interface MultirangeHTMLInputElement extends HTMLInputElement {
   valueLow: number;
   valueHigh: number;
 }
+
+// fix broken type from lib.dom.ts
+declare interface AudioParamMap extends Map<string, AudioParam> {}

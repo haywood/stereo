@@ -1,11 +1,13 @@
 import { Audio } from './types';
 
 /**
- * This defines the values used for power and chroma when audio is not enabled.
+ * This defines the placeholder used for power and chroma when audio is not enabled.
  */
-export const NO_AUDIO: Audio = {
+export const AUDIO_PLACEHOLDER: Audio = {
   power: 1,
-  chroma: 0.5,
+  chroma: 0,
+  tempo: 0.5,
+  onset: 1,
 };
 
 export const chromaCount = 12;

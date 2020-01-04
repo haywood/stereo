@@ -83,10 +83,14 @@ export class CompositeFn implements Fn {
     assert.equal(x.length, y.length);
     for (const f of fns) {
       f.fn(x.subarray(0, f.domain), y.subarray(0, f.d));
+      for (let i = 0; i < y.length; i++) {
+        if (!isFinite(y[i])) y[i] = Math.sign(y[i]) * inf;
+        else if (isNaN(y[i])) {
+          console.warn(`found NaN at index ${i}; setting to 0`);
+          y[i] = 0;
+        }
+      }
       x.set(y);
-    }
-    for (let i = 0; i < y.length; i++) {
-      if (!isFinite(y[i])) y[i] = Math.sign(y[i]) * inf;
     }
   };
 

@@ -5,21 +5,20 @@ import { inputs } from './inputs';
 import { fps } from './constants';
 import { Audio } from './audio/types';
 import { error } from './error';
-import { NO_AUDIO } from './audio/constants';
+import { AUDIO_PLACEHOLDER } from './audio/constants';
 
-const params = (t: number, { power, chroma }: Audio) => {
+const params = (t: number, audio: Audio) => {
   return {
     pipe: inputs.pipe.value,
     theta: inputs.theta.value,
     h: inputs.h.value,
     v: inputs.v.value,
     t,
-    power,
-    chroma,
+    ...audio,
   };
 };
 
-const subject = new BehaviorSubject<Params>(params(0, NO_AUDIO));
+const subject = new BehaviorSubject<Params>(params(0, AUDIO_PLACEHOLDER));
 export const paramsStream = subject.asObservable();
 let count = 0;
 

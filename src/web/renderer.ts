@@ -65,11 +65,17 @@ class Renderer {
     assert.equal(position.length % d, 0);
     assert.equal(color.length % 3, 0);
 
-    position.forEach((p, i) => {
+    const nans = position.reduce((nans, p, i) => {
       if (isNaN(p)) {
-        console.warn(`found NaN value at index ${i}`);
+        position[i] = 0;
+        nans.push(i);
       }
-    });
+      return nans;
+    }, []);
+    if (nans.length)
+      console.warn(
+        `position contains ${nans.length} NaNs at the following indices [${nans}], position=[${position}]`,
+      );
 
     geometry.setAttribute('position', new BufferAttribute(position, d));
     geometry.setAttribute('color', new BufferAttribute(color, 3));
