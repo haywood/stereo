@@ -220,7 +220,7 @@ export const inputs = {
     'pipe',
     `${n}->torus(4, 1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
   ),
-  theta: new TextInput('theta', 'pi * power * t * tempo / 4'),
+  theta: new TextInput('theta', 'pi * power + pi * t * tempo / 20'),
   h: new TextInput('h', 'chroma * abs(p[0])'),
   v: new TextInput('v', '(power + onset) / 2'),
   animate: new ToggleInput('animate', true, false, true),
@@ -231,7 +231,7 @@ export const inputs = {
     !document.fullscreenEnabled,
     false,
   ),
-  allowedDbs: new RangeInput('allowed_db_range', [-130, 0]),
+  allowedDbs: new RangeInput('allowed_db_range', [-130, -30]),
   save: new ActionInput('save', async () => {
     const canvas = renderer.domElement;
     renderer.render();

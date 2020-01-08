@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { Audio } from './types';
 import { Spectrum } from './spectrum';
-import { binCount } from './constants';
+import { binCount, AUDIO_PLACEHOLDER } from './constants';
 import processorUrl from './power.worklet';
 import { error } from '../error';
 import { inputs } from '../inputs';
@@ -24,13 +24,22 @@ export class AudioGraph {
       channelCountMode: 'explicit',
       channelCount: 1,
     });
-    power.port.onmessage = msg => subject.next(msg.data as Audio);
+    power.port.onmessage = msg => {
+      if (inputs.mic.value) {
+        subject.next(msg.data as Audio);
+      } else {
+        subject.next(AUDIO_PLACEHOLDER);
+      }
+    };
+
     power.onprocessorerror = err => {
       error(err);
       // processor dies after an error, so close the graph
       inputs.mic.value = false;
     };
+
     power.connect(ctx.destination);
+
     inputs.allowedDbs.stream.subscribe(({ newValue: [min, max] }) => {
       power.parameters.get('dbMin').setValueAtTime(min, ctx.currentTime);
       power.parameters.get('dbMax').setValueAtTime(max, ctx.currentTime);

@@ -59,6 +59,12 @@ declare var sampleRate: number;
  */
 declare var currentTime: number;
 
+/**
+ * Defiend on AudioWorkletGlobalScope. The currentFrame
+ * of the AudioContext that created the worklet.
+ */
+declare var currentFrame: number;
+
 declare var _debug: any;
 
 declare interface MultirangeHTMLInputElement extends HTMLInputElement {

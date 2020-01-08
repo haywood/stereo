@@ -1,6 +1,6 @@
 import { audioStream } from './audio';
 import { Params } from '../core/pipe/types';
-import { interval, BehaviorSubject } from 'rxjs';
+import { interval, BehaviorSubject, combineLatest } from 'rxjs';
 import { inputs } from './inputs';
 import { fps } from './constants';
 import { Audio } from './audio/types';
@@ -22,13 +22,10 @@ const subject = new BehaviorSubject<Params>(params(0, AUDIO_PLACEHOLDER));
 export const paramsStream = subject.asObservable();
 let count = 0;
 
-let audio: Audio;
-audioStream.subscribe(a => (audio = a), error);
-
-const maybeEmit = () => {
+const maybeEmit = ([audio]: [Audio, number]) => {
   if (inputs.animate.value) {
     subject.next(params(count++ / fps, audio));
   }
 };
 
-interval(1000 / fps).subscribe(maybeEmit, error);
+combineLatest(audioStream, interval(1000 / fps)).subscribe(maybeEmit, error);

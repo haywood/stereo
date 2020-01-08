@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { binCount, chromaCount, frameSize, octaveCount } from './constants';
+import { binCount, chromaCount, quantumSize } from './constants';
 import { Note } from './note';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
@@ -21,7 +21,7 @@ class Processor extends AudioWorkletProcessor {
   private readonly notes = new Array<Note>(binCount);
   // track two seconds worth of onsets to determine tempo
   private readonly impulses = new CircularBuffer<number>(
-    (2 * sampleRate) / frameSize,
+    (2 * sampleRate) / quantumSize,
   );
   private readonly onsets = new CircularBuffer<0 | 1>(this.impulses.capacity());
 
@@ -47,14 +47,14 @@ class Processor extends AudioWorkletProcessor {
       );
     });
 
-    const frames = inputs.map(channels => channels[0]);
+    const quanta = inputs.map(channels => channels[0]);
     const dbMin = parameters.dbMin[0];
     const dbMax = parameters.dbMax[0];
     this.notes.forEach((n, k) => {
       n.dbMin = dbMin;
       n.dbMax = dbMax;
     });
-    const analyses = this.notes.map((n, k) => n.analyze(frames[k]));
+    const analyses = this.notes.map((n, k) => n.analyze(quanta[k]));
 
     const power =
       analyses.reduce((sum, { power }) => sum + power, 0) / binCount;
@@ -83,7 +83,7 @@ class Processor extends AudioWorkletProcessor {
   }
 
   /**
-   * Compute a chroma for the frame based on a power-weighted
+   * Compute a chroma for the quantum based on a power-weighted
    * average across all the notes.
    */
   chroma = (powers: number[]) => {

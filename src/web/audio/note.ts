@@ -1,5 +1,4 @@
-import CircularBuffer from 'circular-buffer';
-import { frameSize } from './constants';
+import { quantumSize } from './constants';
 
 export type Analysis = {
   power: number;
@@ -13,42 +12,39 @@ const NO_AUDIO: Analysis = {
 
 const { round, abs, log2, min, max } = Math;
 
-const memory = round(sampleRate / frameSize / 100); // enough for ~10ms of audio
+const memory = round(sampleRate / quantumSize / 200); // enough for ~5ms of audio
 
 export class Note {
-  private readonly frames = new CircularBuffer<Float32Array>(memory);
-  private prevPower = 0;
+  private readonly window = new Float32Array(memory * quantumSize);
+  private analysis = NO_AUDIO;
   dbMin = -Infinity;
   dbMax = 0;
 
-  analyze(frame: Float32Array): Analysis {
-    if (frame.length === 0) {
-      return NO_AUDIO;
+  analyze(quantum: Float32Array): Analysis {
+    if (quantum.length === 0) {
+      return this.analysis;
     }
 
-    this.frames.push(frame);
-    if (this.frames.size() < this.frames.capacity()) {
-      return NO_AUDIO;
+    if (currentFrame && currentFrame % this.window.length == 0) {
+      const window = this.normalize(this.window.slice());
+      const power = this.power(window);
+      const dpower = Math.abs(power - this.analysis.power);
+      this.analysis = {
+        power,
+        dpower,
+      };
     }
 
-    const window = new Float32Array(this.frames.size() * frame.length);
-    for (let i = 0; i < this.frames.size(); i++) {
-      window.set(this.frames.get(i), i * frame.length);
-    }
-    this.normalize(window);
+    this.window.set(quantum, currentFrame % this.window.length);
 
-    const power = this.power(window);
-    const dpower = Math.abs(power - this.prevPower);
-    this.prevPower = power;
-
-    return { power, dpower };
+    return this.analysis;
   }
 
   private power(window: Float32Array): number {
     return window.reduce((memo, x) => memo + x, 0) / window.length;
   }
 
-  private normalize(window: Float32Array): void {
+  private normalize(window: Float32Array): Float32Array {
     for (let i = 0; i < window.length; i++) {
       let tmp = abs(window[i]); // [0, 1]
       tmp = 10 * log2(tmp); // [-Inf, 0]
@@ -57,6 +53,7 @@ export class Note {
 
       window[i] = tmp;
     }
+    return window;
   }
 
   private threshold(dbs: number) {
