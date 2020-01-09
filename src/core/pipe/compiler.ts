@@ -15,7 +15,7 @@ export class Compiler {
 
   constructor(params: NormalizedParams) {
     this.simplifier = new Simplifier({
-      theta: Parser.parseArith(params.theta),
+      theta: Parser.parseScalar(params.theta),
     });
   }
 
@@ -24,9 +24,9 @@ export class Compiler {
     return this.simplifier.simplify(ast);
   };
 
-  compileArith = (expr: string): ArithNode => {
-    const ast = Parser.parseArith(expr);
-    return this.simplifier.simplifyArithNode(ast);
+  compileScalar = (expr: string): Scalar => {
+    const ast = Parser.parseScalar(expr);
+    return this.simplifier.simplifyScalar(ast);
   };
 }
 
@@ -48,20 +48,7 @@ export class Simplifier {
     };
   };
 
-  simplifyArithNode = ({ kind, op, operands }: ArithNode): ArithNode => {
-    const [a, b] = operands.map(this.simplifyScalar);
-    return { kind, op, operands: [a, b] };
-  };
-
-  private simplifyStepNode = ({ kind, type: fn, args }: StepNode): StepNode => {
-    return {
-      kind,
-      type: fn,
-      args: args.map(this.simplifyScalar),
-    };
-  };
-
-  private simplifyScalar = (node: Scalar): Scalar => {
+  simplifyScalar = (node: Scalar): Scalar => {
     switch (node.kind) {
       case 'number':
         return node;
@@ -74,6 +61,23 @@ export class Simplifier {
       case 'arith':
         return this.simplifyArithNode(node);
     }
+  };
+
+  private simplifyStepNode = ({ kind, type: fn, args }: StepNode): StepNode => {
+    return {
+      kind,
+      type: fn,
+      args: args.map(this.simplifyScalar),
+    };
+  };
+
+  private simplifyArithNode = ({
+    kind,
+    op,
+    operands,
+  }: ArithNode): ArithNode => {
+    const [a, b] = operands.map(this.simplifyScalar);
+    return { kind, op, operands: [a, b] };
   };
 
   private simplifyFnNode = ({ kind, name, args }: FnNode): FnNode => {

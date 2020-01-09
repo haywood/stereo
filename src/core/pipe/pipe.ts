@@ -58,8 +58,8 @@ export class Pipe {
     compiler: Compiler,
   ): HV => {
     return {
-      h: compiler.compileArith(`359 * (${params.h})`),
-      v: compiler.compileArith(`100 * (${params.v})`),
+      h: compiler.compileScalar(`359 * (${params.h})`),
+      v: compiler.compileScalar(`100 * (${params.v})`),
     };
   };
 }
