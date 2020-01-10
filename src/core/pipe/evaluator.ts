@@ -29,7 +29,7 @@ export class Evaluator {
     chunk: Chunk,
   ) {
     const resolver = new Resolver(scope);
-    const { n, staticFn, dynamicFn } = resolver.resolve(ast) as Resolution;
+    const { n, staticFn, dynamicFn } = resolver.resolve(ast);
     const offset = chunk.offset;
     const size = chunk.size;
     const limit = offset + size;
@@ -99,9 +99,9 @@ export class Evaluator {
       this.scope.p = p;
       this.scope.i = i;
       const [h, s, l] = hsv.hsl([
-        Math.round(resolver.resolve(hv.h) as number),
+        Math.round(resolver.resolve(hv.h, 'number')),
         100,
-        Math.round(resolver.resolve(hv.v) as number),
+        Math.round(resolver.resolve(hv.v, 'number')),
       ]);
       const c = new Color(`hsl(${h}, ${s}%, ${l}%)`);
 

@@ -105,7 +105,7 @@ export const runPipeline = async (
 ): Promise<SharedArrayBuffer> => {
   const ast = Pipe.compile(params);
   const resolver = new Resolver(Pipe.scopeFor(params, ast.n));
-  const { n, staticFn, dynamicFn } = resolver.resolve(ast) as Resolution;
+  const { n, staticFn, dynamicFn } = resolver.resolve(ast);
   const buffer = await getOrInitialize(params, n, staticFn.d, dynamicFn.d);
   await iterate(params, n, buffer);
 

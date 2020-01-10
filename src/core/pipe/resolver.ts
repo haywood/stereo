@@ -32,7 +32,11 @@ export type Resolution = {
 export class Resolver {
   constructor(private readonly scope: Scope) {}
 
-  resolve = (node: PipeNode | Scalar) => {
+  resolve(node: PipeNode): Resolution;
+  resolve(node: Scalar, hint: 'number'): number;
+  resolve(node: Scalar, hint: 'function'): Function;
+  resolve(node: Scalar): Value;
+  resolve(node: any, hint?: any): any {
     switch (node.kind) {
       case 'pipe':
         return this.resolvePipe(node);
@@ -43,17 +47,25 @@ export class Resolver {
       case 'access':
         return this.resolveAccess(node);
       case 'id':
-        return this.resolveIdToNumber(node.id);
+        const value = this.resolveId(node.id);
+        const actual = typeof value;
+        if (hint)
+          assert.equal(
+            actual,
+            hint,
+            `Expected identifier ${node.id} to resolve to a ${hint}, but was ${actual} instead.`,
+          );
+        return value;
       case 'arith':
         return this.resolveArith(node);
     }
-  };
+  }
 
-  resolvePipe = (pipe: PipeNode): Resolution => {
+  private resolvePipe = (pipe: PipeNode): Resolution => {
     const chain = pipe.chain;
     const links: Link[] = [];
     const fun = chain[0];
-    const d = this.resolveScalar(fun.args[0]) as number;
+    const d = this.resolve(fun.args[0], 'number');
     const link = this.resolveFirstStep(d, fun);
     const n = Interval.n(link.fn.domain, pipe.n);
 
@@ -85,33 +97,18 @@ export class Resolver {
   };
 
   private resolveFirstStep = (d: number, { type, args }: StepNode) => {
-    const fn = funs[type](d, ...args.map(a => this.resolveScalar(a)));
-    const isDynamic = args.some(isNodeDynamic);
+    const fn = funs[type](d, ...args.map(a => this.resolve(a)));
+    const isDynamic = args.some(this.isNodeDynamic);
 
     return { fn, isDynamic };
   };
 
   private resolveStep = (prev: Fn, { type, args }: StepNode): Link => {
     const d = ranges[type](prev.d);
-    const fn = funs[type](d, ...args.map(a => this.resolveScalar(a)));
-    const isDynamic = args.some(isNodeDynamic);
+    const fn = funs[type](d, ...args.map(a => this.resolve(a)));
+    const isDynamic = args.some(this.isNodeDynamic);
 
     return { fn, isDynamic };
-  };
-
-  private resolveScalar = (arg: Scalar): Value => {
-    switch (arg.kind) {
-      case 'number':
-        return arg.value;
-      case 'fn':
-        return this.resolveFn(arg);
-      case 'access':
-        return this.resolveAccess(arg);
-      case 'id':
-        return this.resolveId(arg.id);
-      case 'arith':
-        return this.resolveArith(arg);
-    }
   };
 
   private resolveFn = ({ name, args }: FnNode): number => {
@@ -120,14 +117,14 @@ export class Resolver {
       typeof fn === 'function',
       `Expected ${name} to be a Math function in ${pp({ name, args })}`,
     );
-    return fn(...args.map(a => this.resolveScalar(a)));
+    return fn(...args.map(a => this.resolve(a)));
   };
 
   private resolveAccess = ({ id, index }: AccessNode): number => {
     const scope = this.scope;
     const target = scope[id];
     assert(target, `Unable to resolve ${id} in scope ${pp(scope, 2)}`);
-    return target[this.resolveScalar(index) as number];
+    return target[this.resolve(index, 'number')];
   };
 
   private resolveId = (id: string): Value => {
@@ -143,42 +140,24 @@ export class Resolver {
     assert.fail(`unable to resolve id ${id} in scope ${pp(this.scope, 2)}`);
   };
 
-  private resolveIdToNumber = (id: string): number => {
-    const value = this.resolveId(id);
-    assert.equal(
-      typeof value,
-      'number',
-      `id ${id} resolved to ${value} but a number was expected`,
-    );
-    return value as number;
+  private resolveArith = ({ op, operands }: ArithNode) => {
+    const [a, b] = operands.map(a => this.resolve(a, 'number'));
+    return ops[op](a, b);
   };
 
-  private resolveArith = ({ op, operands }: ArithNode) => {
-    const [a, b] = operands.map(a => this.resolveScalar(a));
-    if (typeof a === 'number' && typeof b === 'number') {
-      return ops[op](a, b);
+  private isNodeDynamic = (node: Scalar): boolean => {
+    switch (node.kind) {
+      case 'fn':
+        return node.args.some(this.isNodeDynamic);
+      case 'id':
+        return typeof this.resolve(node) === 'number';
+      case 'arith':
+        return node.operands.some(this.isNodeDynamic);
+      default:
+        return false;
     }
-    assert.fail(
-      `One or more arithmetic operands evaluate to a non-number in ${pp(
-        { op, operands },
-        2,
-      )}`,
-    );
   };
 }
-
-const isNodeDynamic = (node: Scalar): boolean => {
-  switch (node.kind) {
-    case 'fn':
-      return node.args.some(isNodeDynamic);
-    case 'id':
-      return ['t', 'power', 'chroma'].includes(node.id);
-    case 'arith':
-      return node.operands.some(isNodeDynamic);
-    default:
-      return false;
-  }
-};
 
 const ops: { [op: string]: (a: number, b: number) => number } = {
   '+': (a, b) => a + b,
