@@ -1,7 +1,7 @@
-import { Pipe } from './pipe';
 import { getLogger } from 'loglevel';
 import { expose } from 'threads/worker';
 import { Params, Chunk, PipelineWorker } from './types';
+import { Evaluator } from './evaluator';
 
 const logger = getLogger('PipelineWorker');
 
@@ -13,11 +13,13 @@ const worker: PipelineWorker = {
     chunk: Chunk,
     buffer: SharedArrayBuffer,
   ): void => {
-    Pipe.evaluatorFor(params, chunk).initialize(buffer);
+    new Evaluator(params.scope, params.pipe, params.hv, chunk).initialize(
+      buffer,
+    );
   },
 
   iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void => {
-    Pipe.evaluatorFor(params, chunk).iterate(buffer);
+    new Evaluator(params.scope, params.pipe, params.hv, chunk).iterate(buffer);
   },
 };
 

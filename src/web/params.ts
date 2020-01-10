@@ -6,15 +6,22 @@ import { fps } from './constants';
 import { Audio } from './audio/types';
 import { error } from './error';
 import { AUDIO_PLACEHOLDER } from './audio/constants';
+import { Compiler } from '../core/pipe/compiler';
+import { inf } from '../core/constants';
 
 const params = (t: number, audio: Audio) => {
+  const compiler = new Compiler({ theta: inputs.theta.value });
   return {
-    pipe: inputs.pipe.value,
-    theta: inputs.theta.value,
-    h: inputs.h.value,
-    v: inputs.v.value,
-    t,
-    ...audio,
+    pipe: compiler.compilePipe(inputs.pipe.value),
+    scope: {
+      t,
+      inf,
+      ...audio,
+    },
+    hv: {
+      h: compiler.compileScalar(`360 * (${inputs.h.value})`),
+      v: compiler.compileScalar(`100 * (${inputs.v.value})`),
+    },
   };
 };
 

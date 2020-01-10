@@ -1,4 +1,4 @@
-import { NormalizedParams } from './types';
+import { Defs } from './types';
 import { Parser } from './parser';
 import {
   PipeNode,
@@ -13,9 +13,9 @@ import {
 export class Compiler {
   private readonly simplifier: Simplifier;
 
-  constructor(params: NormalizedParams) {
+  constructor(defs: Defs) {
     this.simplifier = new Simplifier({
-      theta: Parser.parseScalar(params.theta),
+      theta: Parser.parseScalar(defs.theta),
     });
   }
 

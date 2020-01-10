@@ -1,30 +1,16 @@
 import { Fn } from '../fn/fn';
 
-import { Scalar } from './ast';
+import { Scalar, PipeNode } from './ast';
 
 export type Params = {
-  pipe: string;
-  // TODO replace with more general concept of user-defined variables
-  theta?: string;
-  h?: string;
-  v?: string;
-  t?: number;
-  power?: number;
-  chroma?: number;
-  tempo?: number;
-  onset?: 0 | 1;
+  pipe: PipeNode;
+  scope: Scope;
+  hv: HV;
 };
 
-export type NormalizedParams = {
-  pipe: string;
+export type Defs = {
+  // TODO replace with more general concept of user-defined variables
   theta: string;
-  h: string;
-  v: string;
-  t: number;
-  power: number;
-  chroma: number;
-  tempo: number;
-  onset: 0 | 1;
 };
 
 export type UnaryOperator = (x: number) => number;

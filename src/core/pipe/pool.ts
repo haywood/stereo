@@ -1,7 +1,6 @@
 import { spawn, Worker, Pool, ModuleThread } from 'threads';
 import { getLogger } from 'loglevel';
 import { Params, PipelineWorker, Chunk } from './types';
-import { Pipe } from './pipe';
 import { Data } from '../data';
 import { Resolver, Resolution } from './resolver';
 
@@ -62,9 +61,7 @@ const iterate = (params: Params, n: number, buffer: SharedArrayBuffer) => {
 const getKey = (params: Params) =>
   JSON.stringify({
     pipe: params.pipe,
-    theta: params.theta,
-    h: params.h,
-    l: params.v,
+    hv: params.hv,
   });
 
 const getOrInitialize = async (
@@ -103,9 +100,8 @@ const timing = (label: string) => async <T>(op: () => Promise<T>) => {
 export const runPipeline = async (
   params: Params,
 ): Promise<SharedArrayBuffer> => {
-  const ast = Pipe.compile(params);
-  const resolver = new Resolver(Pipe.scopeFor(params, ast.n));
-  const { n, staticFn, dynamicFn } = resolver.resolve(ast);
+  const resolver = new Resolver(params.scope);
+  const { n, staticFn, dynamicFn } = resolver.resolve(params.pipe);
   const buffer = await getOrInitialize(params, n, staticFn.d, dynamicFn.d);
   await iterate(params, n, buffer);
 
