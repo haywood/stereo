@@ -62,17 +62,15 @@ export class Resolver {
   }
 
   private resolvePipe = (pipe: PipeNode): Resolution => {
-    const chain = pipe.chain;
+    const [head, ...tail] = pipe.chain;
     const links: Link[] = [];
-    const fun = chain[0];
-    const d = this.resolve(fun.args[0], 'number');
-    const link = this.resolveFirstStep(d, fun);
+    const link = this.resolveFirstStep(head);
     const n = Interval.n(link.fn.domain, pipe.n);
 
     links.push(link);
 
-    for (let i = 1; i < chain.length; i++) {
-      links.push(this.resolveStep(links[i - 1].fn, chain[i]));
+    for (let i = 0; i < tail.length; i++) {
+      links.push(this.resolveStep(links[i].fn, tail[i]));
     }
 
     const [staticFn, dynamicFn] = this.buildComposites(links);
@@ -96,8 +94,10 @@ export class Resolver {
     return [init, iter];
   };
 
-  private resolveFirstStep = (d: number, { type, args }: StepNode) => {
-    const fn = funs[type](d, ...args.map(a => this.resolve(a)));
+  private resolveFirstStep = ({ type, args }: StepNode) => {
+    const [head, ...tail] = args;
+    const d = this.resolve(head, 'number');
+    const fn = funs[type](d, ...tail.map(a => this.resolve(a)));
     const isDynamic = args.some(this.isNodeDynamic);
 
     return { fn, isDynamic };
