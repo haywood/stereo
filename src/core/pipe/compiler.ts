@@ -1,4 +1,4 @@
-import { Defs } from './types';
+import { Defs, Scope } from './types';
 import { Parser } from './parser';
 import {
   PipeNode,
@@ -9,19 +9,29 @@ import {
   IdNode,
   AccessNode,
 } from './ast';
+import { Resolver } from './resolver';
+import Interval from '../fn/interval';
 
 export class Compiler {
   private readonly simplifier: Simplifier;
 
-  constructor(defs: Defs) {
+  constructor(defs: Defs, private readonly scope: Scope) {
     this.simplifier = new Simplifier({
       theta: Parser.parseScalar(defs.theta),
     });
   }
 
   compilePipe = (expr: string): PipeNode => {
-    const ast = Parser.parsePipe(expr);
-    return this.simplifier.simplify(ast);
+    const ast = this.simplifier.simplify(Parser.parsePipe(expr));
+    const resolver = new Resolver(this.scope);
+    const d = resolver.resolve(ast.chain[0].args[0], 'number');
+    // Due to the way that sampling is implemented, the actual
+    // number of points generated will not be exactly the n specified
+    // by the user, unless n happens to be the dth power of some number.
+    // The below expression computes the exact number of points that will
+    // be generated.
+    ast.n = Interval.nPerLevel(d, ast.n) ** d;
+    return ast;
   };
 
   compileScalar = (expr: string): Scalar => {

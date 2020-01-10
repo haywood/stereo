@@ -65,7 +65,6 @@ export class Resolver {
     const [head, ...tail] = pipe.chain;
     const links: Link[] = [];
     const link = this.resolveFirstStep(head);
-    const n = Interval.n(link.fn.domain, pipe.n);
 
     links.push(link);
 
@@ -74,7 +73,7 @@ export class Resolver {
     }
 
     const [staticFn, dynamicFn] = this.buildComposites(links);
-    return { n, staticFn, dynamicFn };
+    return { n: pipe.n, staticFn, dynamicFn };
   };
 
   private buildComposites = (links: Link[]) => {

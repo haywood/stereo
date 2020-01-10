@@ -15,8 +15,6 @@ export default class Interval implements Fn {
     return Math.round(Math.pow(n, 1 / d));
   };
 
-  static n = (d: number, n: number) => Interval.nPerLevel(d, n) ** d;
-
   /**
    * @param x A vector of length this.domain contained in the interval [0, 1].
    * @returns A mapping of the vector into this interval.

@@ -1,5 +1,5 @@
 import { audioStream } from './audio';
-import { Params } from '../core/pipe/types';
+import { Params, Scope } from '../core/pipe/types';
 import { interval, BehaviorSubject, combineLatest } from 'rxjs';
 import { inputs } from './inputs';
 import { fps } from './constants';
@@ -10,14 +10,13 @@ import { Compiler } from '../core/pipe/compiler';
 import { inf } from '../core/constants';
 
 const params = (t: number, audio: Audio) => {
-  const compiler = new Compiler({ theta: inputs.theta.value });
+  const scope: Scope = { t, inf, ...audio };
+  const compiler = new Compiler({ theta: inputs.theta.value }, scope);
+  const pipe = compiler.compilePipe(inputs.pipe.value);
+  scope.n = pipe.n;
   return {
-    pipe: compiler.compilePipe(inputs.pipe.value),
-    scope: {
-      t,
-      inf,
-      ...audio,
-    },
+    pipe,
+    scope,
     hv: {
       h: compiler.compileScalar(`360 * (${inputs.h.value})`),
       v: compiler.compileScalar(`100 * (${inputs.v.value})`),
