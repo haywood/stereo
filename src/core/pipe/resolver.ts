@@ -16,7 +16,6 @@ import {
   AccessNode,
   ArithNode,
   FnNode,
-  NumberNode,
   PipeNode,
   Scalar,
   StepNode,
@@ -53,17 +52,15 @@ export class Resolver {
   resolvePipe = (pipe: PipeNode): Resolution => {
     const chain = pipe.chain;
     const links: Link[] = [];
-    const fun = chain.shift();
-    const d = (fun.args.shift() as NumberNode).value;
+    const fun = chain[0];
+    const d = this.resolveScalar(fun.args[0]) as number;
     const link = this.resolveFirstStep(d, fun);
     const n = Interval.n(link.fn.domain, pipe.n);
 
     links.push(link);
 
-    for (let i = 0; i < chain.length; i++) {
-      const fun = chain[i];
-      const link = this.resolveStep(links[i].fn, fun);
-      links.push(link);
+    for (let i = 1; i < chain.length; i++) {
+      links.push(this.resolveStep(links[i - 1].fn, chain[i]));
     }
 
     const [staticFn, dynamicFn] = this.buildComposites(links);
