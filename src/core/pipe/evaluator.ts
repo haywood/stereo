@@ -79,10 +79,6 @@ export class Evaluator {
       iter.fn(Data.get(input, i, init.d), Data.get(position, i, iter.d));
     }
 
-    position.forEach((p, i) => {
-      assert(!isNaN(p), `Found NaN in position at index ${i}.`);
-    });
-
     this.computeColors(data);
 
     logger.debug(`iteration complete in ${Date.now() - start}ms`);
