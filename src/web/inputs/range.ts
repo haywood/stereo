@@ -1,4 +1,5 @@
 import multirange from 'multirange';
+
 import { Input } from './input';
 
 export class RangeInput extends Input<[number, number]> {

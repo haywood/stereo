@@ -1,9 +1,10 @@
+import assert from 'assert';
+
+import { Vector } from '../data';
 import Cube from './cube';
+import Rotator from './rotator';
 import Sphere from './sphere';
 import { Fn } from '.';
-import Rotator from './rotator';
-import assert from 'assert';
-import { Vector } from '../data';
 
 export default class Torus implements Fn {
   private readonly cross: Sphere;

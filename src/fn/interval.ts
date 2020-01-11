@@ -1,6 +1,7 @@
-import { Fn } from '.';
 import assert from 'assert';
+
 import { Vector } from '../data';
+import { Fn } from '.';
 
 export default class Interval implements Fn {
   readonly domain: number;

@@ -1,10 +1,10 @@
 import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
 import { renderer } from '../renderer';
+import { ActionInput } from './action';
+import { RangeInput } from './range';
 import { TextInput } from './text';
 import { ToggleInput } from './toggle';
-import { RangeInput } from './range';
-import { ActionInput } from './action';
 
 // Points generation is done in parallel, so pick n such
 // that each chunk is size 2000

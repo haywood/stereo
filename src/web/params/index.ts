@@ -1,12 +1,13 @@
-import { audioStream } from '../audio';
+import { Subject, combineLatest, interval } from 'rxjs';
+import { FunctionThread, Worker, spawn } from 'threads';
+
 import { Params } from '../../pipe/types';
-import { interval, combineLatest, Subject } from 'rxjs';
-import { inputs } from '../inputs';
-import { fps } from '../constants';
-import { Audio } from '../audio/types';
-import { error } from '../error';
+import { audioStream } from '../audio';
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
-import { spawn, FunctionThread, Worker } from 'threads';
+import { Audio } from '../audio/types';
+import { fps } from '../constants';
+import { error } from '../error';
+import { inputs } from '../inputs';
 import { Options } from './options';
 
 const subject = new Subject<Params>();

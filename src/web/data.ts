@@ -1,13 +1,14 @@
-import { Observable, timer, Subject, interval, EMPTY } from 'rxjs';
-import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
-import { Data } from '../data';
-import { Params } from '../pipe/types';
-import { startPool, runPipeline } from '../pipe/pool';
-import * as params from './params';
 import { getLogger } from 'loglevel';
+import { EMPTY, Observable, Subject, interval, timer } from 'rxjs';
+import { delayWhen, repeatWhen, retryWhen, tap } from 'rxjs/operators';
+
+import { Data } from '../data';
+import { runPipeline, startPool } from '../pipe/pool';
+import { Params } from '../pipe/types';
 import { pp } from '../pp';
-import { error } from './error';
 import debug from './debug';
+import { error } from './error';
+import * as params from './params';
 
 const logger = getLogger('Data');
 logger.setDefaultLevel('info');

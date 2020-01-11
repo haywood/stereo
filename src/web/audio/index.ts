@@ -1,9 +1,10 @@
-import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { getLogger } from 'loglevel';
+import { BehaviorSubject, Observable, interval } from 'rxjs';
+
 import { inputs } from '../inputs';
-import { Audio } from './types';
 import { AUDIO_PLACEHOLDER } from './constants';
 import { AudioGraph } from './graph';
+import { Audio } from './types';
 
 const logger = getLogger('Audio');
 

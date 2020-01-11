@@ -1,5 +1,5 @@
-import { parse } from './grammar.pegjs';
 import { PipeNode, Scalar } from './ast';
+import { parse } from './grammar.pegjs';
 
 export class Parser {
   static parsePipe = (pipe: string): PipeNode => parse(pipe);

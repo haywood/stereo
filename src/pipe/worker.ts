@@ -1,7 +1,8 @@
 import { getLogger } from 'loglevel';
 import { expose } from 'threads/worker';
-import { Params, Chunk, PipelineWorker } from './types';
+
 import { Evaluator } from './evaluator';
+import { Chunk, Params, PipelineWorker } from './types';
 
 const logger = getLogger('PipelineWorker');
 

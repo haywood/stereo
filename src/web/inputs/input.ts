@@ -1,7 +1,8 @@
-import { Subject, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
+
 import { Change } from './change';
+import { hash, persistenceEnabled } from './constants';
 import { Options } from './options';
-import { persistenceEnabled, hash } from './constants';
 
 export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   readonly disabled: boolean;

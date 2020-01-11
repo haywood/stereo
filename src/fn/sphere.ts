@@ -1,8 +1,9 @@
-import Rotator from './rotator';
-import Cube from './cube';
-import { Fn, CompositeFn } from '.';
-import { Vector } from '../data';
 import assert from 'assert';
+
+import { Vector } from '../data';
+import Cube from './cube';
+import Rotator from './rotator';
+import { CompositeFn, Fn } from '.';
 
 export default class Sphere implements Fn {
   private readonly root: Float32Array;

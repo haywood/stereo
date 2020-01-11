@@ -1,16 +1,16 @@
-import { Defs, Scope } from './types';
-import { Parser } from './parser';
+import Interval from '../fn/interval';
 import {
-  PipeNode,
+  AccessNode,
   ArithNode,
-  Scalar,
-  StepNode,
   FnNode,
   IdNode,
-  AccessNode
+  PipeNode,
+  Scalar,
+  StepNode
 } from './ast';
+import { Parser } from './parser';
 import { Resolver } from './resolver';
-import Interval from '../fn/interval';
+import { Defs, Scope } from './types';
 
 export class Compiler {
   private readonly simplifier: Simplifier;

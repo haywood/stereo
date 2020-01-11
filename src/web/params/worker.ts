@@ -1,7 +1,8 @@
-import { Scope } from '../../pipe/types';
-import { Compiler } from '../../pipe/compiler';
-import { inf } from '../../constants';
 import { expose } from 'threads';
+
+import { inf } from '../../constants';
+import { Compiler } from '../../pipe/compiler';
+import { Scope } from '../../pipe/types';
 import { Options } from './options';
 
 expose((options: Options) => {

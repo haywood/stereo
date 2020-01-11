@@ -1,15 +1,17 @@
+import assert from 'assert';
+
 import {
-  PerspectiveCamera,
-  BufferGeometry,
   BufferAttribute,
+  BufferGeometry,
+  PerspectiveCamera,
   Points,
   PointsMaterial,
-  WebGLRenderer,
+  Scene,
   VertexColors,
-  Scene
+  WebGLRenderer
 } from 'three';
+
 import { Data } from '../../data';
-import assert from 'assert';
 
 class Renderer {
   private renderer: WebGLRenderer;

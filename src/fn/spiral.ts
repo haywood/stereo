@@ -1,8 +1,9 @@
-import { Fn } from '.';
+import assert from 'assert';
+
+import { Vector } from '../data';
 import Cube from './cube';
 import Sphere from './sphere';
-import assert from 'assert';
-import { Vector } from '../data';
+import { Fn } from '.';
 
 export default class Spiral implements Fn {
   private readonly sphere: Sphere;

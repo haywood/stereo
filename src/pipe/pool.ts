@@ -1,8 +1,9 @@
-import { spawn, Worker, Pool, ModuleThread } from 'threads';
 import { getLogger } from 'loglevel';
-import { Params, PipelineWorker, Chunk } from './types';
+import { ModuleThread, Pool, Worker, spawn } from 'threads';
+
 import { Data } from '../data';
-import { Resolver, Resolution } from './resolver';
+import { Resolution, Resolver } from './resolver';
+import { Chunk, Params, PipelineWorker } from './types';
 
 const logger = getLogger('PipelinePool');
 let pool: Pool<ModuleThread<PipelineWorker>>;

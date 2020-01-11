@@ -1,6 +1,5 @@
 import { Fn } from '../fn';
-
-import { Scalar, PipeNode } from './ast';
+import { PipeNode, Scalar } from './ast';
 
 export type Params = {
   pipe: PipeNode;

@@ -1,5 +1,7 @@
-import './global.scss';
 import 'multirange/multirange.css';
+
+import './global.scss';
+
 import debug from './debug';
 
 (async () => {

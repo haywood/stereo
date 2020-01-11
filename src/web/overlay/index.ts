@@ -1,7 +1,9 @@
+import './overlay.scss';
+
+import assert from 'assert';
+
 import { inputs } from '../inputs';
 import html from './overlay.html';
-import './overlay.scss';
-import assert from 'assert';
 
 class Overlay {
   readonly domElement = document.createElement('div');

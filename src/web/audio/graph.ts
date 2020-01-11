@@ -1,10 +1,11 @@
 import { Subject } from 'rxjs';
-import { Audio } from './types';
-import { Spectrum } from './spectrum';
-import { binCount, AUDIO_PLACEHOLDER } from './constants';
-import processorUrl from './power.worklet';
+
 import { error } from '../error';
 import { inputs } from '../inputs';
+import { AUDIO_PLACEHOLDER, binCount } from './constants';
+import processorUrl from './power.worklet';
+import { Spectrum } from './spectrum';
+import { Audio } from './types';
 
 export class AudioGraph {
   static create = async (mediaStream: MediaStream, subject: Subject<Audio>) => {
