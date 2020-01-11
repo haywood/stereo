@@ -15,7 +15,7 @@ export const startPool = async () => {
   logger.info('starting worker pool');
   let i = 0;
   pool = Pool(
-    () => spawn(new Worker('./pipe.worker', { name: `pipe${i++}` })),
+    () => spawn(new Worker('./worker', { name: `pipe${i++}` })),
     poolSize,
   );
   data = new Map();
