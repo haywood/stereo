@@ -1,16 +1,15 @@
 /** RULES */
 
-pipe = n:uint connector d0:d0 connector steps:steps {
-  n = parseInt(n);
+pipe = n:pint connector d0:pint connector steps:steps {
   return {kind: 'pipe', n, d0, steps};
 }
 
-d0 'd0' = d0:uint {
-  d0 = parseInt(d0);
-  if (d0 < 1) {
-    expected('d0 to be positive.');
+pint 'positive integer' = x:uint {
+  x = parseInt(x);
+  if (x <= 0) {
+    expected(`a positive integer`);
   }
-  return d0;
+  return x;
 }
 
 steps =
