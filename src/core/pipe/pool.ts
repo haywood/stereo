@@ -50,9 +50,9 @@ const initialize = (
   });
 };
 
-const iterate = (params: Params, n: number, buffer: SharedArrayBuffer) => {
+const iterate = (params: Params, buffer: SharedArrayBuffer) => {
   return timing('iteration')(async () => {
-    return forkJoin(n, async chunk => {
+    return forkJoin(params.pipe.n, async chunk => {
       return pool.queue(w => w.iterate(params, chunk, buffer));
     });
   });
@@ -64,15 +64,12 @@ const getKey = (params: Params) =>
     hv: params.hv,
   });
 
-const getOrInitialize = async (
-  params: Params,
-  n: number,
-  d0: number,
-  d: number,
-): Promise<SharedArrayBuffer> => {
+const getOrInitialize = async (params: Params): Promise<SharedArrayBuffer> => {
   const key = getKey(params);
   if (!data.has(key)) {
-    const buffer = Data.bufferFor(n, d0, d);
+    const resolver = new Resolver(params.scope);
+    const { n, staticFn, dynamicFn } = resolver.resolve(params.pipe);
+    const buffer = Data.bufferFor(n, staticFn.d, dynamicFn.d);
     await initialize(params, n, buffer);
     data.set(key, buffer);
   }
@@ -100,10 +97,8 @@ const timing = (label: string) => async <T>(op: () => Promise<T>) => {
 export const runPipeline = async (
   params: Params,
 ): Promise<SharedArrayBuffer> => {
-  const resolver = new Resolver(params.scope);
-  const { n, staticFn, dynamicFn } = resolver.resolve(params.pipe);
-  const buffer = await getOrInitialize(params, n, staticFn.d, dynamicFn.d);
-  await iterate(params, n, buffer);
+  const buffer = await getOrInitialize(params);
+  await iterate(params, buffer);
 
   return buffer.slice(0);
 };

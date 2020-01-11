@@ -218,7 +218,7 @@ const n = 2000 * poolSize;
 export const inputs = {
   pipe: new TextInput(
     'pipe',
-    `${n}->torus(4, 1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
+    `${n}->3->torus(1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
   ),
   theta: new TextInput('theta', 'pi * power + pi * t * tempo / 20'),
   h: new TextInput('h', 'chroma * abs(p[0])'),

@@ -1,14 +1,23 @@
 /** RULES */
 
-pipe = n:uint connector steps:steps {
-  return {kind: 'pipe', n: parseInt(n), steps};
+pipe = n:uint connector d0:d0 connector steps:steps {
+  n = parseInt(n);
+  return {kind: 'pipe', n, d0, steps};
+}
+
+d0 'd0' = d0:uint {
+  d0 = parseInt(d0);
+  if (d0 < 1) {
+    expected('d0 to be positive.');
+  }
+  return d0;
 }
 
 steps =
   head:step connector tail:steps { return [head, ...tail]; }
   / f:step { return [f]; }
 
-step =
+step 'step' =
   type:identifier lparen args:step_args rparen {
     return {kind: 'step', type: type.toLowerCase(), args};
   }
@@ -17,13 +26,13 @@ step_args =
   head:scalar comma tail:step_args { return [head, ...tail]; }
   / arg:scalar { return [arg]; }
 
-scalar =
+scalar 'scalar' =
   s:term op:operator a:scalar {
      return {kind: 'arith', op, operands: [s, a]};
   }
   / term
 
-term =
+term 'term' =
   value:number { return {kind: 'number', value}; }
   / name:identifier lparen args:fn_args rparen {
     return {kind: 'fn', name: name.toLowerCase(), args};
@@ -38,38 +47,38 @@ fn_args =
 
 /** TERMINALS */
 
-number =
+number 'number' =
   _ f:float _ { return parseFloat(f); }
   / _ i:int _ { return parseInt(i); }
 
-identifier = _ id:$([a-zA-Z] [a-zA-Z0-9]*) _ { return id; }
+identifier 'identifier' = _ id:$([a-zA-Z] [a-zA-Z0-9]*) _ { return id; }
 
 /** TOKENS */
 
-float =
+float 'float' =
   $([+-]? [0-9] mantissa [eE] int)
   / $(i:int? m:mantissa)
 
-int = $([+-]? uint)
+int 'integer' = $([+-]? uint)
 
-uint = $[0-9]+
+uint 'unsigned integer' = $[0-9]+
 
 mantissa = $('.' uint)
 
-operator =
+operator 'arithmetic operator' =
   _ op:$('+' / '-' / '*' / '/' / '**' / '^') _ { return op; }
 
-lparen = _ '(' _
+lparen 'lparen' = _ '(' _
 
-rparen = _ ')' _
+rparen 'rparen' = _ ')' _
 
-lbrack = _ '[' _
+lbrack 'lbrack' = _ '[' _
 
-rbrack = _ ']' _
+rbrack 'rbrack' = _ ']' _
 
-comma = _ ',' _
+comma 'comma' = _ ',' _
 
-connector = _ $('->' / __ / '=>') _
+connector 'connector' = _ $('->' / __ / '=>') _
 
-_ = [ \t\n\r]*
-__ = $[ \t\n\r]+
+_ 'whitespace' = [ \t\n\r]*
+__ 'whitespace' = $[ \t\n\r]+

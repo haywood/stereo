@@ -1,6 +1,7 @@
 export type PipeNode = {
   kind: 'pipe';
   n: number;
+  d0: number;
   steps: StepNode[];
 };
 

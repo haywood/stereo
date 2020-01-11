@@ -15,7 +15,7 @@ import Interval from '../fn/interval';
 export class Compiler {
   private readonly simplifier: Simplifier;
 
-  constructor(defs: Defs, private readonly scope: Scope) {
+  constructor(defs: Defs) {
     this.simplifier = new Simplifier({
       theta: Parser.parseScalar(defs.theta),
     });
@@ -23,14 +23,12 @@ export class Compiler {
 
   compilePipe = (expr: string): PipeNode => {
     const ast = this.simplifier.simplify(Parser.parsePipe(expr));
-    const resolver = new Resolver(this.scope);
-    const d = resolver.resolve(ast.steps[0].args[0], 'number');
     // Due to the way that sampling is implemented, the actual
     // number of points generated will not be exactly the n specified
     // by the user, unless n happens to be the dth power of some number.
     // The below expression computes the exact number of points that will
     // be generated.
-    ast.n = Interval.nPerLevel(d, ast.n) ** d;
+    ast.n = Interval.nPerLevel(ast.d0, ast.n) ** ast.d0;
     return ast;
   };
 
@@ -48,13 +46,13 @@ export class Simplifier {
   constructor(private readonly substitutions: Substitutions) {}
 
   simplify = (pipe: PipeNode): PipeNode => {
-    const n = pipe.n;
-    const chain = pipe.steps;
+    const { n, d0, steps } = pipe;
 
     return {
       kind: pipe.kind,
       n,
-      steps: chain.map(this.simplifyStepNode),
+      d0,
+      steps: steps.map(this.simplifyStepNode),
     };
   };
 
