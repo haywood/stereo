@@ -36,28 +36,45 @@ export class Resolver {
   resolve(node: Scalar, hint: 'function'): Function;
   resolve(node: Scalar): Value;
   resolve(node: any, hint?: any): any {
+    let value;
     switch (node.kind) {
       case 'pipe':
-        return this.resolvePipe(node);
+        value = this.resolvePipe(node);
+        break;
       case 'number':
-        return node.value;
+        value = node.value;
+        break;
       case 'fn':
-        return this.resolveFn(node);
+        value = this.resolveFn(node);
+        break;
       case 'access':
-        return this.resolveAccess(node);
+        value = this.resolveAccess(node);
+        break;
       case 'id':
-        const value = this.resolveId(node.id);
-        const actual = typeof value;
-        if (hint)
-          assert.equal(
-            actual,
-            hint,
-            `Expected identifier ${node.id} to resolve to a ${hint}, but was ${actual} instead.`,
-          );
-        return value;
+        value = this.resolveId(node.id);
+        break;
       case 'arith':
-        return this.resolveArith(node);
+        value = this.resolveArith(node);
+        break;
     }
+
+    if (hint) {
+      const actual = typeof value;
+      assert.equal(
+        actual,
+        hint,
+        `Expected identifier ${node.id} to resolve to a ${hint}, but was ${actual} instead.`,
+      );
+
+      if (hint === 'number' && isNaN(value))
+        assert.fail(
+          `Expected node ${pp(
+            node,
+          )} to resolve to a valid value, but was NaN instead.`,
+        );
+    }
+
+    return value;
   }
 
   private resolvePipe = (pipe: PipeNode): Resolution => {
