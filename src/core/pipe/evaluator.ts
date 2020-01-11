@@ -1,9 +1,7 @@
 import assert from 'assert';
 import { hsv } from 'color-convert';
 import { getLogger } from 'loglevel';
-import { Color } from 'three';
 
-import { inf } from '../constants';
 import { Data, Vector } from '../data';
 import { CompositeFn } from '../fn/fn';
 import { pp } from '../pp';
@@ -98,14 +96,13 @@ export class Evaluator {
       const p = Data.get(position, i, d);
       this.scope.p = p;
       this.scope.i = i;
-      const [h, s, l] = hsv.hsl([
+      const rgb = hsv.rgb([
         Math.round(resolver.resolve(hv.h, 'number')),
         100,
         Math.round(resolver.resolve(hv.v, 'number')),
       ]);
-      const c = new Color(`hsl(${h}, ${s}%, ${l}%)`);
 
-      Data.set(color, [c.r, c.g, c.b], i, 3);
+      Data.set(color, rgb || [1, 1, 1], i, 3);
     }
   };
 }
