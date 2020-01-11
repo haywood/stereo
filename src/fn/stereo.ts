@@ -1,6 +1,6 @@
 import { Fn } from './fn';
 import Cube from './cube';
-import { Vector } from '../data';
+import { Vector } from '../core/data';
 import assert from 'assert';
 
 export default class Stereo implements Fn {

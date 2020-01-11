@@ -3,7 +3,7 @@ import Sphere from './sphere';
 import { Fn } from './fn';
 import Rotator from './rotator';
 import assert from 'assert';
-import { Vector } from '../data';
+import { Vector } from '../core/data';
 
 export default class Torus implements Fn {
   private readonly cross: Sphere;

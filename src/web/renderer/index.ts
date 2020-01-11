@@ -8,7 +8,7 @@ import {
   VertexColors,
   Scene,
 } from 'three';
-import { Data } from '../core/data';
+import { Data } from '../../core/data';
 import assert from 'assert';
 
 class Renderer {

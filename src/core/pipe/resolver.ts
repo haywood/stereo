@@ -1,14 +1,14 @@
 import assert from 'assert';
 
-import Cube from '../fn/cube';
-import { CompositeFn, Fn } from '../fn/fn';
-import FuckedUpTorus from '../fn/fucked_up_torus';
-import { Identity } from '../fn/identity';
-import Rotator from '../fn/rotator';
-import Sphere from '../fn/sphere';
-import Spiral from '../fn/spiral';
-import Stereo from '../fn/stereo';
-import Torus from '../fn/torus';
+import Cube from '../../fn/cube';
+import { CompositeFn, Fn } from '../../fn/fn';
+import FuckedUpTorus from '../../fn/fucked_up_torus';
+import { Identity } from '../../fn/identity';
+import Rotator from '../../fn/rotator';
+import Sphere from '../../fn/sphere';
+import Spiral from '../../fn/spiral';
+import Stereo from '../../fn/stereo';
+import Torus from '../../fn/torus';
 import { pp } from '../pp';
 
 import {

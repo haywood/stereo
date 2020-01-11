@@ -2,7 +2,7 @@ import Rotator from './rotator';
 import Cube from './cube';
 import { Fn, components, CompositeFn } from './fn';
 import { TypedArray } from 'three';
-import { Vector } from '../data';
+import { Vector } from '../core/data';
 import assert from 'assert';
 
 export default class Sphere implements Fn {

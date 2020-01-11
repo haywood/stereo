@@ -1,4 +1,4 @@
-import { Fn } from '../fn/fn';
+import { Fn } from '../../fn/fn';
 
 import { Scalar, PipeNode } from './ast';
 
