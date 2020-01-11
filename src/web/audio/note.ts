@@ -7,7 +7,7 @@ export type Analysis = {
 
 const NO_AUDIO: Analysis = {
   power: 0,
-  dpower: 0,
+  dpower: 0
 };
 
 const { round, abs, log2, min, max } = Math;
@@ -31,7 +31,7 @@ export class Note {
       const dpower = Math.abs(power - this.analysis.power);
       this.analysis = {
         power,
-        dpower,
+        dpower
       };
     }
 

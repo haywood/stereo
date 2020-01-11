@@ -13,7 +13,7 @@ export default class Rotator implements Fn {
     readonly d0: number,
     readonly d1: number,
     readonly f0: (theta: number) => number = Math.cos,
-    readonly f1: (theta: number) => number = Math.sin,
+    readonly f1: (theta: number) => number = Math.sin
   ) {
     this.r0 = f0(theta);
     this.r1 = f1(theta);

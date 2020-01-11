@@ -24,7 +24,7 @@ export class Evaluator {
     private readonly scope: Scope,
     ast: PipeNode,
     private readonly hv: HV,
-    chunk: Chunk,
+    chunk: Chunk
   ) {
     const resolver = new Resolver(scope);
     const { n, staticFn, dynamicFn } = resolver.resolve(ast);
@@ -34,7 +34,7 @@ export class Evaluator {
     assert(offset >= 0, `offset must be non-negative; got ${offset}`);
     assert(
       limit <= n,
-      `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`,
+      `offset + size must be <= n; got ${offset} + ${size} = ${limit} > ${n}`
     );
 
     this.n = n;
@@ -71,7 +71,7 @@ export class Evaluator {
     assert.equal(
       data[Data.positionOffset(data)],
       iter.d,
-      'd(data) != d(evaluator)',
+      'd(data) != d(evaluator)'
     );
 
     logger.debug(`iterating using ${pp(scope)}, ${pp(iter)}`);

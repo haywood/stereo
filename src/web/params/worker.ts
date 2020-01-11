@@ -13,7 +13,7 @@ expose((options: Options) => {
     scope,
     hv: {
       h: compiler.compile(options.h, 'scalar'),
-      v: compiler.compile(options.v, 'scalar'),
-    },
+      v: compiler.compile(options.v, 'scalar')
+    }
   };
 });

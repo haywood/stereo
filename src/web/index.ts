@@ -44,7 +44,7 @@ import debug from './debug';
           document.body.classList.add('data');
           maybeSetCursorInactive();
         },
-        (err: Error) => alert(`${err.message}\n${err.stack}`),
+        (err: Error) => alert(`${err.message}\n${err.stack}`)
       );
     }
   };

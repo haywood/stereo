@@ -9,7 +9,7 @@ export default class Cube implements Fn {
     this.interval = new Interval(
       d,
       new Array(d).fill(-l / 2),
-      new Array(d).fill(l / 2),
+      new Array(d).fill(l / 2)
     );
   }
 

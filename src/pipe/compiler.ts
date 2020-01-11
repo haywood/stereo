@@ -7,7 +7,7 @@ import {
   StepNode,
   FnNode,
   IdNode,
-  AccessNode,
+  AccessNode
 } from './ast';
 import { Resolver } from './resolver';
 import Interval from '../fn/interval';
@@ -17,7 +17,7 @@ export class Compiler {
 
   constructor(defs: Defs) {
     this.simplifier = new Simplifier({
-      theta: Parser.parseScalar(defs.theta),
+      theta: Parser.parseScalar(defs.theta)
     });
   }
 
@@ -63,7 +63,7 @@ class Simplifier {
       kind: pipe.kind,
       n,
       d0,
-      steps: steps.map(this.simplifyStepNode),
+      steps: steps.map(this.simplifyStepNode)
     };
   };
 
@@ -86,14 +86,14 @@ class Simplifier {
     return {
       kind,
       type: fn,
-      args: args.map(this.simplifyScalar),
+      args: args.map(this.simplifyScalar)
     };
   };
 
   private simplifyArithNode = ({
     kind,
     op,
-    operands,
+    operands
   }: ArithNode): ArithNode => {
     const [a, b] = operands.map(this.simplifyScalar);
     return { kind, op, operands: [a, b] };
@@ -103,14 +103,14 @@ class Simplifier {
     return {
       kind,
       name,
-      args: args.map(this.simplifyIdNode),
+      args: args.map(this.simplifyIdNode)
     };
   };
 
   private simplifyAccessNode = ({
     kind,
     id,
-    index,
+    index
   }: AccessNode): AccessNode => {
     return { kind, id, index: this.simplifyScalar(index) };
   };

@@ -29,7 +29,7 @@ export default class Torus implements Fn {
     assert.equal(
       theta.length,
       d - 1,
-      `torus expects an input of ${d - 1}; got ${theta.length}`,
+      `torus expects an input of ${d - 1}; got ${theta.length}`
     );
     const rotator = new Rotator(d, theta[d - 2], 0, d - 1);
 

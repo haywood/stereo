@@ -23,21 +23,21 @@ export const inputs = {
       ->stereo(3)`.trim(),
     {
       persistent: true,
-      stringify: text => text.replace(/\s*(->|=>)\s*/g, '\n  ->').trim(),
-    },
+      stringify: text => text.replace(/\s*(->|=>)\s*/g, '\n  ->').trim()
+    }
   ),
   theta: new TextInput('theta', 'pi * power + pi * t / 20'),
   h: new TextInput('h', 'chroma * abs(p[0])'),
   v: new TextInput('v', '(power + onset) / 2'),
   animate: new ToggleInput('animate', true),
   mic: new ToggleInput('mic', false, {
-    disabled: !new AudioContext().audioWorklet,
+    disabled: !new AudioContext().audioWorklet
   }),
   fullscreen: new ToggleInput('fullscreen', false, {
-    disabled: !document.fullscreenEnabled,
+    disabled: !document.fullscreenEnabled
   }),
   allowedDbs: new RangeInput('allowed_db_range', [-130, -30], {
-    disabled: !new AudioContext().audioWorklet,
+    disabled: !new AudioContext().audioWorklet
   }),
   save: new ActionInput('save', async () => {
     const canvas = renderer.domElement;
@@ -52,7 +52,7 @@ export const inputs = {
     } finally {
       URL.revokeObjectURL(url);
     }
-  }),
+  })
 };
 
 export type Inputs = typeof inputs;

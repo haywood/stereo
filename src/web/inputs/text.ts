@@ -7,7 +7,7 @@ export class TextInput extends Input<
   constructor(
     readonly id: string,
     _value: string,
-    { persistent = true, disabled = false, stringify = (s: string) => s } = {},
+    { persistent = true, disabled = false, stringify = (s: string) => s } = {}
   ) {
     super(id, _value, { persistent, disabled, stringify });
   }
@@ -36,7 +36,7 @@ export class TextInput extends Input<
       this.el.rows = Math.min(10, lines.length);
       this.el.cols = Math.min(
         50,
-        lines.reduce((max, line) => Math.max(max, line.length), 0),
+        lines.reduce((max, line) => Math.max(max, line.length), 0)
       );
     }
   }

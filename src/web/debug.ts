@@ -3,6 +3,6 @@ export default (key: string, value: any) => {
   // to it in the console are not mutated.
   window._debug = {
     ...window._debug,
-    [key]: value,
+    [key]: value
   };
 };

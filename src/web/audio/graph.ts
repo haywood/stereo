@@ -17,12 +17,12 @@ export class AudioGraph {
   constructor(
     private readonly ctx: AudioContext,
     source: AudioNode,
-    subject: Subject<Audio>,
+    subject: Subject<Audio>
   ) {
     const power = new AudioWorkletNode(ctx, 'power', {
       numberOfInputs: binCount,
       channelCountMode: 'explicit',
-      channelCount: 1,
+      channelCount: 1
     });
     power.port.onmessage = msg => {
       if (inputs.mic.value) {
@@ -50,7 +50,7 @@ export class AudioGraph {
       const filter = new BiquadFilterNode(ctx, {
         type: 'bandpass',
         frequency: f,
-        Q: f / 2,
+        Q: f / 2
       });
       source.connect(filter).connect(power, 0, k);
     }

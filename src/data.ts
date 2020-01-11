@@ -7,7 +7,7 @@ export class Data {
     readonly n: number,
     readonly d: number,
     readonly position: Float32Array,
-    readonly color: Float32Array,
+    readonly color: Float32Array
   ) {}
 
   static fromBuffer = (buffer: ArrayBuffer) => {
@@ -75,7 +75,7 @@ export class Data {
     arr: Vector,
     value: ArrayLike<number>,
     i: number,
-    stride: number,
+    stride: number
   ) => {
     assert(value.length <= stride);
     const offset = i * stride;

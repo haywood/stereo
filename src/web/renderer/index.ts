@@ -6,7 +6,7 @@ import {
   PointsMaterial,
   WebGLRenderer,
   VertexColors,
-  Scene,
+  Scene
 } from 'three';
 import { Data } from '../../data';
 import assert from 'assert';
@@ -30,8 +30,8 @@ class Renderer {
       new BufferGeometry(),
       new PointsMaterial({
         vertexColors: VertexColors,
-        size: 0.001,
-      }),
+        size: 0.001
+      })
     );
 
     this.scene = new Scene();

@@ -75,7 +75,7 @@ declare abstract class AudioWorkletProcessor<P = never> {
   process(
     inputs: Float32Array[][],
     outputs: Float32Array[][],
-    parameters?: P,
+    parameters?: P
   ): boolean;
 
   protected readonly port: MessagePort;
@@ -83,7 +83,7 @@ declare abstract class AudioWorkletProcessor<P = never> {
 
 declare function registerProcessor(
   name: string,
-  ctor: new (options: AudioWorkletNodeOptions) => AudioWorkletProcessor,
+  ctor: new (options: AudioWorkletNodeOptions) => AudioWorkletProcessor
 );
 
 /**

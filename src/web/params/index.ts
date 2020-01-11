@@ -14,7 +14,7 @@ export const paramsStream = subject.asObservable();
 
 (async () => {
   const params: FunctionThread<[Options], Params> = await spawn(
-    new Worker('./worker', { name: 'params' }),
+    new Worker('./worker', { name: 'params' })
   );
 
   let count = 0;
@@ -28,8 +28,8 @@ export const paramsStream = subject.asObservable();
           audio,
           h: inputs.h.value,
           v: inputs.v.value,
-          t: count++ / fps,
-        }),
+          t: count++ / fps
+        })
       );
     } catch (err) {
       error(err);
@@ -46,6 +46,6 @@ export const paramsStream = subject.asObservable();
 
   combineLatest(audioStream, interval(1000 / fps)).subscribe(
     ([a]) => maybeEmit(a),
-    error,
+    error
   );
 })();

@@ -52,6 +52,6 @@ const webWorkerSource = async (): Promise<Source> => {
         inFlight = null;
       }
     },
-    err => error(err),
+    err => error(err)
   );
 })();

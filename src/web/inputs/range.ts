@@ -5,14 +5,14 @@ export class RangeInput extends Input<[number, number]> {
   constructor(
     readonly id: string,
     _value: [number, number],
-    { disabled = false, persistent = true } = {},
+    { disabled = false, persistent = true } = {}
   ) {
     super(id, _value, {
       disabled,
       persistent,
       stringify: ([min, max]) => {
         return `${min},${max}`;
-      },
+      }
     });
   }
 
@@ -28,7 +28,7 @@ export class RangeInput extends Input<[number, number]> {
     };
 
     this.el.querySelector<HTMLInputElement>(
-      'input.ghost',
+      'input.ghost'
     ).oninput = input.oninput = () => {
       minEl.innerText = input.valueLow.toString();
       maxEl.innerText = input.valueHigh.toString();

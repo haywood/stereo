@@ -11,16 +11,16 @@ const worker: PipelineWorker = {
   initialize: (
     params: Params,
     chunk: Chunk,
-    buffer: SharedArrayBuffer,
+    buffer: SharedArrayBuffer
   ): void => {
     new Evaluator(params.scope, params.pipe, params.hv, chunk).initialize(
-      buffer,
+      buffer
     );
   },
 
   iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void => {
     new Evaluator(params.scope, params.pipe, params.hv, chunk).iterate(buffer);
-  },
+  }
 };
 
 expose(worker);

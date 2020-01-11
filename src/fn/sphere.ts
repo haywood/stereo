@@ -30,8 +30,8 @@ export default class Sphere implements Fn {
 
     const r = new CompositeFn(
       Array.from(new Array(d - 1).keys()).map(
-        i => new Rotator(d, phi[i], 0, i + 1),
-      ),
+        i => new Rotator(d, phi[i], 0, i + 1)
+      )
     );
     r.fn(root, y);
     return y;

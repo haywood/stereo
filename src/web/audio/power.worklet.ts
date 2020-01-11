@@ -14,14 +14,14 @@ class Processor extends AudioWorkletProcessor {
   static get parameterDescriptors() {
     return [
       { name: 'dbMin', maxValue: 0 },
-      { name: 'dbMax', maxValue: 0 },
+      { name: 'dbMax', maxValue: 0 }
     ];
   }
 
   private readonly notes = new Array<Note>(binCount);
   // track two seconds worth of onsets to determine tempo
   private readonly impulses = new CircularBuffer<number>(
-    (2 * sampleRate) / quantumSize,
+    (2 * sampleRate) / quantumSize
   );
   private readonly onsets = new CircularBuffer<0 | 1>(this.impulses.capacity());
 
@@ -36,14 +36,14 @@ class Processor extends AudioWorkletProcessor {
   process(
     inputs: Float32Array[][],
     _: Float32Array[][],
-    parameters: PowerWorkletParams,
+    parameters: PowerWorkletParams
   ) {
     const start = Date.now();
     inputs.forEach((channels, i) => {
       assert.equal(
         channels.length,
         1,
-        `Expected input ${i} to have exactly 1 channel, not ${channels.length}`,
+        `Expected input ${i} to have exactly 1 channel, not ${channels.length}`
       );
     });
 
@@ -74,7 +74,7 @@ class Processor extends AudioWorkletProcessor {
     if (lastTime) {
       console.debug(
         `audio processor took ${end -
-          start}ms; latency between calls was ${start - lastTime}ms`,
+          start}ms; latency between calls was ${start - lastTime}ms`
       );
     }
     lastTime = start;

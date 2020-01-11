@@ -20,8 +20,8 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
       disabled = false,
       stringify = () => {
         throw new Error('stringify unsupported');
-      },
-    }: Options<T> = {},
+      }
+    }: Options<T> = {}
   ) {
     this.persistent = persistent;
     this.disabled = disabled;

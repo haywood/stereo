@@ -18,7 +18,7 @@ import {
   PipeNode,
   Scalar,
   StepNode,
-  Value,
+  Value
 } from './ast';
 import { Link, Scope, UnaryOperator } from './types';
 
@@ -63,14 +63,14 @@ export class Resolver {
       assert.equal(
         actual,
         hint,
-        `Expected identifier ${node.id} to resolve to a ${hint}, but was ${actual} instead.`,
+        `Expected identifier ${node.id} to resolve to a ${hint}, but was ${actual} instead.`
       );
 
       if (hint === 'number' && isNaN(value))
         assert.fail(
           `Expected node ${pp(
-            node,
-          )} to resolve to a valid value, but was NaN instead.`,
+            node
+          )} to resolve to a valid value, but was NaN instead.`
         );
     }
 
@@ -121,7 +121,7 @@ export class Resolver {
     const fn = Math[name];
     assert(
       typeof fn === 'function',
-      `Expected ${name} to be a Math function in ${pp({ name, args })}`,
+      `Expected ${name} to be a Math function in ${pp({ name, args })}`
     );
     return fn(...args.map(a => this.resolve(a)));
   };
@@ -171,7 +171,7 @@ const ops: { [op: string]: (a: number, b: number) => number } = {
   '*': (a, b) => a * b,
   '/': (a, b) => a / b,
   '**': (a, b) => a ** b,
-  '^': (a, b) => a ** b,
+  '^': (a, b) => a ** b
 };
 
 const funs: { [op: string]: (d: number, ...rest) => Fn } = {
@@ -187,13 +187,13 @@ const funs: { [op: string]: (d: number, ...rest) => Fn } = {
     d0: number,
     d1: number,
     f0: UnaryOperator = Math.cos,
-    f1: UnaryOperator = Math.sin,
+    f1: UnaryOperator = Math.sin
   ) => {
     assert(0 <= d0 && d0 < d, `rotate: Expected 0 <= d0 = ${d0} < d = ${d}`);
     assert(0 <= d1 && d1 < d, `rotate: Expected 0 <= d1 = ${d1} < d = ${d}`);
     return new Rotator(d, theta, d0, d1, f0, f1);
   },
-  stereo: (d, to) => new Stereo(d, to),
+  stereo: (d, to) => new Stereo(d, to)
 };
 
 type Funs = typeof funs;
@@ -210,5 +210,5 @@ const ranges: Ranges = {
   fucked_up_torus: domain => domain + 1,
   rotate: domain => domain,
   r: domain => domain,
-  stereo: domain => domain,
+  stereo: domain => domain
 };

@@ -7,7 +7,7 @@ export const AUDIO_PLACEHOLDER: Audio = {
   power: 1,
   chroma: 0,
   tempo: 0.5,
-  onset: 1,
+  onset: 1
 };
 
 export const chromaCount = 12;

@@ -97,7 +97,7 @@ export class CompositeFn implements Fn {
       const { fns, last } = this;
       if (last && fn.domain !== last.d) {
         throw new Error(
-          `Cannot add ${fn} to composite, because its domain is not ${last.d}`,
+          `Cannot add ${fn} to composite, because its domain is not ${last.d}`
         );
       }
       fns.push(fn);

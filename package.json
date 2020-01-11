@@ -77,5 +77,8 @@
     "dev": "webpack-dev-server --config webpack.dev.js",
     "dist": "webpack --config webpack.prod.js",
     "serve": "serve"
+  },
+  "prettier": {
+    "singleQuote": true
   }
 }

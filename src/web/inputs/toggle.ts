@@ -4,14 +4,14 @@ export class ToggleInput extends Input<boolean> {
   constructor(
     readonly id: string,
     _value: boolean,
-    { disabled = false, persistent = false } = {},
+    { disabled = false, persistent = false } = {}
   ) {
     super(id, _value, {
       persistent,
       disabled,
       stringify: (bool: boolean) => {
         return bool ? '1' : '0';
-      },
+      }
     });
   }
 

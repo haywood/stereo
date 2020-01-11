@@ -16,7 +16,7 @@ class Overlay {
 
     this.domElement
       .querySelectorAll<HTMLElement>(
-        'input, textarea, label, i, h2, h1, #allowed_db_range',
+        'input, textarea, label, i, h2, h1, #allowed_db_range'
       )
       .forEach(el => {
         el.onmouseover = () => (this.hasHover = true);

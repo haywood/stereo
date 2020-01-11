@@ -13,5 +13,7 @@
     ".js-bin/**": true,
     "stereo/**": true,
     ".tsbuildinfo": true
-  }
+  },
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": false
 }

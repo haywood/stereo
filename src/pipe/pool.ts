@@ -16,7 +16,7 @@ export const startPool = async () => {
   let i = 0;
   pool = Pool(
     () => spawn(new Worker('./worker', { name: `pipe${i++}` })),
-    poolSize,
+    poolSize
   );
   data = new Map();
   let promises = [];
@@ -41,7 +41,7 @@ export const stopPool = async (): Promise<void> => {
 const initialize = (
   params: Params,
   n: number,
-  buffer: SharedArrayBuffer,
+  buffer: SharedArrayBuffer
 ): Promise<void> => {
   return timing('initialization')(async () => {
     return forkJoin(n, async chunk => {
@@ -61,7 +61,7 @@ const iterate = (params: Params, buffer: SharedArrayBuffer) => {
 const getKey = (params: Params) =>
   JSON.stringify({
     pipe: params.pipe,
-    hv: params.hv,
+    hv: params.hv
   });
 
 const getOrInitialize = async (params: Params): Promise<SharedArrayBuffer> => {
@@ -95,7 +95,7 @@ const timing = (label: string) => async <T>(op: () => Promise<T>) => {
 };
 
 export const runPipeline = async (
-  params: Params,
+  params: Params
 ): Promise<SharedArrayBuffer> => {
   const buffer = await getOrInitialize(params);
   await iterate(params, buffer);
