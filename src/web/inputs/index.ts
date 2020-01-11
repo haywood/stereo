@@ -18,23 +18,41 @@ const hash = (() => {
   return new URLSearchParams(temp ? atob(temp) : '');
 })();
 
-export abstract class AbstractInput<T, E = HTMLElement> {
-  private readonly subject: Subject<Change<T>>;
+type Options<T> = {
+  persistent?: boolean;
+  disabled?: boolean;
+  stringify?: (t: T) => string;
+};
+export abstract class AbstractInput<T, E extends HTMLElement = HTMLElement> {
+  readonly disabled: boolean;
+
+  protected readonly stringify: (t: T) => string;
   protected el?: E;
+
+  private readonly subject: Subject<Change<T>>;
+  private readonly persistent: boolean;
 
   constructor(
     readonly id: string,
     private _value: T,
-    private readonly persistent: boolean,
-    protected readonly stringify: (t: T) => string = () => {
-      throw new Error('stringify unsupported');
-    },
+    {
+      persistent = false,
+      disabled = false,
+      stringify = () => {
+        throw new Error('stringify unsupported');
+      },
+    }: Options<T> = {},
   ) {
+    this.persistent = persistent;
+    this.disabled = disabled;
+    this.stringify = stringify;
+
     if (persistenceEnabled) {
       this.initFromOrWriteToHash();
     } else {
       this.persistent = false;
     }
+
     this.subject = this.newSubject();
   }
 
@@ -50,6 +68,7 @@ export abstract class AbstractInput<T, E = HTMLElement> {
 
   setup = (el: E) => {
     this.el = el;
+    if (this.disabled) this.el.classList.add('disabled');
     this._setup();
   };
 
@@ -87,22 +106,22 @@ export class TextInput extends AbstractInput<
   string,
   HTMLInputElement | HTMLTextAreaElement
 > {
-  readonly disabled = false;
-
   constructor(
     readonly id: TextInputId,
     _value: string,
-    persistent = true,
-    protected readonly stringify = (s: string) => s,
+    { persistent = true, disabled = false, stringify = (s: string) => s } = {},
   ) {
-    super(id, _value, persistent, stringify);
+    super(id, _value, { persistent, disabled, stringify });
   }
 
   protected _setup = () => {
+    this.el.disabled = this.disabled;
+
     this.el.onchange = () => {
       this.el.value = this.stringify(this.el.value);
       this.value = this.el.value;
     };
+
     this.el.oninput = () => this.setSize();
 
     this.stream.subscribe(({ newValue }) => {
@@ -135,20 +154,23 @@ export class ToggleInput extends AbstractInput<boolean> {
   constructor(
     readonly id: ToggleInputId,
     _value: boolean,
-    readonly disabled: boolean = false,
-    persistent = true,
+    { disabled = false, persistent = false } = {},
   ) {
-    super(id, _value, persistent, (bool: boolean) => {
-      return bool ? '1' : '0';
+    super(id, _value, {
+      persistent,
+      disabled,
+      stringify: (bool: boolean) => {
+        return bool ? '1' : '0';
+      },
     });
   }
 
   protected _setup = () => {
     const on = this.el.querySelector<HTMLInputElement>('.on');
-    on.onclick = () => (this.value = true);
+    if (!this.disabled) on.onclick = () => (this.value = true);
 
     const off = this.el.querySelector<HTMLInputElement>('.off');
-    off.onclick = () => (this.value = false);
+    if (!this.disabled) off.onclick = () => (this.value = false);
 
     this.stream.subscribe(({ newValue }) => {
       if (newValue) {
@@ -174,16 +196,20 @@ export class RangeInput extends AbstractInput<[number, number]> {
   constructor(
     readonly id: RangeInputId,
     _value: [number, number],
-    readonly disabled: boolean = false,
-    persistent = true,
+    { disabled = false, persistent = true } = {},
   ) {
-    super(id, _value, persistent, ([min, max]) => {
-      return `${min},${max}`;
+    super(id, _value, {
+      disabled,
+      persistent,
+      stringify: ([min, max]) => {
+        return `${min},${max}`;
+      },
     });
   }
 
   protected _setup = () => {
     const input = this.el.querySelector<MultirangeHTMLInputElement>('input');
+    input.disabled = this.disabled;
     multirange(input);
     const minEl = this.el.querySelector<HTMLElement>('.min');
     const maxEl = this.el.querySelector<HTMLElement>('.max');
@@ -213,16 +239,12 @@ export class RangeInput extends AbstractInput<[number, number]> {
 }
 
 export class ActionInput extends AbstractInput<void> {
-  constructor(
-    id: string,
-    private readonly action: (ev: MouseEvent) => void,
-    readonly disabled: boolean = false,
-  ) {
-    super(id, null, false);
+  constructor(id: string, private readonly action: (ev: MouseEvent) => void) {
+    super(id, null);
   }
 
   protected _setup = () => {
-    this.el.onclick = ev => this.action(ev);
+    if (!this.disabled) this.el.onclick = ev => this.action(ev);
   };
 }
 
@@ -241,21 +263,24 @@ export const inputs = {
       ->R(theta, 0, 2)
       ->R(theta, 0, 3)
       ->stereo(3)`,
-    true,
-    text => text.replace(/\s*(->|=>)\s*/g, '\n  ->').trim(),
+    {
+      persistent: true,
+      stringify: text => text.replace(/\s*(->|=>)\s*/g, '\n  ->').trim(),
+    },
   ),
   theta: new TextInput('theta', 'pi * power + pi * t / 20'),
   h: new TextInput('h', 'chroma * abs(p[0])'),
   v: new TextInput('v', '(power + onset) / 2'),
-  animate: new ToggleInput('animate', true, false, true),
-  mic: new ToggleInput('mic', false, false, false),
-  fullscreen: new ToggleInput(
-    'fullscreen',
-    false,
-    !document.fullscreenEnabled,
-    false,
-  ),
-  allowedDbs: new RangeInput('allowed_db_range', [-130, -30]),
+  animate: new ToggleInput('animate', true),
+  mic: new ToggleInput('mic', false, {
+    disabled: !new AudioContext().audioWorklet,
+  }),
+  fullscreen: new ToggleInput('fullscreen', false, {
+    disabled: !document.fullscreenEnabled,
+  }),
+  allowedDbs: new RangeInput('allowed_db_range', [-130, -30], {
+    disabled: !new AudioContext().audioWorklet,
+  }),
   save: new ActionInput('save', async () => {
     const canvas = renderer.domElement;
     renderer.render();

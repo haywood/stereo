@@ -16,7 +16,7 @@ class Overlay {
 
     this.domElement
       .querySelectorAll<HTMLElement>(
-        'input, label, i, h2, h1, #allowed_db_range',
+        'input, textarea, label, i, h2, h1, #allowed_db_range',
       )
       .forEach(el => {
         el.onmouseover = () => (this.hasHover = true);
@@ -34,7 +34,6 @@ class Overlay {
 
   private setupInputs = () => {
     for (const input of Object.values(inputs)) {
-      if (input.disabled) continue;
       const el = this.querySelector<HTMLInputElement>(`#${input.id}`);
       assert(el, `Did not find element for input #${input.id}`);
       input.setup(el);

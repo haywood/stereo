@@ -17,6 +17,20 @@
   [title] {
     cursor: help;
   }
+
+  .disabled {
+    cursor: not-allowed;
+
+    i.material-icons {
+      color: gray;
+      cursor: not-allowed;
+    }
+  }
+
+  input:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
 }
 
 #inputs {
