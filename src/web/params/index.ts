@@ -17,7 +17,9 @@ export const paramsStream = subject.asObservable();
     new Worker('./worker', { name: 'params' }),
   );
 
-  const emit = async (t: number, audio: Audio) => {
+  let count = 0;
+
+  const emit = async (audio: Audio) => {
     try {
       subject.next(
         await params({
@@ -26,7 +28,7 @@ export const paramsStream = subject.asObservable();
           audio,
           h: inputs.h.value,
           v: inputs.v.value,
-          t,
+          t: count++ / fps,
         }),
       );
     } catch (err) {
@@ -34,15 +36,13 @@ export const paramsStream = subject.asObservable();
     }
   };
 
-  let count = 0;
+  await emit(AUDIO_PLACEHOLDER);
 
   const maybeEmit = async (audio: Audio) => {
     if (inputs.animate.value) {
-      await emit(count++ / fps, audio);
+      await emit(audio);
     }
   };
-
-  await maybeEmit(AUDIO_PLACEHOLDER);
 
   combineLatest(audioStream, interval(1000 / fps)).subscribe(
     ([a]) => maybeEmit(a),
