@@ -25,7 +25,8 @@ body {
   }
 }
 
-input {
+input,
+textarea {
   font-family: $font-family;
   font-size: $font-size;
 }

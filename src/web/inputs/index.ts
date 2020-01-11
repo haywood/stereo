@@ -26,6 +26,9 @@ export abstract class AbstractInput<T, E = HTMLElement> {
     readonly id: string,
     private _value: T,
     private readonly persistent: boolean,
+    protected readonly stringify: (t: T) => string = () => {
+      throw new Error('stringify unsupported');
+    },
   ) {
     if (persistenceEnabled) {
       this.initFromOrWriteToHash();
@@ -56,10 +59,6 @@ export abstract class AbstractInput<T, E = HTMLElement> {
     throw new Error('parse unsupported');
   }
 
-  protected stringify(value: T): string {
-    throw new Error('stringify unsupported');
-  }
-
   get stream() {
     return this.subject.asObservable();
   }
@@ -84,29 +83,49 @@ export abstract class AbstractInput<T, E = HTMLElement> {
 
 type TextInputId = 'pipe' | 'theta' | 'h' | 'v';
 
-export class TextInput extends AbstractInput<string, HTMLInputElement> {
+export class TextInput extends AbstractInput<
+  string,
+  HTMLInputElement | HTMLTextAreaElement
+> {
   readonly disabled = false;
 
-  constructor(readonly id: TextInputId, _value: string, persistent = true) {
-    super(id, _value, persistent);
+  constructor(
+    readonly id: TextInputId,
+    _value: string,
+    persistent = true,
+    protected readonly stringify = (s: string) => s,
+  ) {
+    super(id, _value, persistent, stringify);
   }
 
   protected _setup = () => {
-    this.el.onchange = () => (this.value = this.el.value);
-    this.el.oninput = () => (this.el.size = this.el.value.length);
+    this.el.onchange = () => {
+      this.el.value = this.stringify(this.el.value);
+      this.value = this.el.value;
+    };
+    this.el.oninput = () => this.setSize();
 
     this.stream.subscribe(({ newValue }) => {
-      this.el.value = newValue;
-      this.el.size = newValue.length;
+      this.el.value = this.stringify(newValue);
+      this.setSize();
     });
   };
 
-  protected parse(str: string) {
-    return str;
+  private setSize() {
+    if (this.el instanceof HTMLInputElement)
+      this.el.size = this.el.value.length;
+    else {
+      const lines = this.el.value.split('\n');
+      this.el.rows = Math.min(10, lines.length);
+      this.el.cols = Math.min(
+        50,
+        lines.reduce((max, line) => Math.max(max, line.length), 0),
+      );
+    }
   }
 
-  protected stringify(text: string) {
-    return text;
+  protected parse(str: string) {
+    return str;
   }
 }
 
@@ -119,7 +138,9 @@ export class ToggleInput extends AbstractInput<boolean> {
     readonly disabled: boolean = false,
     persistent = true,
   ) {
-    super(id, _value, persistent);
+    super(id, _value, persistent, (bool: boolean) => {
+      return bool ? '1' : '0';
+    });
   }
 
   protected _setup = () => {
@@ -145,10 +166,6 @@ export class ToggleInput extends AbstractInput<boolean> {
     else if (/0|false/i.test(str)) return false;
     else throw new Error(`invalid boolean value for input ${this.id}: ${str}`);
   }
-
-  protected stringify(bool: boolean) {
-    return bool ? '1' : '0';
-  }
 }
 
 type RangeInputId = 'allowed_db_range';
@@ -160,7 +177,9 @@ export class RangeInput extends AbstractInput<[number, number]> {
     readonly disabled: boolean = false,
     persistent = true,
   ) {
-    super(id, _value, persistent);
+    super(id, _value, persistent, ([min, max]) => {
+      return `${min},${max}`;
+    });
   }
 
   protected _setup = () => {
@@ -191,10 +210,6 @@ export class RangeInput extends AbstractInput<[number, number]> {
     const [min, max] = str.split(/,/);
     return [parseInt(min), parseInt(max)];
   }
-
-  protected stringify([min, max]) {
-    return `${min},${max}`;
-  }
 }
 
 export class ActionInput extends AbstractInput<void> {
@@ -218,7 +233,16 @@ const n = 2000 * poolSize;
 export const inputs = {
   pipe: new TextInput(
     'pipe',
-    `${n}->3->torus(1, 1)->R(theta, 0, 1, cos, tan)->R(theta, 0, 2)->R(theta, 0, 3)->stereo(3)`,
+    `
+    ${n}
+      ->3
+      ->torus(1, 1)
+      ->R(theta, 0, 1, cos, tan)
+      ->R(theta, 0, 2)
+      ->R(theta, 0, 3)
+      ->stereo(3)`,
+    true,
+    text => text.replace(/\s*(->|=>)\s*/g, '\n  ->').trim(),
   ),
   theta: new TextInput('theta', 'pi * power + pi * t / 20'),
   h: new TextInput('h', 'chroma * abs(p[0])'),

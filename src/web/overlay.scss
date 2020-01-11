@@ -41,6 +41,10 @@
     flex-flow: column wrap;
     justify-content: flex-start;
   }
+
+  #pipe {
+    resize: none;
+  }
 }
 
 #media {
