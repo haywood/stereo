@@ -1,6 +1,6 @@
 import Rotator from './rotator';
 import Cube from './cube';
-import { Fn, components, CompositeFn } from './fn';
+import { Fn, components, CompositeFn } from '.';
 import { TypedArray } from 'three';
 import { Vector } from '../core/data';
 import assert from 'assert';

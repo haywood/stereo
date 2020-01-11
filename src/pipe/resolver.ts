@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import Cube from '../fn/cube';
-import { CompositeFn, Fn } from '../fn/fn';
+import { CompositeFn, Fn } from '../fn';
 import FuckedUpTorus from '../fn/fucked_up_torus';
 import { Identity } from '../fn/identity';
 import Rotator from '../fn/rotator';

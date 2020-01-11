@@ -1,5 +1,5 @@
 import Interval from './interval';
-import { Fn } from './fn';
+import { Fn } from '.';
 import { Vector } from '../core/data';
 
 export default class Cube implements Fn {

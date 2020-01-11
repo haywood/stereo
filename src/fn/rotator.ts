@@ -1,4 +1,4 @@
-import { Fn, cos, sin } from './fn';
+import { Fn, cos, sin } from '.';
 import Cube from './cube';
 import { Vector } from '../core/data';
 import assert from 'assert';

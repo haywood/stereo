@@ -1,4 +1,4 @@
-import { Fn } from './fn';
+import { Fn } from '.';
 import assert from 'assert';
 import { Vector } from '../core/data';
 
