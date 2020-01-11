@@ -21,7 +21,18 @@ export class Compiler {
     });
   }
 
-  compilePipe = (expr: string): PipeNode => {
+  compile(expr: string): PipeNode;
+  compile(expr: string, startRule: 'scalar'): Scalar;
+  compile(expr: string, startRule?: string): any {
+    switch (startRule) {
+      default:
+        return this.compilePipe(expr);
+      case 'scalar':
+        return this.compileScalar(expr);
+    }
+  }
+
+  private compilePipe = (expr: string): PipeNode => {
     const ast = this.simplifier.simplify(Parser.parsePipe(expr));
     // Due to the way that sampling is implemented, the actual
     // number of points generated will not be exactly the n specified
@@ -32,7 +43,7 @@ export class Compiler {
     return ast;
   };
 
-  compileScalar = (expr: string): Scalar => {
+  private compileScalar = (expr: string): Scalar => {
     const ast = Parser.parseScalar(expr);
     return this.simplifier.simplifyScalar(ast);
   };
@@ -42,7 +53,7 @@ type Substitutions = {
   [id: string]: Scalar;
 };
 
-export class Simplifier {
+class Simplifier {
   constructor(private readonly substitutions: Substitutions) {}
 
   simplify = (pipe: PipeNode): PipeNode => {

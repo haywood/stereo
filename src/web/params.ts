@@ -11,14 +11,14 @@ import { inf } from '../core/constants';
 
 const params = (t: number, audio: Audio) => {
   const compiler = new Compiler({ theta: inputs.theta.value });
-  const pipe = compiler.compilePipe(inputs.pipe.value);
+  const pipe = compiler.compile(inputs.pipe.value);
   const scope: Scope = { t, inf, n: pipe.n, ...audio };
   return {
     pipe,
     scope,
     hv: {
-      h: compiler.compileScalar(`360 * (${inputs.h.value})`),
-      v: compiler.compileScalar(`100 * (${inputs.v.value})`),
+      h: compiler.compile(`360 * (${inputs.h.value})`, 'scalar'),
+      v: compiler.compile(`100 * (${inputs.v.value})`, 'scalar'),
     },
   };
 };
