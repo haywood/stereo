@@ -174,17 +174,6 @@ const ops: { [op: string]: (a: number, b: number) => number } = {
   '^': (a, b) => a ** b,
 };
 
-const rotate = (
-  d: number,
-  theta: number,
-  d0: number,
-  d1: number,
-  f0: UnaryOperator = Math.cos,
-  f1: UnaryOperator = Math.sin,
-) => {
-  return new Rotator(d, theta, d0, d1, f0, f1);
-};
-
 const funs: { [op: string]: (d: number, ...rest) => Fn } = {
   cube: (d, l) => new Cube(d, l),
   sphere: (d, r: number) => new Sphere(d, r),
@@ -192,8 +181,18 @@ const funs: { [op: string]: (d: number, ...rest) => Fn } = {
     new Spiral(d, new Array(d).fill(a), new Array(d - 1).fill(k)),
   torus: (d, r: number, t: number) => new Torus(d, r, t),
   fucked_up_torus: (d, r: number, t: number) => new FuckedUpTorus(d, r, t),
-  rotate,
-  r: rotate,
+  rotate: (
+    d: number,
+    theta: number,
+    d0: number,
+    d1: number,
+    f0: UnaryOperator = Math.cos,
+    f1: UnaryOperator = Math.sin,
+  ) => {
+    assert(0 <= d0 && d0 < d, `rotate: Expected 0 <= d0 = ${d0} < d = ${d}`);
+    assert(0 <= d1 && d1 < d, `rotate: Expected 0 <= d1 = ${d1} < d = ${d}`);
+    return new Rotator(d, theta, d0, d1, f0, f1);
+  },
   stereo: (d, to) => new Stereo(d, to),
 };
 
