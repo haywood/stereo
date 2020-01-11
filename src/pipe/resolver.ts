@@ -9,7 +9,7 @@ import Sphere from '../fn/sphere';
 import Spiral from '../fn/spiral';
 import Stereo from '../fn/stereo';
 import Torus from '../fn/torus';
-import { pp } from '../core/pp';
+import { pp } from '../pp';
 
 import {
   AccessNode,

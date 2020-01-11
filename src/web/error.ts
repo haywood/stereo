@@ -1,4 +1,4 @@
-import { pp } from '../core/pp';
+import { pp } from '../pp';
 import * as log from 'loglevel';
 
 export const error = (err: any): void => {

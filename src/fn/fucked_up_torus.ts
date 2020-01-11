@@ -1,7 +1,7 @@
 import Cube from './cube';
 import Sphere from './sphere';
 import { Fn } from '.';
-import { Vector } from '../core/data';
+import { Vector } from '../data';
 import assert from 'assert';
 
 // This shape does not implement a torus. It used to,

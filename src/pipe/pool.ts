@@ -1,7 +1,7 @@
 import { spawn, Worker, Pool, ModuleThread } from 'threads';
 import { getLogger } from 'loglevel';
 import { Params, PipelineWorker, Chunk } from './types';
-import { Data } from '../core/data';
+import { Data } from '../data';
 import { Resolver, Resolution } from './resolver';
 
 const logger = getLogger('PipelinePool');

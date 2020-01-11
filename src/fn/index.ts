@@ -1,6 +1,6 @@
-import { Vector } from '../core/data';
+import { Vector } from '../data';
 import assert from 'assert';
-import { inf } from '../core/constants';
+import { inf } from '../constants';
 
 export interface Fn {
   readonly d: number;

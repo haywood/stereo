@@ -1,5 +1,5 @@
 import { Fn } from '.';
-import { Vector } from '../core/data';
+import { Vector } from '../data';
 import assert from 'assert';
 
 export class Identity implements Fn {

@@ -1,6 +1,6 @@
 import { Scope } from '../../pipe/types';
 import { Compiler } from '../../pipe/compiler';
-import { inf } from '../../core/constants';
+import { inf } from '../../constants';
 import { expose } from 'threads';
 import { Options } from './options';
 
