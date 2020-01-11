@@ -1,16 +1,12 @@
+import { PipeNode, Scalar } from './core/pipe/ast';
+
 declare module '*.html' {
   export default '';
 }
 
 declare module '*.pegjs' {
-  export function parse(spec: string): AST;
-
-  export function parse(
-    spec: string,
-    options: {
-      startRule: 'arith';
-    },
-  ): Arithmetic;
+  export function parse(spec: string): PipeNode;
+  export function parse(spec: string, options: { startRule: 'scalar' }): Scalar;
 }
 
 declare module 'circular-buffer' {

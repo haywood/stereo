@@ -31,7 +31,7 @@ module.exports = {
       {
         test: /\.pegjs$/,
         loader:
-          'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=arith',
+          'pegjs-loader?allowedStartRules[]=pipe,allowedStartRules[]=scalar',
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,

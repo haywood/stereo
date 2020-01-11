@@ -4,7 +4,6 @@ import Cube from '../fn/cube';
 import { CompositeFn, Fn } from '../fn/fn';
 import FuckedUpTorus from '../fn/fucked_up_torus';
 import { Identity } from '../fn/identity';
-import Interval from '../fn/interval';
 import Rotator from '../fn/rotator';
 import Sphere from '../fn/sphere';
 import Spiral from '../fn/spiral';
@@ -62,7 +61,7 @@ export class Resolver {
   }
 
   private resolvePipe = (pipe: PipeNode): Resolution => {
-    const [head, ...tail] = pipe.chain;
+    const [head, ...tail] = pipe.steps;
     const links: Link[] = [];
     const link = this.resolveFirstStep(head);
 

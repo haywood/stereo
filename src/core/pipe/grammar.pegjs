@@ -1,11 +1,11 @@
 /** RULES */
 
-pipe = n:uint pipe_sep chain:chain {
-  return {kind: 'pipe', n: parseInt(n), chain};
+pipe = n:uint connector steps:steps {
+  return {kind: 'pipe', n: parseInt(n), steps};
 }
 
-chain =
-  head:step pipe_sep tail:chain { return [head, ...tail]; }
+steps =
+  head:step connector tail:steps { return [head, ...tail]; }
   / f:step { return [f]; }
 
 step =
@@ -14,27 +14,27 @@ step =
   }
 
 step_args =
-  head:arith comma tail:step_args { return [head, ...tail]; }
-  / arg:arith { return [arg]; }
-
-arith =
-  s:scalar op:arith_op a:arith {
-     return {kind: 'arith', op, operands: [s, a]};
-  }
-  / scalar
+  head:scalar comma tail:step_args { return [head, ...tail]; }
+  / arg:scalar { return [arg]; }
 
 scalar =
+  s:term op:operator a:scalar {
+     return {kind: 'arith', op, operands: [s, a]};
+  }
+  / term
+
+term =
   value:number { return {kind: 'number', value}; }
   / name:identifier lparen args:fn_args rparen {
     return {kind: 'fn', name: name.toLowerCase(), args};
   }
-  / id:identifier '[' index:scalar ']' { return {kind: 'access', id, index}; }
+  / id:identifier lbrack index:scalar rbrack { return {kind: 'access', id, index}; }
   / id:identifier { return {kind: 'id', id: id.toLowerCase()}; }
-  / lparen a:arith rparen { return a; }
+  / lparen a:scalar rparen { return a; }
 
 fn_args =
-  head:arith comma tail:fn_args { return [head, ...tail]; }
-  / arg:arith { return [arg]; }
+  head:scalar comma tail:fn_args { return [head, ...tail]; }
+  / arg:scalar { return [arg]; }
 
 /** TERMINALS */
 
@@ -56,16 +56,20 @@ uint = $[0-9]+
 
 mantissa = $('.' uint)
 
-arith_op =
+operator =
   _ op:$('+' / '-' / '*' / '/' / '**' / '^') _ { return op; }
 
 lparen = _ '(' _
 
 rparen = _ ')' _
 
+lbrack = _ '[' _
+
+rbrack = _ ']' _
+
 comma = _ ',' _
 
-pipe_sep = _ $('->' / __ / '=>') _
+connector = _ $('->' / __ / '=>') _
 
 _ = [ \t\n\r]*
 __ = $[ \t\n\r]+

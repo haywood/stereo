@@ -24,7 +24,7 @@ export class Compiler {
   compilePipe = (expr: string): PipeNode => {
     const ast = this.simplifier.simplify(Parser.parsePipe(expr));
     const resolver = new Resolver(this.scope);
-    const d = resolver.resolve(ast.chain[0].args[0], 'number');
+    const d = resolver.resolve(ast.steps[0].args[0], 'number');
     // Due to the way that sampling is implemented, the actual
     // number of points generated will not be exactly the n specified
     // by the user, unless n happens to be the dth power of some number.
@@ -49,12 +49,12 @@ export class Simplifier {
 
   simplify = (pipe: PipeNode): PipeNode => {
     const n = pipe.n;
-    const chain = pipe.chain;
+    const chain = pipe.steps;
 
     return {
       kind: pipe.kind,
       n,
-      chain: chain.map(this.simplifyStepNode),
+      steps: chain.map(this.simplifyStepNode),
     };
   };
 
