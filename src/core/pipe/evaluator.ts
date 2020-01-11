@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { hsv } from 'color-convert';
+import Color from 'color';
 import { getLogger } from 'loglevel';
 
 import { Data, Vector } from '../data';
@@ -96,13 +96,13 @@ export class Evaluator {
       const p = Data.get(position, i, d);
       this.scope.p = p;
       this.scope.i = i;
-      const rgb = hsv.rgb([
-        Math.round(resolver.resolve(hv.h, 'number')),
-        100,
-        Math.round(resolver.resolve(hv.v, 'number')),
-      ]);
+      const h = Math.round(360 * resolver.resolve(hv.h, 'number'));
+      const v = Math.round(100 * resolver.resolve(hv.v, 'number'));
+      const rgb = Color({ h, s: 100, v })
+        .rgb()
+        .array();
 
-      Data.set(color, rgb || [1, 1, 1], i, 3);
+      Data.set(color, rgb, i, 3);
     }
   };
 }

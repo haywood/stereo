@@ -17,8 +17,8 @@ const params = (t: number, audio: Audio) => {
     pipe,
     scope,
     hv: {
-      h: compiler.compile(`360 * (${inputs.h.value})`, 'scalar'),
-      v: compiler.compile(`100 * (${inputs.v.value})`, 'scalar'),
+      h: compiler.compile(inputs.h.value, 'scalar'),
+      v: compiler.compile(inputs.v.value, 'scalar'),
     },
   };
 };

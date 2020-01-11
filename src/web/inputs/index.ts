@@ -262,7 +262,7 @@ export const inputs = {
       ->R(theta, 0, 1, cos, tan)
       ->R(theta, 0, 2)
       ->R(theta, 0, 3)
-      ->stereo(3)`,
+      ->stereo(3)`.trim(),
     {
       persistent: true,
       stringify: text => text.replace(/\s*(->|=>)\s*/g, '\n  ->').trim(),
