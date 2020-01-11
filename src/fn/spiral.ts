@@ -1,4 +1,4 @@
-import { Fn, exp } from '.';
+import { Fn } from '.';
 import Cube from './cube';
 import Sphere from './sphere';
 import assert from 'assert';
@@ -32,7 +32,7 @@ export default class Spiral implements Fn {
     for (let i = 0; i < domain; i++) {
       x += k[i] * phi[i];
     }
-    const r = exp(x);
+    const r = Math.exp(x);
     for (let i = 0; i < d; i++) {
       y[i] = y[i] * a[i] * r;
     }

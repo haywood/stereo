@@ -1,5 +1,4 @@
 import { Fn } from '.';
-import Cube from './cube';
 import { Vector } from '../core/data';
 import assert from 'assert';
 

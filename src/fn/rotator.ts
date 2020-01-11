@@ -1,4 +1,4 @@
-import { Fn, cos, sin } from '.';
+import { Fn } from '.';
 import Cube from './cube';
 import { Vector } from '../core/data';
 import assert from 'assert';
@@ -12,8 +12,8 @@ export default class Rotator implements Fn {
     readonly theta: number,
     readonly d0: number,
     readonly d1: number,
-    readonly f0: (theta: number) => number = cos,
-    readonly f1: (theta: number) => number = sin,
+    readonly f0: (theta: number) => number = Math.cos,
+    readonly f1: (theta: number) => number = Math.sin,
   ) {
     this.r0 = f0(theta);
     this.r1 = f1(theta);

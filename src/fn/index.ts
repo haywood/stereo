@@ -2,12 +2,6 @@ import { Vector } from '../core/data';
 import assert from 'assert';
 import { inf } from '../core/constants';
 
-export const cos = Math.cos;
-export const sin = Math.sin;
-export const tan = Math.tan;
-export const tanh = Math.tanh;
-export const exp = Math.exp;
-
 export interface Fn {
   readonly d: number;
   readonly domain: number;
