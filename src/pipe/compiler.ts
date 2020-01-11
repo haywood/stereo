@@ -10,7 +10,7 @@ import {
   AccessNode,
 } from './ast';
 import { Resolver } from './resolver';
-import Interval from '../../fn/interval';
+import Interval from '../fn/interval';
 
 export class Compiler {
   private readonly simplifier: Simplifier;

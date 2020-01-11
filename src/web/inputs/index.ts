@@ -1,4 +1,4 @@
-import { poolSize } from '../../core/pipe/pool';
+import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
 import { renderer } from '../renderer';
 import { TextInput } from './text';
