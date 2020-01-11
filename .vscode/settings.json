@@ -1,0 +1,17 @@
+{
+  "files.exclude": {
+    ".js-bin/**": true,
+    "stereo/**": true,
+    ".tsbuildinfo": true
+  },
+  "files.watcherExclude": {
+    ".js-bin/**": true,
+    "stereo/**": true,
+    ".tsbuildinfo": true
+  },
+  "search.exclude": {
+    ".js-bin/**": true,
+    "stereo/**": true,
+    ".tsbuildinfo": true
+  }
+}
