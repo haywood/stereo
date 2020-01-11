@@ -1,8 +1,8 @@
 import { Observable, timer, Subject, interval, EMPTY } from 'rxjs';
 import { retryWhen, delayWhen, repeatWhen, tap } from 'rxjs/operators';
 import { Data } from '../core/data';
-import { Params } from '../core/pipe/types';
-import { startPool, runPipeline } from '../core/pipe/pool';
+import { Params } from '../pipe/types';
+import { startPool, runPipeline } from '../pipe/pool';
 import * as params from './params';
 import { getLogger } from 'loglevel';
 import { pp } from '../core/pp';

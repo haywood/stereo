@@ -2,9 +2,9 @@ import assert from 'assert';
 import Color from 'color';
 import { getLogger } from 'loglevel';
 
-import { Data, Vector } from '../data';
-import { CompositeFn } from '../../fn/fn';
-import { pp } from '../pp';
+import { Data, Vector } from '../core/data';
+import { CompositeFn } from '../fn/fn';
+import { pp } from '../core/pp';
 
 import { PipeNode } from './ast';
 import { Resolution, Resolver } from './resolver';

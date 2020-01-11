@@ -1,5 +1,5 @@
 import { audioStream } from '../audio';
-import { Params } from '../../core/pipe/types';
+import { Params } from '../../pipe/types';
 import { interval, combineLatest, Subject } from 'rxjs';
 import { inputs } from '../inputs';
 import { fps } from '../constants';
