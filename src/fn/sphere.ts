@@ -1,7 +1,6 @@
 import Rotator from './rotator';
 import Cube from './cube';
-import { Fn, components, CompositeFn } from '.';
-import { TypedArray } from 'three';
+import { Fn, CompositeFn } from '.';
 import { Vector } from '../core/data';
 import assert from 'assert';
 
@@ -30,7 +29,9 @@ export default class Sphere implements Fn {
     assert.equal(y.length, d);
 
     const r = new CompositeFn(
-      components(d - 1).map(i => new Rotator(d, phi[i], 0, i + 1)),
+      Array.from(new Array(d - 1).keys()).map(
+        i => new Rotator(d, phi[i], 0, i + 1),
+      ),
     );
     r.fn(root, y);
     return y;

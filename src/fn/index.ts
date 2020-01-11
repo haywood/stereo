@@ -8,8 +8,6 @@ export const tan = Math.tan;
 export const tanh = Math.tanh;
 export const exp = Math.exp;
 
-export const components = d => Array.from(new Array(d).keys());
-
 export interface Fn {
   readonly d: number;
   readonly domain: number;

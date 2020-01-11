@@ -1,4 +1,4 @@
-import { Fn, exp, components } from '.';
+import { Fn, exp } from '.';
 import Cube from './cube';
 import Sphere from './sphere';
 import assert from 'assert';
