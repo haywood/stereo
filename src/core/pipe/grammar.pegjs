@@ -1,3 +1,14 @@
+{
+  function step(type, args, min, max = min) {
+    if (args.length < min) {
+      error(`expected ${type} to have at least ${min} argument${min == 1 ? '' : 's'}, but found ${args.length} instead`);
+    } else if (args.length > max) {
+      error(`expected ${type} to have at most ${max} argument${max == 1 ? '' : 's'}, but found ${args.length} instead`);
+    }
+    return {kind: 'step', type, args}
+  }
+}
+
 /** RULES */
 
 pipe = n:pint connector d0:pint connector steps:steps {
@@ -25,50 +36,33 @@ step =
   / rotate
   / stereo
 
-cube 'cube' =
-  type:$'cube'i lparen length:scalar rparen {
-    return {kind: 'step', type, args: [length]};
-  }
+cube 'cube' = type:$'cube'i args:fn_args {
+  return step(type, args, 1);
+}
 
-sphere 'sphere' =
-  type:$'sphere'i lparen r:scalar rparen {
-    return {kind: 'step', type, args: [r]};
-  }
+sphere 'sphere' = type:$'sphere'i args:fn_args {
+  return step(type, args, 1);
+}
 
-spiral 'spiral' =
-  type:$'spiral'i lparen a:scalar comma k:scalar rparen {
-    return {kind: 'step', type, args: [a, k]};
-  }
+spiral 'spiral' = type:$'spiral'i args:fn_args {
+  return step(type, args, 2);
+}
 
-torus 'torus' =
-  type:$'torus'i lparen r:scalar comma t:scalar rparen {
-    return {kind: 'step', type, args: [r, t]};
-  }
+torus 'torus' = type:$'torus'i args:fn_args {
+  return step(type, args, 2);
+}
 
-fucked_up_torus 'fucked_up_torus' =
-  type:$'fucked_up_torus'i lparen r:scalar comma t:scalar rparen {
-    return {kind: 'step', type, args: [r, t]};
-  }
+fucked_up_torus 'fucked_up_torus' = type:$'fucked_up_torus'i args:fn_args {
+  return step(type, args, 2);
+}
 
-rotate 'rotate' =
-  ('r'i / 'rotate'i)
-  lparen
-    theta:scalar
-    comma d0:scalar
-    comma d1:scalar
-    f0:(comma id:id { return id})?
-    f1:(comma id:id { return id})?
-  rparen {
-    const args = [theta, d0, d1];
-    if (f0) args.push(f0);
-    if (f1) args.push(f1);
-    return {kind: 'step', type: 'rotate', args};
-  }
+rotate 'rotate' = ('r'i / 'rotate'i) args:fn_args  {
+  return step('rotate', args, 3, 5);
+}
 
-stereo 'stereo' =
-  type:$'stereo'i lparen to:scalar rparen {
-    return {kind: 'step', type, args: [to]};
-  }
+stereo 'stereo' = type:$'stereo'i args:fn_args {
+  return step(type, args, 1);
+}
 
 step_args =
   head:scalar comma tail:step_args { return [head, ...tail]; }
@@ -82,7 +76,7 @@ scalar 'scalar' =
 
 term 'term' =
   value:number { return {kind: 'number', value}; }
-  / name:identifier lparen args:fn_args rparen {
+  / name:identifier args:fn_args {
     return {kind: 'fn', name: name.toLowerCase(), args};
   }
   / id:identifier lbrack index:scalar rbrack { return {kind: 'access', id, index}; }
@@ -91,8 +85,10 @@ term 'term' =
 
 id = id:identifier { return {kind: 'id', id: id.toLowerCase()}; }
 
-fn_args =
-  head:scalar comma tail:fn_args { return [head, ...tail]; }
+fn_args = lparen args:fn_args_list rparen { return args }
+
+fn_args_list =
+  head:scalar comma tail:fn_args_list { return [head, ...tail]; }
   / arg:scalar { return [arg]; }
 
 /** TERMINALS */
