@@ -14,11 +14,60 @@ pint 'positive integer' = x:uint {
 
 steps =
   head:step connector tail:steps { return [head, ...tail]; }
-  / f:step { return [f]; }
+  / step:step { return [step]; }
 
-step 'step' =
-  type:identifier lparen args:step_args rparen {
-    return {kind: 'step', type: type.toLowerCase(), args};
+step =
+  cube
+  / sphere
+  / spiral
+  / torus
+  / fucked_up_torus
+  / rotate
+  / stereo
+
+cube 'cube' =
+  type:$'cube'i lparen length:scalar rparen {
+    return {kind: 'step', type, args: [length]};
+  }
+
+sphere 'sphere' =
+  type:$'sphere'i lparen r:scalar rparen {
+    return {kind: 'step', type, args: [r]};
+  }
+
+spiral 'spiral' =
+  type:$'spiral'i lparen a:scalar comma k:scalar rparen {
+    return {kind: 'step', type, args: [a, k]};
+  }
+
+torus 'torus' =
+  type:$'torus'i lparen r:scalar comma t:scalar rparen {
+    return {kind: 'step', type, args: [r, t]};
+  }
+
+fucked_up_torus 'fucked_up_torus' =
+  type:$'fucked_up_torus'i lparen r:scalar comma t:scalar rparen {
+    return {kind: 'step', type, args: [r, t]};
+  }
+
+rotate 'rotate' =
+  ('r'i / 'rotate'i)
+  lparen
+    theta:scalar
+    comma d0:scalar
+    comma d1:scalar
+    f0:(comma id:id { return id})?
+    f1:(comma id:id { return id})?
+  rparen {
+    const args = [theta, d0, d1];
+    if (f0) args.push(f0);
+    if (f1) args.push(f1);
+    return {kind: 'step', type: 'rotate', args};
+  }
+
+stereo 'stereo' =
+  type:$'stereo'i lparen to:scalar rparen {
+    return {kind: 'step', type, args: [to]};
   }
 
 step_args =
@@ -37,8 +86,10 @@ term 'term' =
     return {kind: 'fn', name: name.toLowerCase(), args};
   }
   / id:identifier lbrack index:scalar rbrack { return {kind: 'access', id, index}; }
-  / id:identifier { return {kind: 'id', id: id.toLowerCase()}; }
+  / id
   / lparen a:scalar rparen { return a; }
+
+id = id:identifier { return {kind: 'id', id: id.toLowerCase()}; }
 
 fn_args =
   head:scalar comma tail:fn_args { return [head, ...tail]; }
