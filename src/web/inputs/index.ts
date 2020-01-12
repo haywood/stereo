@@ -47,7 +47,7 @@ export const inputs = {
     stringify: print
   }),
 
-  v: new TextInput('v', '(power + onset) / 2', {
+  v: new TextInput('v', 'power', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
