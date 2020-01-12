@@ -2,52 +2,62 @@ import 'multirange/multirange.css';
 
 import './global.scss';
 
+import { Transfer } from 'threads';
+
+import { dataStream } from './data';
 import debug from './debug';
+import { overlay } from './overlay';
+import { renderThreadPromise } from './renderer';
 
-(async () => {
-  const { renderer } = await import('./renderer');
-  const { dataStream } = await import('./data');
-  const { overlay } = await import('./overlay');
-  const { setDefaultLevel } = await import('loglevel');
+const cursorInactiveTimeout = 1000;
+let lastMouseMove = 0;
 
-  setDefaultLevel('info');
+const maybeSetCursorInactive = (event?) => {
+  if (Date.now() < lastMouseMove + cursorInactiveTimeout) return;
+  if (overlay.hasAttention()) return;
 
-  const cursorInactiveTimeout = 1000;
-  let lastMouseMove = 0;
+  document.body.classList.add('cursor-inactive');
+  overlay.hide();
+};
 
-  const maybeSetCursorInactive = (event?) => {
-    if (Date.now() < lastMouseMove + cursorInactiveTimeout) return;
-    if (overlay.hasAttention()) return;
+document.body.onmousemove = event => {
+  overlay.show();
 
-    document.body.classList.add('cursor-inactive');
-    overlay.hide();
-  };
+  if (document.body.classList.contains('cursor-inactive')) {
+    document.body.classList.remove('cursor-inactive');
+  }
 
-  document.body.onmousemove = event => {
-    overlay.show();
+  lastMouseMove = Date.now();
+  setTimeout(() => maybeSetCursorInactive(event), cursorInactiveTimeout);
+};
 
-    if (document.body.classList.contains('cursor-inactive')) {
-      document.body.classList.remove('cursor-inactive');
-    }
+document.onreadystatechange = async () => {
+  if (document.readyState === 'complete') {
+    const renderThread = await renderThreadPromise;
+    document.body.appendChild(overlay.domElement);
 
-    lastMouseMove = Date.now();
-    setTimeout(() => maybeSetCursorInactive(event), cursorInactiveTimeout);
-  };
+    const offscrenCanvas = document
+      .querySelector('canvas')
+      .transferControlToOffscreen();
 
-  document.onreadystatechange = (): void => {
-    if (document.readyState === 'complete') {
-      document.body.appendChild(renderer.domElement);
-      document.body.appendChild(overlay.domElement);
+    await renderThread.init(
+      Transfer(offscrenCanvas as any), // cast to any because Transferable typedef is broken
+      window.innerWidth,
+      window.innerHeight
+    );
 
-      dataStream.subscribe(
-        data => {
-          renderer.update(data);
-          debug('data', data);
-          document.body.classList.add('data');
-          maybeSetCursorInactive();
-        },
-        (err: Error) => alert(`${err.message}\n${err.stack}`)
-      );
-    }
-  };
-})();
+    window.onresize = () => {
+      renderThread.resize(window.innerWidth, window.innerHeight);
+    };
+
+    dataStream.subscribe(
+      async data => {
+        await renderThread.update(data);
+        debug('data', data);
+        document.body.classList.add('data');
+        maybeSetCursorInactive();
+      },
+      (err: Error) => alert(`${err.message}\n${err.stack}`)
+    );
+  }
+};

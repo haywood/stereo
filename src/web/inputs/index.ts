@@ -2,7 +2,7 @@ import { PipeNode, print } from '../../pipe/ast';
 import { Compiler } from '../../pipe/compiler';
 import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
-import { renderer } from '../renderer';
+import { renderThreadPromise } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';
 import { TextInput } from './text';
@@ -29,31 +29,40 @@ export const inputs = {
       stringify: print
     }
   ),
+
   theta: new TextInput('theta', 'pi * power + pi * t / 20', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
+
   h: new TextInput('h', 'chroma * abs(p[0])', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
+
   v: new TextInput('v', '(power + onset) / 2', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
+
   animate: new ToggleInput('animate', '1'),
+
   mic: new ToggleInput('mic', '0', {
     disabled: !new AudioContext().audioWorklet
   }),
+
   fullscreen: new ToggleInput('fullscreen', '0', {
     disabled: !document.fullscreenEnabled
   }),
+
   allowedDbs: new RangeInput('allowed_db_range', '-130, -30', {
     disabled: !new AudioContext().audioWorklet
   }),
+
   save: new ActionInput('save', async () => {
-    const canvas = renderer.domElement;
-    renderer.render();
+    const canvas = document.querySelector('canvas');
+    const renderThread = await renderThreadPromise;
+    await renderThread.render();
     const blob = await new Promise(resolve => canvas.toBlob(resolve));
     const url = URL.createObjectURL(blob);
     try {
