@@ -21,6 +21,7 @@ export type Scope = {
   tempo: number;
   onset: 0 | 1;
   inf: number;
+  extent: [number, number, number];
   n?: number;
   p?: Float32Array;
   i?: number;

@@ -3,7 +3,8 @@ import { Compiler } from '../../pipe/compiler';
 import { PipeNode } from '../../pipe/grammar.pegjs';
 import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
-import { renderThreadPromise } from '../renderer';
+import { overlayElement } from '../overlay';
+import { render } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';
 import { TextInput } from './text';
@@ -12,6 +13,11 @@ import { ToggleInput } from './toggle';
 // Points generation is done in parallel, so pick n such
 // that each chunk is size 2000
 const n = 2000 * poolSize;
+const minDbs = parseInt(
+  overlayElement.querySelector<HTMLInputElement>(
+    '#allowed_db_range_input input'
+  ).min
+);
 
 const compiler = new Compiler();
 export const inputs = {
@@ -36,7 +42,7 @@ export const inputs = {
     stringify: print
   }),
 
-  h: new TextInput('h', 'chroma', {
+  h: new TextInput('h', 'min(1, abs(p[0]) / extent[0])', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
@@ -56,15 +62,15 @@ export const inputs = {
     disabled: !document.fullscreenEnabled
   }),
 
-  allowedDbs: new RangeInput('allowed_db_range', '-130, -30', {
+  allowedDbs: new RangeInput('allowed_db_range', `${minDbs / 2}, -30`, {
     disabled: !new AudioContext().audioWorklet
   }),
 
   save: new ActionInput('save', async () => {
-    const canvas = document.querySelector('canvas');
-    const renderThread = await renderThreadPromise;
-    await renderThread.render();
-    const blob = await new Promise(resolve => canvas.toBlob(resolve));
+    await render();
+    const blob = await new Promise(resolve =>
+      document.querySelector('canvas').toBlob(resolve)
+    );
     const url = URL.createObjectURL(blob);
     try {
       const a = document.createElement('a');

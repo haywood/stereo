@@ -2,14 +2,13 @@ import 'multirange/multirange.css';
 
 import './global.scss';
 
-import { Transfer } from 'threads';
-
 import { dataStream } from './data';
 import debug from './debug';
-import { overlay } from './overlay';
-import { renderThreadPromise } from './renderer';
+import { Overlay } from './overlay';
+import { initRenderer, updateRenderer } from './renderer';
 
 const cursorInactiveTimeout = 1000;
+const overlay = new Overlay();
 let lastMouseMove = 0;
 
 const maybeSetCursorInactive = (event?) => {
@@ -33,26 +32,15 @@ document.body.onmousemove = event => {
 
 document.onreadystatechange = async () => {
   if (document.readyState === 'complete') {
-    const renderThread = await renderThreadPromise;
     document.body.appendChild(overlay.domElement);
 
-    const offscrenCanvas = document
-      .querySelector('canvas')
-      .transferControlToOffscreen();
-
-    await renderThread.init(
-      Transfer(offscrenCanvas as any), // cast to any because Transferable typedef is broken
-      window.innerWidth,
-      window.innerHeight
+    await initRenderer(
+      document.querySelector('canvas').transferControlToOffscreen()
     );
-
-    window.onresize = () => {
-      renderThread.resize(window.innerWidth, window.innerHeight);
-    };
 
     dataStream.subscribe(
       async data => {
-        await renderThread.update(data);
+        await updateRenderer(data);
         debug('data', data);
         document.body.classList.add('data');
         maybeSetCursorInactive();

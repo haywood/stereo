@@ -166,7 +166,7 @@ export class Resolver {
 
 const ops: { [op: string]: (a: number, b: number) => number } = {
   '+': (a, b) => a + b,
-  '-': (a, b) => a - b,
+  '-': (a, b) => (b == null ? -a : a - b),
   '*': (a, b) => a * b,
   '/': (a, b) => a / b,
   '**': (a, b) => a ** b,

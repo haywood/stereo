@@ -73,6 +73,7 @@ scalar 'scalar' =
      return {kind: 'arith', op, operands: [s, a]};
   }
   / term
+  / '-' t:term { return {kind: 'arith', op: '-', operands: [t]}}
 
 term 'term' =
   value:number { return {kind: 'number', value}; }

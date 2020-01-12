@@ -3,16 +3,14 @@ import './overlay.scss';
 import assert from 'assert';
 
 import { inputs } from '../inputs';
-import html from './overlay.html';
 
-class Overlay {
-  readonly domElement = document.createElement('div');
+export const overlayElement = document.getElementById('overlay');
+
+export class Overlay {
+  readonly domElement = overlayElement;
   private hasHover = false;
 
   constructor() {
-    this.domElement.id = 'overlay';
-    this.domElement.innerHTML = html;
-
     this.setupInputs();
     this.setupKeyboardShortcuts();
 
@@ -49,7 +47,7 @@ class Overlay {
     }
   };
 
-  private querySelector = <E extends Element = HTMLElement>(selector: string) =>
+  querySelector = <E extends Element = HTMLElement>(selector: string) =>
     this.domElement.querySelector<E>(selector);
 
   private setupKeyboardShortcuts = () => {
@@ -72,5 +70,3 @@ class Overlay {
     };
   };
 }
-
-export const overlay = new Overlay();

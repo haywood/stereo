@@ -43,7 +43,8 @@ function printStep(node: StepNode): string {
 
 function printArith(node: ArithNode): string {
   const [a, b] = node.operands;
-  const expr = `${print(a)} ${node.op} ${print(b)}`;
+  const expr =
+    b == null ? `-${print(a)}` : `${print(a)} ${node.op} ${print(b)}`;
   return node.parens ? `(${expr})` : expr;
 }
 

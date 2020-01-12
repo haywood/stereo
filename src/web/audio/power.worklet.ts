@@ -20,9 +20,9 @@ class Processor extends AudioWorkletProcessor {
   }
 
   private readonly notes = new Array<Note>(binCount);
-  // track two seconds worth of onsets to determine tempo
+  // track 1/8 seconds worth of onsets to determine tempo
   private readonly impulses = new CircularBuffer<number>(
-    (2 * sampleRate) / quantumSize
+    Math.floor(sampleRate / 8 / quantumSize) + 1
   );
   private readonly onsets = new CircularBuffer<0 | 1>(this.impulses.capacity());
 

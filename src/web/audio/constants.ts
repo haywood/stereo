@@ -5,7 +5,7 @@ import { Audio } from './types';
  */
 export const AUDIO_PLACEHOLDER: Audio = {
   power: 1,
-  chroma: 0,
+  chroma: 0.5,
   tempo: 0.5,
   onset: 1
 };
