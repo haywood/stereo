@@ -1,7 +1,5 @@
 import { getLogger } from 'loglevel';
-import { EMPTY, Observable, Subject, interval, timer } from 'rxjs';
-import { delayWhen, repeatWhen, retryWhen, tap } from 'rxjs/operators';
-
+import { Subject } from 'rxjs';
 import { Data } from '../data';
 import { runPipeline, startPool } from '../pipe/pool';
 import { Params } from '../pipe/types';
