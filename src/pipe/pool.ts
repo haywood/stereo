@@ -2,7 +2,7 @@ import { getLogger } from 'loglevel';
 import { ModuleThread, Pool, Worker, spawn } from 'threads';
 
 import { Data } from '../data';
-import { Resolution, Resolver } from './resolver';
+import { Resolver } from './resolver';
 import { Chunk, Params, PipelineWorker } from './types';
 
 const logger = getLogger('PipelinePool');
@@ -10,7 +10,7 @@ let pool: Pool<ModuleThread<PipelineWorker>>;
 let data: Map<string, SharedArrayBuffer>;
 logger.setLevel('info');
 
-export const poolSize = 2 * navigator.hardwareConcurrency;
+export const poolSize = navigator.hardwareConcurrency;
 
 export const startPool = async () => {
   logger.info('starting worker pool');
