@@ -1,15 +1,11 @@
 import assert from 'assert';
-
-import { getLogger } from 'loglevel';
-
 import { Data, Vector } from '../data';
 import { CompositeFn } from '../fn';
-import { pp } from '../pp';
 import { PipeNode } from './grammar.pegjs';
 import { Resolver } from './resolver';
 import { Chunk, HV, Scope } from './types';
 
-const logger = getLogger('Evaluator');
+const { abs, min, round, sign } = Math;
 
 export class Evaluator {
   private readonly n: number;
@@ -63,7 +59,6 @@ export class Evaluator {
     const { staticFn: init, dynaicFn: iter, scope, n, offset, limit } = this;
     const input = Data.input(data);
     const position = Data.position(data);
-    const start = Date.now();
 
     assert.equal(data[Data.nOffset], n, `n(data) != n(evaluator)`);
     assert.equal(data[Data.inputOffset], init.d, `d0(data) != d0(evaluator)`);
@@ -73,28 +68,26 @@ export class Evaluator {
       'd(data) != d(evaluator)'
     );
 
-    logger.debug(`iterating using ${pp(scope)}, ${pp(iter)}`);
     for (let i = offset; i < limit; i++) {
       iter.fn(Data.get(input, i, init.d), Data.get(position, i, iter.d));
     }
 
     this.computeColors(data);
-
-    logger.debug(`iteration complete in ${Date.now() - start}ms`);
   };
 
   private computeColors = (data: Vector) => {
-    logger.debug(`computing colors`);
     const { d, hv, offset, limit, resolver } = this;
     const position = Data.position(data);
     const color = Data.color(data);
 
     for (let i = offset; i < limit; i++) {
       const p = Data.get(position, i, d);
-      this.scope.p = p;
+      this.scope.p = p.map(
+        (pk, k) => sign(pk) * min(1, abs(pk) / this.scope.extent[k])
+      );
       this.scope.i = i;
-      const h = Math.round(360 * resolver.resolve(hv.h, 'number'));
-      const v = Math.round(resolver.resolve(hv.v, 'number'));
+      const h = round(360 * resolver.resolve(hv.h, 'number'));
+      const v = round(resolver.resolve(hv.v, 'number'));
 
       Data.set(color, hsv2rgb(h, v), i, 3);
     }
@@ -108,7 +101,7 @@ function hsv2rgb(h: number, v: number): [number, number, number] {
 
   const hprime = h / 60;
   const c = v; // saturation fixed at 1
-  const x = c * (1 - Math.abs((hprime % 2) - 1));
+  const x = c * (1 - abs((hprime % 2) - 1));
 
   if (hprime <= 1) {
     return [c, x, 0];

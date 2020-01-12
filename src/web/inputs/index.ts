@@ -42,7 +42,7 @@ export const inputs = {
     stringify: print
   }),
 
-  h: new TextInput('h', 'min(1, abs(p[0]) / extent[0])', {
+  h: new TextInput('h', 'chroma * abs(p[0])', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
