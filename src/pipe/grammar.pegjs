@@ -11,7 +11,7 @@
 
 /** RULES */
 
-pipe = n:pint connector d0:pint connector steps:steps {
+pipe = _ n:pint connector d0:pint connector steps:steps _ {
   return {kind: 'pipe', n, d0, steps};
 }
 

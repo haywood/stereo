@@ -1,23 +1,30 @@
 import { Input } from './input';
+import { Options } from './options';
 
-export class TextInput extends Input<
-  string,
+export class TextInput<T = string> extends Input<
+  T,
   HTMLInputElement | HTMLTextAreaElement
 > {
   constructor(
     readonly id: string,
-    _value: string,
-    { persistent = true, disabled = false, stringify = (s: string) => s } = {}
+    defaultText: string,
+    {
+      parse,
+      persistent = true,
+      disabled = false,
+      stringify = (t: T) => t.toString()
+    }: Options<T> = {}
   ) {
-    super(id, _value, { persistent, disabled, stringify });
+    super(id, defaultText, { persistent, disabled, parse, stringify });
   }
 
   protected _setup = () => {
     this.el.disabled = this.disabled;
 
     this.el.onchange = () => {
-      this.el.value = this.stringify(this.el.value);
-      this.value = this.el.value;
+      const value = this.parse(this.el.value);
+      this.el.value = this.stringify(value);
+      this.value = value;
     };
 
     this.el.oninput = () => this.setSize();
@@ -39,9 +46,5 @@ export class TextInput extends Input<
         lines.reduce((max, line) => Math.max(max, line.length), 0)
       );
     }
-  }
-
-  protected parse(str: string) {
-    return str;
   }
 }

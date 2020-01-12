@@ -5,12 +5,16 @@ import { Input } from './input';
 export class RangeInput extends Input<[number, number]> {
   constructor(
     readonly id: string,
-    _value: [number, number],
+    defaultText: string,
     { disabled = false, persistent = true } = {}
   ) {
-    super(id, _value, {
+    super(id, defaultText, {
       disabled,
       persistent,
+      parse: str => {
+        const [min, max] = str.split(/\s*,\s*/);
+        return [parseInt(min), parseInt(max)];
+      },
       stringify: ([min, max]) => {
         return `${min},${max}`;
       }
@@ -41,9 +45,4 @@ export class RangeInput extends Input<[number, number]> {
       maxEl.innerText = input.valueHigh.toString();
     });
   };
-
-  protected parse(str: string): [number, number] {
-    const [min, max] = str.split(/,/);
-    return [parseInt(min), parseInt(max)];
-  }
 }

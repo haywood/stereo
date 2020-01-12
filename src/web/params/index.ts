@@ -1,7 +1,8 @@
 import { Subject, combineLatest, interval } from 'rxjs';
-import { FunctionThread, Worker, spawn } from 'threads';
 
-import { Params } from '../../pipe/types';
+import { inf } from '../../constants';
+import { Simplifier } from '../../pipe/simplifier';
+import { Params, Scope } from '../../pipe/types';
 import { audioStream } from '../audio';
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import { Audio } from '../audio/types';
@@ -14,16 +15,28 @@ const subject = new Subject<Params>();
 export const paramsStream = subject.asObservable();
 
 (async () => {
-  const params: FunctionThread<[Options], Params> = await spawn(
-    new Worker('./worker', { name: 'params' })
-  );
+  const params = (options: Options) => {
+    const simplifier = new Simplifier({
+      theta: options.theta
+    });
+    const pipe = simplifier.simplify(options.pipe);
+    const scope: Scope = { t: options.t, inf, n: pipe.n, ...options.audio };
+    return {
+      pipe,
+      scope,
+      hv: {
+        h: options.h,
+        v: options.v
+      }
+    };
+  };
 
   let count = 0;
 
   const emit = async (audio: Audio) => {
     try {
       subject.next(
-        await params({
+        params({
           pipe: inputs.pipe.value,
           theta: inputs.theta.value,
           audio,

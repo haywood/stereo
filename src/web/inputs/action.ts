@@ -2,7 +2,7 @@ import { Input } from './input';
 
 export class ActionInput extends Input<void> {
   constructor(id: string, private readonly action: (ev: MouseEvent) => void) {
-    super(id, null);
+    super(id, '', { parse: () => {} });
   }
 
   protected _setup = () => {

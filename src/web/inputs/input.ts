@@ -7,18 +7,23 @@ import { Options } from './options';
 export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   readonly disabled: boolean;
 
+  protected readonly parse: (s: string) => T;
   protected readonly stringify: (t: T) => string;
   protected el?: E;
 
   private readonly subject: Subject<Change<T>>;
   private readonly persistent: boolean;
+  private _value: T;
 
   constructor(
     readonly id: string,
-    private _value: T,
+    defaultText: string,
     {
       persistent = false,
       disabled = false,
+      parse = () => {
+        throw new Error('parse unsupported');
+      },
       stringify = () => {
         throw new Error('stringify unsupported');
       }
@@ -26,26 +31,22 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   ) {
     this.persistent = persistent;
     this.disabled = disabled;
+    this.parse = parse;
     this.stringify = stringify;
 
-    if (persistenceEnabled) {
-      this.initFromOrWriteToHash();
-    } else {
+    if (!persistenceEnabled) {
       this.persistent = false;
     }
+    let text = defaultText;
+    if (this.persistent && hash.has(this.id)) {
+      text = hash.get(this.id);
+    }
 
+    this._value = this.parse(text);
     this.subject = this.newSubject();
   }
 
-  initFromOrWriteToHash = () => {
-    if (this.persistent && hash.has(this.id)) {
-      this._value = this.parse(hash.get(this.id));
-    } else if (this.persistent) {
-      this.updateHash();
-    }
-  };
-
-  newSubject = () => new BehaviorSubject({ newValue: this._value });
+  newSubject = () => new BehaviorSubject<Change<T>>({ newValue: this._value });
 
   setup = (el: E) => {
     this.el = el;
@@ -54,10 +55,6 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   };
 
   protected abstract _setup(): void;
-
-  protected parse(str: string): T {
-    throw new Error('parse unsupported');
-  }
 
   get stream() {
     return this.subject.asObservable();

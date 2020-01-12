@@ -1,10 +1,12 @@
+import { PipeNode, Scalar } from '*.pegjs';
+
 import { Audio } from '../audio/types';
 
 export type Options = {
-  pipe: string;
-  theta: string;
+  pipe: PipeNode;
+  theta: Scalar;
   audio: Audio;
-  h: string;
-  v: string;
+  h: Scalar;
+  v: Scalar;
   t: number;
 };

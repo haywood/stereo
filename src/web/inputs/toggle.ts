@@ -3,12 +3,23 @@ import { Input } from './input';
 export class ToggleInput extends Input<boolean> {
   constructor(
     readonly id: string,
-    _value: boolean,
+    defaultText: string,
     { disabled = false, persistent = false } = {}
   ) {
-    super(id, _value, {
+    super(id, defaultText, {
       persistent,
       disabled,
+      parse: text => {
+        switch (text.trim()) {
+          default:
+          case '0':
+          case 'false':
+            return false;
+          case '1':
+          case 'true':
+            return true;
+        }
+      },
       stringify: (bool: boolean) => {
         return bool ? '1' : '0';
       }
