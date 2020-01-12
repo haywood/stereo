@@ -2,9 +2,9 @@ import assert from 'assert';
 
 import CircularBuffer from 'circular-buffer';
 
+import { mean, median } from '../../reducable';
 import { binCount, chromaCount, quantumSize } from './constants';
 import { Note } from './note';
-import { mean, median } from './reducable';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
 

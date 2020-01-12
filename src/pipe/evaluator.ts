@@ -1,13 +1,12 @@
 import assert from 'assert';
 
-import Color from 'color';
 import { getLogger } from 'loglevel';
 
 import { Data, Vector } from '../data';
 import { CompositeFn } from '../fn';
 import { pp } from '../pp';
-import { PipeNode } from './ast';
-import { Resolution, Resolver } from './resolver';
+import { PipeNode } from './grammar.pegjs';
+import { Resolver } from './resolver';
 import { Chunk, HV, Scope } from './types';
 
 const logger = getLogger('Evaluator');
@@ -90,19 +89,38 @@ export class Evaluator {
     const position = Data.position(data);
     const color = Data.color(data);
 
-    this.scope.max = position.reduce((max, p) => Math.max(max, Math.abs(p)), 0);
-
     for (let i = offset; i < limit; i++) {
       const p = Data.get(position, i, d);
       this.scope.p = p;
       this.scope.i = i;
       const h = Math.round(360 * resolver.resolve(hv.h, 'number'));
-      const v = Math.round(100 * resolver.resolve(hv.v, 'number'));
-      const rgb = Color({ h, s: 100, v })
-        .rgb()
-        .array();
+      const v = Math.round(resolver.resolve(hv.v, 'number'));
 
-      Data.set(color, rgb, i, 3);
+      Data.set(color, hsv2rgb(h, v), i, 3);
     }
   };
+}
+
+function hsv2rgb(h: number, v: number): [number, number, number] {
+  // source: https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
+  assert(0 <= h && h <= 360, `hsv2rgb: expected 0 <= h = ${h} <= 360`);
+  assert(0 <= v && v <= 1, `hsv2rgb: expected 0 <= v = ${v} <= 1`);
+
+  const hprime = h / 60;
+  const c = v; // saturation fixed at 1
+  const x = c * (1 - Math.abs((hprime % 2) - 1));
+
+  if (hprime <= 1) {
+    return [c, x, 0];
+  } else if (hprime <= 2) {
+    return [x, c, 0];
+  } else if (hprime <= 3) {
+    return [0, c, x];
+  } else if (hprime <= 4) {
+    return [0, x, c];
+  } else if (hprime <= 5) {
+    return [x, 0, c];
+  } else if (hprime <= 6) {
+    return [c, 0, x];
+  }
 }

@@ -81,7 +81,7 @@ term 'term' =
   }
   / id:identifier lbrack index:scalar rbrack { return {kind: 'access', id, index}; }
   / id
-  / lparen a:scalar rparen { return a; }
+  / lparen a:scalar rparen { return {...a, parens: true}; }
 
 id = id:identifier { return {kind: 'id', id: id.toLowerCase()}; }
 

@@ -18,7 +18,7 @@ import {
   Scalar,
   StepNode,
   Value
-} from './ast';
+} from './grammar.pegjs';
 import { Link, Scope, UnaryOperator } from './types';
 
 export type Resolution = {

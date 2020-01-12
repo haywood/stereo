@@ -25,6 +25,7 @@ declare module '*.pegjs' {
     kind: 'arith';
     op: string;
     operands: [Scalar, Scalar];
+    parens?: boolean;
   };
 
   export type NumberNode = {

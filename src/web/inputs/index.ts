@@ -1,5 +1,6 @@
-import { PipeNode, print } from '../../pipe/ast';
+import { print } from '../../pipe/ast';
 import { Compiler } from '../../pipe/compiler';
+import { PipeNode } from '../../pipe/grammar.pegjs';
 import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
 import { renderThreadPromise } from '../renderer';
@@ -35,7 +36,7 @@ export const inputs = {
     stringify: print
   }),
 
-  h: new TextInput('h', 'chroma * abs(p[0])', {
+  h: new TextInput('h', 'chroma', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
