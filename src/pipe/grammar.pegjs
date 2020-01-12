@@ -56,7 +56,7 @@ fucked_up_torus 'fucked_up_torus' = type:$'fucked_up_torus'i args:fn_args {
   return step(type, args, 2);
 }
 
-rotate 'rotate' = ('r'i / 'rotate'i) args:fn_args  {
+rotate 'rotate' = (('r'i) / ('rotate'i)) args:fn_args  {
   return step('rotate', args, 3, 5);
 }
 
