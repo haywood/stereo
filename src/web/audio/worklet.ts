@@ -1,12 +1,12 @@
 import assert from 'assert';
+
 import CircularBuffer from 'circular-buffer';
+
 import { mean, median, sum } from '../../reducable';
 import { binCount, chromaCount, quantumSize } from './constants';
 import { Note } from './note';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
-
-export default ''; // makes tsc happy
 
 class Processor extends AudioWorkletProcessor {
   static get parameterDescriptors() {

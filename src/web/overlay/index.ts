@@ -4,10 +4,8 @@ import assert from 'assert';
 
 import { inputs } from '../inputs';
 
-export const overlayElement = document.getElementById('overlay');
-
 export class Overlay {
-  readonly domElement = overlayElement;
+  readonly domElement = document.getElementById('overlay');
   private hasHover = false;
 
   constructor() {

@@ -6,7 +6,7 @@ import {
   PipeNode,
   Scalar,
   StepNode
-} from './ast';
+} from './grammar.pegjs';
 import { Defs } from './types';
 
 export type Substitutions = {

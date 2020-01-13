@@ -1,42 +1,24 @@
-import { getLogger } from 'loglevel';
-import { ModuleThread, Pool, Worker, spawn } from 'threads';
+import { Remote, releaseProxy, wrap } from 'comlink';
 
 import { Data } from '../data';
 import { Resolver } from './resolver';
 import { Chunk, Params, PipelineWorker } from './types';
 
-const logger = getLogger('PipelinePool');
-let pool: Pool<ModuleThread<PipelineWorker>>;
-let data: Map<string, SharedArrayBuffer>;
-logger.setLevel('info');
+const data = new Map<string, SharedArrayBuffer>();
 
 export const poolSize = navigator.hardwareConcurrency;
+const workers = new Array<Promise<Remote<PipelineWorker>>>(poolSize);
 
 export const startPool = async () => {
-  logger.info('starting worker pool');
-  let i = 0;
-  pool = Pool(
-    () => spawn(new Worker('./worker', { name: `pipe${i++}` })),
-    poolSize
-  );
-  data = new Map();
-  let promises = [];
-  for (let i = 0; i < poolSize; i++) {
-    // pre-load scripts so the first task doesn't take forever
-    promises.push(pool.queue(async () => {}));
+  for (let i = 0; i < workers.length; i++) {
+    workers[i] = new Promise(r =>
+      r(wrap<PipelineWorker>(new Worker('/stereo/pipe/worker.js')))
+    );
   }
-  await Promise.all(promises);
 };
 
 export const stopPool = async (): Promise<void> => {
-  logger.info('waiting for pending tasks to complete before terminating pool');
-  try {
-    await pool.terminate(true);
-  } catch (err) {
-    logger.error(err);
-  } finally {
-    pool = null;
-  }
+  workers.forEach(w => w[releaseProxy]());
 };
 
 const initialize = (
@@ -45,16 +27,16 @@ const initialize = (
   buffer: SharedArrayBuffer
 ): Promise<void> => {
   return timing('initialization')(async () => {
-    return forkJoin(n, async chunk => {
-      return pool.queue(w => w.initialize(params, chunk, buffer));
+    return forkJoin(n, async (chunk, w) => {
+      w.initialize(params, chunk, buffer);
     });
   });
 };
 
 const iterate = (params: Params, buffer: SharedArrayBuffer) => {
   return timing('iteration')(async () => {
-    return forkJoin(params.pipe.n, async chunk => {
-      return pool.queue(w => w.iterate(params, chunk, buffer));
+    return forkJoin(params.pipe.n, async (chunk, w) => {
+      return w.iterate(params, chunk, buffer);
     });
   });
 };
@@ -77,13 +59,16 @@ const getOrInitialize = async (params: Params): Promise<SharedArrayBuffer> => {
   return data.get(key);
 };
 
-const forkJoin = async (n: number, op: (chunk: Chunk) => Promise<void>) => {
+const forkJoin = async (
+  n: number,
+  op: (chunk: Chunk, w: PipelineWorker) => Promise<void>
+) => {
   const size = Math.round(n / poolSize);
-  let promises = [];
-  for (let offset = 0; offset < n; offset += size) {
-    const chunk = { offset, size: Math.min(n - offset, size) };
-    promises.push(op(chunk));
-  }
+  const promises = workers.map(async (w, i) => {
+    const offset = i * size;
+    const chunk = { offset, size: Math.min(size, n - offset) };
+    return op(chunk, await w);
+  });
   await Promise.all(promises);
 };
 
@@ -91,7 +76,6 @@ const timing = (label: string) => async <T>(op: () => Promise<T>) => {
   const start = Date.now();
   const t = await op();
   const elapsed = Date.now() - start;
-  logger.debug(`${label} took ${elapsed}ms`);
   return t;
 };
 

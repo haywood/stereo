@@ -1,7 +1,3 @@
-declare module '*.html' {
-  export default '';
-}
-
 declare module '*.pegjs' {
   export function parse(spec: string): PipeNode;
   export function parse(spec: string, options: { startRule: 'scalar' }): Scalar;

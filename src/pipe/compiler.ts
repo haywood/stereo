@@ -1,5 +1,5 @@
 import Interval from '../fn/interval';
-import { PipeNode, Scalar } from './ast';
+import { PipeNode, Scalar } from './grammar.pegjs';
 import { Parser } from './parser';
 
 export class Compiler {

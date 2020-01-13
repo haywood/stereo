@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { expose, TransferDescriptor } from 'threads';
+
 import {
   BufferAttribute,
   BufferGeometry,
@@ -10,6 +10,7 @@ import {
   VertexColors,
   WebGLRenderer
 } from 'three';
+
 import { Data } from '../../data';
 
 class Renderer {
@@ -99,13 +100,3 @@ export const worker = {
     return renderer.extent;
   }
 };
-
-export type RenderThread = typeof worker & {
-  init(
-    canvas: TransferDescriptor<OffscreenCanvas>,
-    width: number,
-    height: number
-  ): Promise<[number, number, number]>;
-};
-
-expose(worker);

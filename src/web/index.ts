@@ -11,7 +11,7 @@ const cursorInactiveTimeout = 1000;
 const overlay = new Overlay();
 let lastMouseMove = 0;
 
-const maybeSetCursorInactive = (event?) => {
+const maybeSetCursorInactive = () => {
   if (Date.now() < lastMouseMove + cursorInactiveTimeout) return;
   if (overlay.hasAttention()) return;
 
@@ -19,7 +19,7 @@ const maybeSetCursorInactive = (event?) => {
   overlay.hide();
 };
 
-document.body.onmousemove = event => {
+document.body.onmousemove = () => {
   overlay.show();
 
   if (document.body.classList.contains('cursor-inactive')) {
@@ -27,25 +27,22 @@ document.body.onmousemove = event => {
   }
 
   lastMouseMove = Date.now();
-  setTimeout(() => maybeSetCursorInactive(event), cursorInactiveTimeout);
+  setTimeout(() => maybeSetCursorInactive(), cursorInactiveTimeout);
 };
 
 document.onreadystatechange = async () => {
-  if (document.readyState === 'complete') {
-    document.body.appendChild(overlay.domElement);
+  if (document.readyState !== 'complete') return;
 
-    await initRenderer(
-      document.querySelector('canvas').transferControlToOffscreen()
-    );
+  const canvas = document.querySelector('canvas').transferControlToOffscreen();
+  await initRenderer(canvas);
 
-    dataStream.subscribe(
-      async data => {
-        await updateRenderer(data);
-        debug('data', data);
-        document.body.classList.add('data');
-        maybeSetCursorInactive();
-      },
-      (err: Error) => alert(`${err.message}\n${err.stack}`)
-    );
-  }
+  dataStream.subscribe(
+    async data => {
+      await updateRenderer(data);
+      debug('data', data);
+      document.body.classList.add('data');
+      maybeSetCursorInactive();
+    },
+    (err: Error) => alert(`${err.message}\n${err.stack}`)
+  );
 };

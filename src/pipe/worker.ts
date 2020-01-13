@@ -1,12 +1,7 @@
-import { getLogger } from 'loglevel';
-import { expose } from 'threads/worker';
+import { expose } from 'comlink';
 
 import { Evaluator } from './evaluator';
 import { Chunk, Params, PipelineWorker } from './types';
-
-const logger = getLogger('PipelineWorker');
-
-logger.debug('new worker started');
 
 const worker: PipelineWorker = {
   initialize: (

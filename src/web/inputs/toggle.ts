@@ -10,15 +10,12 @@ export class ToggleInput extends Input<boolean> {
       persistent,
       disabled,
       parse: text => {
-        switch (text.trim()) {
-          default:
-          case '0':
-          case 'false':
-            return false;
-          case '1':
-          case 'true':
-            return true;
-        }
+        if (/1|true/i.test(text)) return true;
+        else if (/0|false/i.test(text)) return false;
+        else
+          throw new Error(
+            `invalid boolean value for input ${this.id}: ${text}`
+          );
       },
       stringify: (bool: boolean) => {
         return bool ? '1' : '0';
@@ -43,10 +40,4 @@ export class ToggleInput extends Input<boolean> {
       }
     });
   };
-
-  protected parse(str: string) {
-    if (/1|true/i.test(str)) return true;
-    else if (/0|false/i.test(str)) return false;
-    else throw new Error(`invalid boolean value for input ${this.id}: ${str}`);
-  }
 }

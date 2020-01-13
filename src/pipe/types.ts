@@ -1,5 +1,5 @@
 import { Fn } from '../fn';
-import { PipeNode, Scalar } from './ast';
+import { PipeNode, Scalar } from './grammar.pegjs';
 
 export type Params = {
   pipe: PipeNode;

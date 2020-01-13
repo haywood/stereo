@@ -3,7 +3,6 @@ import { Compiler } from '../../pipe/compiler';
 import { PipeNode } from '../../pipe/grammar.pegjs';
 import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
-import { overlayElement } from '../overlay';
 import { render } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';
@@ -14,9 +13,7 @@ import { ToggleInput } from './toggle';
 // that each chunk is size 2000
 const n = 2000 * poolSize;
 const minDbs = parseInt(
-  overlayElement.querySelector<HTMLInputElement>(
-    '#allowed_db_range_input input'
-  ).min
+  document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
 
 const compiler = new Compiler();
