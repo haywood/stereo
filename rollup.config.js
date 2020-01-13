@@ -2,9 +2,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import path from 'path';
-import analyze from 'rollup-plugin-analyzer';
 import copy from 'rollup-plugin-copy';
-import dev from 'rollup-plugin-dev';
 import livereload from 'rollup-plugin-livereload';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
@@ -31,7 +29,6 @@ const common = {
     typescript(),
     progress(),
     notify(),
-    analyze(),
   ],
 }
 
@@ -55,7 +52,7 @@ function main() {
   ];
 
   if (watch) {
-    plugins.push(dev({ dirs: [out], basePath: '/stereo' }), livereload(out));
+    plugins.push(livereload(out));
   }
 
   return {
