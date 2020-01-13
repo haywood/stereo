@@ -1,13 +1,4 @@
-import {
-  AccessNode,
-  ArithNode,
-  FnNode,
-  IdNode,
-  NumberNode,
-  PipeNode,
-  Scalar,
-  StepNode
-} from '*.pegjs';
+import { AccessNode, ArithNode, FnNode, IdNode, NumberNode, PipeNode, Scalar, StepNode } from '*.pegjs';
 
 export type Value = number | Function;
 
@@ -30,6 +21,8 @@ export function print(node: any) {
       return printAccess(node);
     case 'id':
       return printId(node);
+    case 'paren':
+      return `(${print(node.scalar)})`;
   }
 }
 
@@ -43,9 +36,7 @@ function printStep(node: StepNode): string {
 
 function printArith(node: ArithNode): string {
   const [a, b] = node.operands;
-  const expr =
-    b == null ? `-${print(a)}` : `${print(a)} ${node.op} ${print(b)}`;
-  return node.parens ? `(${expr})` : expr;
+  return b == null ? `-${print(a)}` : `${print(a)} ${node.op} ${print(b)}`;
 }
 
 function printNumber(node: NumberNode): string {

@@ -1,12 +1,4 @@
-import {
-  AccessNode,
-  ArithNode,
-  FnNode,
-  IdNode,
-  PipeNode,
-  Scalar,
-  StepNode
-} from './grammar.pegjs';
+import { AccessNode, ArithNode, FnNode, IdNode, PipeNode, Scalar, StepNode } from './grammar.pegjs';
 import { Defs } from './types';
 
 export type Substitutions = {
@@ -15,6 +7,7 @@ export type Substitutions = {
 
 export class Simplifier {
   constructor(private readonly substitutions: Substitutions) {}
+
   simplify = (pipe: PipeNode): PipeNode => {
     const { n, d0, steps } = pipe;
     return {
@@ -24,20 +17,24 @@ export class Simplifier {
       steps: steps.map(this.simplifyStepNode)
     };
   };
+
   simplifyScalar = (node: Scalar): Scalar => {
     switch (node.kind) {
       case 'number':
         return node;
+      case 'arith':
+        return this.simplifyArithNode(node);
       case 'fn':
         return this.simplifyFnNode(node);
       case 'access':
         return this.simplifyAccessNode(node);
       case 'id':
         return this.simplifyIdNode(node);
-      case 'arith':
-        return this.simplifyArithNode(node);
+      case 'paren':
+        return {kind: node.kind, scalar: this.simplifyScalar(node.scalar)};
     }
   };
+
   private simplifyStepNode = ({ kind, type: fn, args }: StepNode): StepNode => {
     return {
       kind,

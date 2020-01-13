@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import { CompositeFn, Fn } from '../fn';
 import Cube from '../fn/cube';
 import FuckedUpTorus from '../fn/fucked_up_torus';
@@ -10,16 +9,9 @@ import Spiral from '../fn/spiral';
 import Stereo from '../fn/stereo';
 import Torus from '../fn/torus';
 import { pp } from '../pp';
-import {
-  AccessNode,
-  ArithNode,
-  FnNode,
-  PipeNode,
-  Scalar,
-  StepNode,
-  Value
-} from './grammar.pegjs';
+import { AccessNode, ArithNode, FnNode, PipeNode, Scalar, StepNode, Value } from './grammar.pegjs';
 import { Link, Scope, UnaryOperator } from './types';
+
 
 export type Resolution = {
   n: number;
@@ -40,6 +32,9 @@ export class Resolver {
       case 'pipe':
         value = this.resolvePipe(node);
         break;
+        case 'arith':
+          value = this.resolveArith(node);
+          break;
       case 'number':
         value = node.value;
         break;
@@ -52,8 +47,8 @@ export class Resolver {
       case 'id':
         value = this.resolveId(node.id);
         break;
-      case 'arith':
-        value = this.resolveArith(node);
+      case 'paren':
+        value = this.resolve(node.scalar);
         break;
     }
 
