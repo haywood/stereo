@@ -1,4 +1,12 @@
-import { AccessNode, ArithNode, FnNode, IdNode, PipeNode, Scalar, StepNode } from './grammar.pegjs';
+import {
+  AccessNode,
+  ArithNode,
+  FnNode,
+  IdNode,
+  PipeNode,
+  Scalar,
+  StepNode
+} from './grammar.pegjs';
 import { Defs } from './types';
 
 export type Substitutions = {
@@ -31,7 +39,7 @@ export class Simplifier {
       case 'id':
         return this.simplifyIdNode(node);
       case 'paren':
-        return {kind: node.kind, scalar: this.simplifyScalar(node.scalar)};
+        return { kind: node.kind, scalar: this.simplifyScalar(node.scalar) };
     }
   };
 

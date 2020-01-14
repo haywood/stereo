@@ -1,4 +1,13 @@
-import { AccessNode, ArithNode, FnNode, IdNode, NumberNode, PipeNode, Scalar, StepNode } from '*.pegjs';
+import {
+  AccessNode,
+  ArithNode,
+  FnNode,
+  IdNode,
+  NumberNode,
+  PipeNode,
+  Scalar,
+  StepNode
+} from '*.pegjs';
 
 export type Value = number | Function;
 

@@ -34,7 +34,7 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', 'pi * power + pi * t / 20', {
+  theta: new TextInput('theta', '2 * pi * power + pi * t * tempo / 60', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),

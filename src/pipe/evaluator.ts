@@ -86,10 +86,11 @@ export class Evaluator {
         (pk, k) => sign(pk) * min(1, abs(pk) / this.scope.extent[k])
       );
       this.scope.i = i;
-      const h = round(360 * resolver.resolve(hv.h, 'number'));
-      const v = round(resolver.resolve(hv.v, 'number'));
+      const h = 360 * resolver.resolve(hv.h, 'number');
+      const v = resolver.resolve(hv.v, 'number');
+      const rgb = hsv2rgb(h, v);
 
-      Data.set(color, hsv2rgb(h, v), i, 3);
+      color.set(rgb, i * 3);
     }
   };
 }

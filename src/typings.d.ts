@@ -15,7 +15,13 @@ declare module '*.pegjs' {
     args: Scalar[];
   };
 
-  export type Scalar = ArithNode | NumberNode | FnNode | AccessNode | IdNode | ParenNode;
+  export type Scalar =
+    | ArithNode
+    | NumberNode
+    | FnNode
+    | AccessNode
+    | IdNode
+    | ParenNode;
 
   export type ArithNode = {
     kind: 'arith';
@@ -48,7 +54,7 @@ declare module '*.pegjs' {
   export type ParenNode = {
     kind: 'paren';
     scalar: Scalar;
-  }
+  };
 
   export type Value = number | Function;
 }
