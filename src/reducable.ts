@@ -1,5 +1,7 @@
+import { inf } from './constants';
+
 interface Reducable<T> {
-  reduce<M>(cb: (memo: M, t: T) => M, m0?: M): M;
+  reduce<M>(cb: (memo: M, t: T, i: number) => M, m0?: M): M;
   slice(start?: number): this;
   sort(cb?: (a: T, b: T) => number): this;
   length: number;
@@ -8,8 +10,19 @@ interface Reducable<T> {
 
 const identity = (x: number) => x;
 
+export const argmax = (xs: Reducable<number>, mapper = identity) => {
+  if (!xs.length) return 0;
+  return xs.reduce(
+    (memo, x, arg) => {
+      x = mapper(x);
+      return x > memo.x ? { x, arg } : memo;
+    },
+    { x: -inf, arg: -1 }
+  ).arg;
+};
+
 export const max = (xs: Reducable<number>, mapper = identity) =>
-  xs.length ? xs.reduce<number>((m, x) => Math.max(m, mapper(x))) : 0;
+  xs[argmax(xs, mapper)];
 
 export const min = (xs: Reducable<number>, mapper = identity) =>
   xs.length ? xs.reduce<number>((m, x) => Math.min(m, mapper(x))) : 0;

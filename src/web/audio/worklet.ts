@@ -1,8 +1,6 @@
 import assert from 'assert';
-
 import CircularBuffer from 'circular-buffer';
-
-import { mean, median, sum } from '../../reducable';
+import { argmax, mean, median, sum } from '../../reducable';
 import { binCount, chromaCount, quantumSize } from './constants';
 import { Note } from './note';
 import { Spectrum } from './spectrum';
@@ -76,13 +74,9 @@ class Processor extends AudioWorkletProcessor {
    * average across all the notes.
    */
   chroma = (powers: number[]) => {
-    return (
-      powers.reduce((sum, p, k) => {
-        const chroma = Spectrum.chroma(k);
-
-        return sum + (p * chroma) / (chromaCount - 1);
-      }) / powers.length
-    );
+    const k = argmax(powers);
+    const chroma = Spectrum.chroma(k);
+    return (powers[k] * chroma) / (chromaCount - 1);
   };
 
   onset = (dpowers: number[]): 0 | 1 => {
