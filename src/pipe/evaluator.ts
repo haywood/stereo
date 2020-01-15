@@ -79,12 +79,14 @@ export class Evaluator {
     const { d, hv, offset, limit, resolver } = this;
     const position = Data.position(data);
     const color = Data.color(data);
+    const { extent } = this.scope;
 
     for (let i = offset; i < limit; i++) {
       const p = Data.get(position, i, d);
-      this.scope.p = p.map(
-        (pk, k) => sign(pk) * min(1, abs(pk) / this.scope.extent[k])
-      );
+      this.scope.p = p.map((pk, k) => {
+        const m = extent[k];
+        return m ? sign(pk) * min(1, abs(pk) / m) : 0;
+      });
       this.scope.i = i;
       const h = 360 * resolver.resolve(hv.h, 'number');
       const v = resolver.resolve(hv.v, 'number');
