@@ -10,6 +10,7 @@ import notify from 'rollup-plugin-notify';
 import pegjs from 'rollup-plugin-pegjs';
 import progress from 'rollup-plugin-progress';
 import scss from 'rollup-plugin-scss';
+import dev from 'rollup-plugin-dev';
 import { terser } from 'rollup-plugin-terser';
 
 const out = path.resolve(__dirname, 'stereo');
@@ -28,14 +29,14 @@ const common = {
     commonjs(),
     typescript(),
     progress(),
-    notify(),
-  ],
-}
+    notify()
+  ]
+};
 
 export default [main(), worker(), worklet()];
 
 function main() {
-  const plugins =  [
+  const plugins = [
     ...common.plugins,
     scss({
       output: path.resolve(out, 'stereo.css')
@@ -48,11 +49,11 @@ function main() {
         { src: 'src/web/index.html', dest: out },
         { src: 'src/web/logo.png', dest: out }
       ]
-    }),
+    })
   ];
 
   if (watch) {
-    plugins.push(livereload(out));
+    plugins.push(livereload(out), dev());
   }
 
   return {
@@ -61,9 +62,9 @@ function main() {
     },
     output: {
       ...common.output,
-      format: 'es',
+      format: 'es'
     },
-    plugins,
+    plugins
   };
 }
 
@@ -74,9 +75,9 @@ function worker() {
     },
     output: {
       ...common.output,
-      format: 'iife',
+      format: 'iife'
     },
-    plugins: common.plugins,
+    plugins: common.plugins
   };
 }
 
@@ -87,8 +88,8 @@ function worklet() {
     },
     output: {
       ...common.output,
-      format: 'iife',
+      format: 'iife'
     },
-    plugins: common.plugins,
+    plugins: common.plugins
   };
 }
