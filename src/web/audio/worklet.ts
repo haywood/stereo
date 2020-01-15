@@ -1,7 +1,7 @@
 import assert from 'assert';
 import CircularBuffer from 'circular-buffer';
 import { argmax, mean, median, sum } from '../../reducable';
-import { binCount, chromaCount, quantumSize } from './constants';
+import { binCount, chromaCount, octaveCount, quantumSize } from './constants';
 import { Note } from './note';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
@@ -70,13 +70,15 @@ class Processor extends AudioWorkletProcessor {
   }
 
   /**
-   * Compute a chroma for the quantum based on a power-weighted
-   * average across all the notes.
+   * Compute a chroma for the quantum based on the loudest note.
    */
   chroma = (powers: number[]) => {
     const k = argmax(powers);
+    const chromaStep = 1 / chromaCount; // partition [0, 1] into chroma regions
+    const octaveStep = chromaStep / octaveCount; // partition [0, chromaStep] into octave regions
     const chroma = Spectrum.chroma(k);
-    return (powers[k] * chroma) / (chromaCount - 1);
+    const octave = Spectrum.octave(k);
+    return chroma * chromaStep + octave * octaveStep;
   };
 
   onset = (dpowers: number[]): 0 | 1 => {
