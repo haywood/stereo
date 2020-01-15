@@ -1,17 +1,12 @@
 import assert from 'assert';
-
+import { Fn } from '.';
 import { Vector } from '../data';
 import Cube from './cube';
-import Rotator from './rotator';
-import { CompositeFn, Fn } from '.';
 
 export default class Sphere implements Fn {
   private readonly root: Float32Array;
 
-  constructor(readonly d: number, r: number) {
-    this.root = new Float32Array(d);
-    this.root[0] = r;
-  }
+  constructor(readonly d: number, private readonly r: number) {}
 
   get domain() {
     return this.d - 1;
@@ -25,16 +20,18 @@ export default class Sphere implements Fn {
   };
 
   fn = (phi: Vector, y: Vector = new Float32Array(this.d)) => {
-    const { d, root } = this;
+    const { d, r } = this;
     assert.equal(phi.length, d - 1);
     assert.equal(y.length, d);
 
-    const r = new CompositeFn(
-      Array.from(new Array(d - 1).keys()).map(
-        i => new Rotator(d, phi[i], 0, i + 1)
-      )
-    );
-    r.fn(root, y);
+    y[0] = r;
+    for (let i = 1; i < y.length; i++) {
+      const sin = Math.sin(phi[i - 1]);
+      const cos = Math.cos(phi[i - 1]);
+      y[i] = y[0] * sin;
+      y[0] *= cos;
+    }
+
     return y;
   };
 }
