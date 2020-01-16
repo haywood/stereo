@@ -6,6 +6,13 @@ import { Note } from './note';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
 
+const onsetWindowSecs = 1;
+const onsetWindowSize = Math.round(
+  (onsetWindowSecs * sampleRate) / quantumSize
+);
+const bpmMax = 200;
+const tempoModulus = ((onsetWindowSize / onsetWindowSecs) * bpmMax) / 60;
+
 class Processor extends AudioWorkletProcessor {
   static get parameterDescriptors() {
     return [
@@ -16,10 +23,8 @@ class Processor extends AudioWorkletProcessor {
 
   private readonly notes = new Array<Note>(binCount);
   // track 1 seconds worth of onsets to determine tempo
-  private readonly impulses = new CircularBuffer<number>(
-    Math.floor(sampleRate / quantumSize) + 1
-  );
-  private readonly onsets = new CircularBuffer<0 | 1>(this.impulses.capacity());
+  private readonly impulses = new CircularBuffer<number>(onsetWindowSize);
+  private readonly onsets = new CircularBuffer<0 | 1>(onsetWindowSize);
 
   constructor(options) {
     super(options);
@@ -60,9 +65,8 @@ class Processor extends AudioWorkletProcessor {
 
     const onset = this.onset(analyses.map(a => a.dpower));
     this.onsets.push(onset);
-    const tempo =
-      this.onsets.toarray().reduce((sum, o) => sum + o, 0) /
-      this.onsets.capacity();
+    const beatCount = this.onsets.toarray().reduce((sum, o) => sum + o, 0);
+    const tempo = Math.min(1, beatCount / tempoModulus);
 
     this.port.postMessage({ power, chroma, tempo, onset } as Audio);
 

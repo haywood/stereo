@@ -34,12 +34,12 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', 'pi * (onset + t * (1 + tempo / 100) / 100)', {
+  theta: new TextInput('theta', 'pi * (t + power + onset) / 100', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
 
-  h: new TextInput('h', 'chroma * abs(p[0])', {
+  h: new TextInput('h', '(1 - tempo) * abs(p[0])', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
