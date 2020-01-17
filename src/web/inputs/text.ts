@@ -20,19 +20,26 @@ export class TextInput<T = string> extends Input<
 
   protected _setup = () => {
     this.el.disabled = this.disabled;
+    this.el.value = this.initialText;
+    this.setSize();
 
     this.el.onchange = () => {
-      const value = this.parse(this.el.value);
-      this.el.value = this.stringify(value);
-      this.value = value;
+      if (this.el.checkValidity()) {
+        this.value = this.parse(this.el.value);
+      }
     };
 
-    this.el.oninput = () => this.setSize();
-
-    this.stream.subscribe(({ newValue }) => {
-      this.el.value = this.stringify(newValue);
+    this.el.oninput = () => {
       this.setSize();
-    });
+      try {
+        this.parse(this.el.value);
+        this.el.setCustomValidity('');
+      } catch (err) {
+        this.el.setCustomValidity(err.message);
+        console.warn(err);
+        setTimeout(() => this.el.reportValidity(), 1000);
+      }
+    };
   };
 
   private setSize() {

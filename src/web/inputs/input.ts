@@ -1,5 +1,4 @@
 import { BehaviorSubject, Subject } from 'rxjs';
-
 import { Change } from './change';
 import { hash, persistenceEnabled } from './constants';
 import { Options } from './options';
@@ -10,6 +9,7 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   protected readonly parse: (s: string) => T;
   protected readonly stringify: (t: T) => string;
   protected el?: E;
+  protected readonly initialText: string;
 
   private readonly subject: Subject<Change<T>>;
   private readonly persistent: boolean;
@@ -42,6 +42,7 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
       text = hash.get(this.id);
     }
 
+    this.initialText = text;
     this._value = this.parse(text);
     this.subject = this.newSubject();
   }
