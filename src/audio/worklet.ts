@@ -1,6 +1,6 @@
 import assert from 'assert';
 import CircularBuffer from 'circular-buffer';
-import { argmax, mean, median, sum } from '../../reducable';
+import { argmax, mean, median, sum } from '../reducable';
 import { binCount, chromaCount, octaveCount, quantumSize } from './constants';
 import { Note } from './note';
 import { Spectrum } from './spectrum';

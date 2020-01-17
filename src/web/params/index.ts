@@ -1,11 +1,10 @@
-import { Subject, combineLatest, interval } from 'rxjs';
-
+import { combineLatest, interval, Subject } from 'rxjs';
+import { audioStream } from '../../audio';
+import { AUDIO_PLACEHOLDER } from '../../audio/constants';
+import { Audio } from '../../audio/types';
 import { inf } from '../../constants';
 import { Simplifier } from '../../pipe/simplifier';
 import { Params, Scope } from '../../pipe/types';
-import { audioStream } from '../audio';
-import { AUDIO_PLACEHOLDER } from '../audio/constants';
-import { Audio } from '../audio/types';
 import { fps } from '../constants';
 import { error } from '../error';
 import { inputs } from '../inputs';

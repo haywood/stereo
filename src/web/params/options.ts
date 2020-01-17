@@ -1,6 +1,5 @@
 import { PipeNode, Scalar } from '*.pegjs';
-
-import { Audio } from '../audio/types';
+import { Audio } from '../../audio/types';
 
 export type Options = {
   pipe: PipeNode;

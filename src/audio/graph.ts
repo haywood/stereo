@@ -1,7 +1,6 @@
 import { Subject } from 'rxjs';
-
-import { error } from '../error';
-import { inputs } from '../inputs';
+import { error } from '../web/error';
+import { inputs } from '../web/inputs';
 import { AUDIO_PLACEHOLDER, binCount } from './constants';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
