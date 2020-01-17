@@ -3,7 +3,8 @@ import { Data, Vector } from '../data';
 import { CompositeFn } from '../fn';
 import { PipeNode } from './grammar.pegjs';
 import { Resolver } from './resolver';
-import { Chunk, HV, Scope } from './types';
+import { Scope } from './scope';
+import { Chunk, HV } from './types';
 
 const { abs, min, round, sign } = Math;
 

@@ -1,6 +1,6 @@
-import { Audio } from '../audio/types';
 import { Fn } from '../fn';
 import { PipeNode, Scalar } from './grammar.pegjs';
+import { Scope } from './scope';
 
 export type Params = {
   pipe: PipeNode;
@@ -14,16 +14,6 @@ export type Defs = {
 };
 
 export type UnaryOperator = (x: number) => number;
-
-export type Scope = Audio & {
-  t: number;
-  inf: number;
-  extent: [number, number, number];
-  n?: number;
-  p?: Float32Array;
-  i?: number;
-  max?: number;
-};
 
 export type HV = {
   h: Scalar;

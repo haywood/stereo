@@ -18,7 +18,8 @@ import {
   StepNode,
   Value
 } from './grammar.pegjs';
-import { Link, Scope, UnaryOperator } from './types';
+import { Scope } from './scope';
+import { Link, UnaryOperator } from './types';
 
 export type Resolution = {
   n: number;
