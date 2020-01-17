@@ -34,17 +34,17 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', 'pi * (t + power + onset) / 100', {
+  theta: new TextInput('theta', 'pi * (t + audio.power + audio.onset) / 100', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
 
-  h: new TextInput('h', 'color * abs(p[0])', {
+  h: new TextInput('h', 'audio.color * abs(p[0])', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
 
-  v: new TextInput('v', 'max(0.4, power)', {
+  v: new TextInput('v', 'max(0.4, audio.power)', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),

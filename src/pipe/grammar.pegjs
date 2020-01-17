@@ -85,6 +85,7 @@ term 'term' =
     return {kind: 'fn', name: name.toLowerCase(), args};
   }
   / id:identifier lbrack index:scalar rbrack { return {kind: 'access', id, index}; }
+  / id:identifier _ '.' _ index:id { return {kind: 'access', id, index}; }
   / id
   / lparen scalar:scalar rparen { return {kind: 'paren', scalar}; }
 

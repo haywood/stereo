@@ -65,13 +65,17 @@ export class Resolver {
       assert.equal(
         actual,
         hint,
-        `Expected identifier ${node.id} to resolve to a ${hint}, but was ${actual} instead.`
+        `Expected node ${pp(
+          node,
+          0
+        )} to resolve to a ${hint}, but was ${actual} instead.`
       );
 
       if (hint === 'number' && isNaN(value))
         assert.fail(
           `Expected node ${pp(
-            node
+            node,
+            0
           )} to resolve to a valid value, but was NaN instead.`
         );
     }
@@ -123,7 +127,7 @@ export class Resolver {
     const fn = Math[name];
     assert(
       typeof fn === 'function',
-      `Expected ${name} to be a Math function in ${pp({ name, args })}`
+      `Expected ${name} to be a Math function in ${pp({ name, args }, 0)}`
     );
     return fn(...args.map(a => this.resolve(a)));
   };
@@ -131,8 +135,13 @@ export class Resolver {
   private resolveAccess = ({ id, index }: AccessNode): number => {
     const scope = this.scope;
     const target = scope[id];
-    assert(target, `Unable to resolve ${id} in scope ${pp(scope, 2)}`);
-    return target[this.resolve(index, 'number')];
+    assert(target, `Unable to resolve ${id} in scope ${pp(scope)}`);
+    if (index.kind === 'id' && index.id in target) {
+      // TODO works in practice, but not sure if corret
+      return target[index.id];
+    } else {
+      return target[this.resolve(index)];
+    }
   };
 
   private resolveId = (id: string): Value => {

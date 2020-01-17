@@ -28,7 +28,7 @@ export const paramsStream = subject.asObservable();
         inf,
         n: pipe.n,
         extent,
-        ...audio
+        audio
       };
       const params = {
         pipe,
