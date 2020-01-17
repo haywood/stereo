@@ -3,6 +3,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import path from 'path';
 import copy from 'rollup-plugin-copy';
+import dev from 'rollup-plugin-dev';
 import livereload from 'rollup-plugin-livereload';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
@@ -10,7 +11,6 @@ import notify from 'rollup-plugin-notify';
 import pegjs from 'rollup-plugin-pegjs';
 import progress from 'rollup-plugin-progress';
 import scss from 'rollup-plugin-scss';
-import dev from 'rollup-plugin-dev';
 import { terser } from 'rollup-plugin-terser';
 
 const out = path.resolve(__dirname, 'stereo');
@@ -84,7 +84,7 @@ function worker() {
 function worklet() {
   return {
     input: {
-      'audio/worklet': 'src/web/audio/worklet.ts'
+      'audio/worklet': 'src/audio/worklet.ts'
     },
     output: {
       ...common.output,

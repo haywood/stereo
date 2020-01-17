@@ -1,7 +1,7 @@
 import assert from 'assert';
 import CircularBuffer from 'circular-buffer';
 import { argmax, mean, median, sum } from '../reducable';
-import { binCount, chromaCount, octaveCount, quantumSize } from './constants';
+import { binCount, quantumSize } from './constants';
 import { Note } from './note';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
@@ -60,30 +60,24 @@ class Processor extends AudioWorkletProcessor {
       analyses.reduce((sum, { power }) => sum + power, 0) / binCount;
     assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
 
-    const chroma = this.chroma(analyses.map(a => a.power));
-    assert(0 <= chroma && chroma <= 1, `chroma: Expected 0 <= ${chroma} <= 1`);
+    const pitch = Spectrum.pitch(argmax(analyses, a => a.power));
+    assert(0 <= pitch && pitch <= 1, `chroma: Expected 0 <= ${pitch} <= 1`);
 
     const onset = this.onset(analyses.map(a => a.dpower));
     this.onsets.push(onset);
     const beatCount = this.onsets.toarray().reduce((sum, o) => sum + o, 0);
     const tempo = Math.min(1, beatCount / tempoModulus);
 
-    this.port.postMessage({ power, chroma, tempo, onset } as Audio);
+    this.port.postMessage({
+      color: 1 - tempo,
+      onset,
+      pitch,
+      power,
+      tempo
+    } as Audio);
 
     return true;
   }
-
-  /**
-   * Compute a chroma for the quantum based on the loudest note.
-   */
-  chroma = (powers: number[]) => {
-    const k = argmax(powers);
-    const chromaStep = 1 / chromaCount; // partition [0, 1] into chroma regions
-    const octaveStep = chromaStep / octaveCount; // partition [0, chromaStep] into octave regions
-    const chroma = Spectrum.chroma(k);
-    const octave = Spectrum.octave(k);
-    return chroma * chromaStep + octave * octaveStep;
-  };
 
   onset = (dpowers: number[]): 0 | 1 => {
     const impulse = sum(dpowers);

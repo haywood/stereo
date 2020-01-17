@@ -1,6 +1,7 @@
 export type Audio = {
-  power: number;
-  chroma: number;
-  tempo: number;
+  color: number;
   onset: 0 | 1;
+  pitch: number;
+  power: number;
+  tempo: number;
 };

@@ -10,11 +10,11 @@ interface Reducable<T> {
 
 const identity = (x: number) => x;
 
-export const argmax = (xs: Reducable<number>, mapper = identity) => {
+export const argmax = <T>(xs: Reducable<T>, mapper = (t: T) => Number(t)) => {
   if (!xs.length) return 0;
   return xs.reduce(
-    (memo, x, arg) => {
-      x = mapper(x);
+    (memo, t, arg) => {
+      const x = mapper(t);
       return x > memo.x ? { x, arg } : memo;
     },
     { x: -inf, arg: -1 }

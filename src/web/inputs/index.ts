@@ -39,7 +39,7 @@ export const inputs = {
     stringify: print
   }),
 
-  h: new TextInput('h', '(1 - tempo) * abs(p[0])', {
+  h: new TextInput('h', 'color * abs(p[0])', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
