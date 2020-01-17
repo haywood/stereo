@@ -1,5 +1,5 @@
 export type Audio = {
-  color: number;
+  hue: number;
   onset: 0 | 1;
   pitch: number;
   power: number;

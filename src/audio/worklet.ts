@@ -69,7 +69,7 @@ class Processor extends AudioWorkletProcessor {
     const tempo = Math.min(1, beatCount / tempoModulus);
 
     this.port.postMessage({
-      color: 1 - tempo,
+      hue: 1 - tempo,
       onset,
       pitch,
       power,

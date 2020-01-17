@@ -39,7 +39,7 @@ export const inputs = {
     stringify: print
   }),
 
-  h: new TextInput('h', 'audio.color * abs(p[0])', {
+  h: new TextInput('h', 'audio.hue * abs(p[0])', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
