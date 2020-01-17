@@ -1,5 +1,7 @@
 import assert from 'assert';
-import { binCount, chromaCount } from './constants';
+import { binCount, chromaCount, octaveCount } from './constants';
+
+const c0 = 16.35; // c0 per https://pages.mtu.edu/~suits/notefreqs.html
 
 export class Spectrum {
   constructor(public dbMin: number, public dbMax: number) {}
@@ -18,15 +20,20 @@ export class Spectrum {
     );
     const octave = Spectrum.octave(k);
     const chroma = Spectrum.chroma(k);
-    const c0 = 16.35; // c0 per https://pages.mtu.edu/~suits/notefreqs.html
 
     return c0 * 2 ** (octave + chroma / chromaCount);
   };
 
-  static fmax = Spectrum.f(binCount - 1);
+  static hue = (k: number) => {
+    const chromaStep = 1 / chromaCount;
+    const octaveStep = chromaStep / octaveCount;
+    return chromaStep * Spectrum.chroma(k) + octaveStep * Spectrum.octave(k);
+  };
+
+  static fmax = c0 * 2 ** binCount;
 
   /**
    * Compute the relative pitch of bin k.
    */
-  static pitch = (k: number) => Spectrum.f(k) / Spectrum.fmax;
+  static pitch = (k: number) => Spectrum.chroma(k) / (chromaCount - 1);
 }

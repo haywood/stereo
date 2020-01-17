@@ -58,18 +58,15 @@ class Processor extends AudioWorkletProcessor {
 
     const power =
       analyses.reduce((sum, { power }) => sum + power, 0) / binCount;
-    assert(0 <= power && power <= 1, `power: Expected 0 <= ${power} <= 1`);
-
-    const pitch = Spectrum.pitch(argmax(analyses, a => a.power));
-    assert(0 <= pitch && pitch <= 1, `chroma: Expected 0 <= ${pitch} <= 1`);
-
+    const loudest = argmax(analyses, a => a.power);
+    const pitch = Spectrum.pitch(loudest);
     const onset = this.onset(analyses.map(a => a.dpower));
     this.onsets.push(onset);
     const beatCount = this.onsets.toarray().reduce((sum, o) => sum + o, 0);
     const tempo = Math.min(1, beatCount / tempoModulus);
 
     this.port.postMessage({
-      hue: 1 - tempo,
+      hue: Spectrum.hue(loudest),
       onset,
       pitch,
       power,
