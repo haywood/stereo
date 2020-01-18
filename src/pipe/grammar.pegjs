@@ -7,6 +7,10 @@
     }
     return {kind: 'step', type, args}
   }
+
+  function arith(op, ...operands) {
+    return {kind: 'arith', op, operands};
+  }
 }
 
 /** RULES */
@@ -72,15 +76,29 @@ step_args =
   head:scalar comma tail:step_args { return [head, ...tail]; }
   / arg:scalar { return [arg]; }
 
-scalar 'scalar' =
-  s:term op:operator a:scalar {
-     return {kind: 'arith', op, operands: [s, a]};
+scalar 'scalar' = additive
+
+additive =
+  a:multiplicative _ op:('+' / '-') _ b:additive {
+    return arith(op, a, b);
+  }
+  / multiplicative
+
+multiplicative =
+  a:exponential _ op:('*' / '/') _ b:multiplicative {
+    return arith(op, a, b);
+  }
+  / exponential
+
+exponential =
+  a:term _ op:('**' / '^') _ b:exponential {
+    return arith(op, a, b);
   }
   / term
-  / '-' t:term { return {kind: 'arith', op: '-', operands: [t]}}
 
 term 'term' =
-  value:number { return {kind: 'number', value}; }
+  op:'-' a:term { return arith(op, a); }
+  / value:number { return {kind: 'number', value}; }
   / name:identifier args:fn_args {
     return {kind: 'fn', name: name.toLowerCase(), args};
   }
