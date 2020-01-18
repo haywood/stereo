@@ -18,14 +18,21 @@ export class TextInput<T = string> extends Input<
     super(id, defaultText, { persistent, disabled, parse, stringify });
   }
 
+  valid() {
+    return this.el.checkValidity();
+  }
+
   protected _setup = () => {
     this.el.disabled = this.disabled;
     this.el.value = this.initialText;
     this.setSize();
 
     this.el.onchange = () => {
-      if (this.el.checkValidity()) {
+      try {
         this.value = this.parse(this.el.value);
+        this.el.setCustomValidity('');
+      } catch (err) {
+        // should already be handled by oninput
       }
     };
 
@@ -35,12 +42,16 @@ export class TextInput<T = string> extends Input<
         this.parse(this.el.value);
         this.el.setCustomValidity('');
       } catch (err) {
-        this.el.setCustomValidity(err.message);
-        console.warn(err);
-        setTimeout(() => this.el.reportValidity(), 1000);
+        this.markInvalid(err);
       }
     };
   };
+
+  markInvalid(err: Error, delay = 500) {
+    this.el.setCustomValidity(err.message);
+    console.warn(err);
+    setTimeout(() => this.el.reportValidity(), delay);
+  }
 
   private setSize() {
     if (this.el instanceof HTMLInputElement)

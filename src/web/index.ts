@@ -1,9 +1,7 @@
 import 'multirange/multirange.css';
-
-import './global.scss';
-
 import { dataStream } from './data';
 import debug from './debug';
+import './global.scss';
 import { Overlay } from './overlay';
 import { initRenderer, updateRenderer } from './renderer';
 
@@ -13,14 +11,13 @@ let lastMouseMove = 0;
 
 const maybeSetCursorInactive = () => {
   if (Date.now() < lastMouseMove + cursorInactiveTimeout) return;
-  if (overlay.hasAttention()) return;
-
   document.body.classList.add('cursor-inactive');
-  overlay.hide();
+
+  overlay.maybeHide();
 };
 
 document.body.onmousemove = () => {
-  overlay.show();
+  overlay.onmousemove();
 
   if (document.body.classList.contains('cursor-inactive')) {
     document.body.classList.remove('cursor-inactive');

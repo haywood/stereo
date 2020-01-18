@@ -1,12 +1,22 @@
 import assert from 'assert';
 import { Data, Vector } from '../data';
 import { CompositeFn } from '../fn';
-import { PipeNode } from './grammar.pegjs';
+import { PipeNode, Scalar } from './grammar.pegjs';
 import { Resolver } from './resolver';
 import { Scope } from './scope';
 import { Chunk, HV } from './types';
 
 const { abs, min, round, sign } = Math;
+
+export class EvaluationError extends Error {
+  constructor(readonly context: string, readonly cause: Error) {
+    super(cause?.message);
+  }
+
+  get name() {
+    return 'EvaluationError';
+  }
+}
 
 export class Evaluator {
   private readonly n: number;
@@ -22,8 +32,8 @@ export class Evaluator {
     private readonly hv: HV,
     chunk: Chunk
   ) {
-    const resolver = new Resolver(scope);
-    const { n, staticFn, dynamicFn } = resolver.resolve(ast);
+    this.resolver = new Resolver(scope);
+    const { n, staticFn, dynamicFn } = this.resolvePipe(ast);
     const offset = chunk.offset;
     const size = chunk.size;
     const limit = offset + size;
@@ -38,11 +48,26 @@ export class Evaluator {
     this.dynaicFn = dynamicFn;
     this.offset = offset;
     this.limit = limit;
-    this.resolver = resolver;
   }
 
   private get d() {
     return this.dynaicFn.d;
+  }
+
+  private resolvePipe(node: PipeNode) {
+    try {
+      return this.resolver.resolve(node);
+    } catch ({ message, scope }) {
+      throw { context: 'pipe', message, scope };
+    }
+  }
+
+  private resolveNumber(context: string, node: Scalar) {
+    try {
+      return this.resolver.resolve(node, 'number');
+    } catch ({ message, scope }) {
+      throw { context, message, scope };
+    }
   }
 
   initialize = (buffer: SharedArrayBuffer): void => {
@@ -89,8 +114,8 @@ export class Evaluator {
         return m ? sign(pk) * min(1, abs(pk) / m) : 0;
       });
       this.scope.i = i;
-      const h = 360 * resolver.resolve(hv.h, 'number');
-      const v = resolver.resolve(hv.v, 'number');
+      const h = 360 * this.resolveNumber('h', hv.h);
+      const v = this.resolveNumber('v', hv.v);
       const rgb = hsv2rgb(h, v);
 
       color.set(rgb, i * 3);
@@ -100,8 +125,8 @@ export class Evaluator {
 
 function hsv2rgb(h: number, v: number): [number, number, number] {
   // source: https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
-  assert(0 <= h && h <= 360, `hsv2rgb: expected 0 <= h = ${h} <= 360`);
-  assert(0 <= v && v <= 1, `hsv2rgb: expected 0 <= v = ${v} <= 1`);
+  h = Math.max(0, Math.min(360, h));
+  v = Math.max(0, Math.min(1, v));
 
   const hprime = h / 60;
   const c = v; // saturation fixed at 1

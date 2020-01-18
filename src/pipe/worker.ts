@@ -1,5 +1,4 @@
 import { expose } from 'comlink';
-
 import { Evaluator } from './evaluator';
 import { Chunk, Params, PipelineWorker } from './types';
 
@@ -9,13 +8,23 @@ const worker: PipelineWorker = {
     chunk: Chunk,
     buffer: SharedArrayBuffer
   ): void => {
-    new Evaluator(params.scope, params.pipe, params.hv, chunk).initialize(
-      buffer
+    const evaluator = new Evaluator(
+      params.scope,
+      params.pipe,
+      params.hv,
+      chunk
     );
+    evaluator.initialize(buffer);
   },
 
   iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void => {
-    new Evaluator(params.scope, params.pipe, params.hv, chunk).iterate(buffer);
+    const evaluator = new Evaluator(
+      params.scope,
+      params.pipe,
+      params.hv,
+      chunk
+    );
+    evaluator.iterate(buffer);
   }
 };
 

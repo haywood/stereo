@@ -1,8 +1,6 @@
-import './overlay.scss';
-
 import assert from 'assert';
-
 import { inputs } from '../inputs';
+import './overlay.scss';
 
 export class Overlay {
   readonly domElement = document.getElementById('overlay');
@@ -20,13 +18,37 @@ export class Overlay {
         el.onmouseover = () => (this.hasHover = true);
         el.onmouseout = () => (this.hasHover = false);
       });
+
+    this.inputs()
+      .querySelectorAll('input')
+      .forEach(el => {
+        el.oninvalid = this.show;
+        el.onblur = () => el.reportValidity();
+      });
   }
 
-  hasAttention = () => this.hasHover || this.contains(document.activeElement);
+  private inputs() {
+    return this.querySelector<HTMLFormElement>('#inputs');
+  }
 
-  show = () => (this.domElement.style.opacity = '1');
+  onmousemove = () => {
+    this.show();
+    this.inputs().reportValidity();
+  };
 
-  hide = () => (this.domElement.style.opacity = '0');
+  private show = () => {
+    this.domElement.style.opacity = '1';
+  };
+
+  maybeHide = () => {
+    if (this.hasAttention() || this.needsAttention()) return;
+    this.domElement.style.opacity = '0';
+  };
+
+  private hasAttention = () =>
+    this.hasHover || this.contains(document.activeElement);
+
+  private needsAttention = () => !this.inputs().reportValidity();
 
   private contains = (node: Node) => this.domElement.contains(node);
 

@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { CompositeFn, Fn } from '../fn';
 import Cube from '../fn/cube';
 import FuckedUpTorus from '../fn/fucked_up_torus';
@@ -21,11 +20,15 @@ import {
 import { Scope } from './scope';
 import { Link, UnaryOperator } from './types';
 
-export type Resolution = {
+type Resolution = {
   n: number;
   staticFn: CompositeFn;
   dynamicFn: CompositeFn;
 };
+
+function assert(cond: boolean, scope: Scope, msg: () => string) {
+  if (!cond) throw { message: msg(), scope };
+}
 
 export class Resolver {
   constructor(private readonly scope: Scope) {}
@@ -62,22 +65,11 @@ export class Resolver {
 
     if (hint) {
       const actual = typeof value;
-      assert.equal(
-        actual,
-        hint,
-        `Expected node ${pp(
-          node,
-          0
-        )} to resolve to a ${hint}, but was ${actual} instead.`
-      );
+      this.expect(actual === hint, node, `be a ${hint}`, `was ${actual}`);
+    }
 
-      if (hint === 'number' && isNaN(value))
-        assert.fail(
-          `Expected node ${pp(
-            node,
-            0
-          )} to resolve to a valid value, but was NaN instead.`
-        );
+    if (hint === 'number') {
+      this.expect(!isNaN(value), node, 'be a number', 'was NaN');
     }
 
     return value;
@@ -125,9 +117,12 @@ export class Resolver {
 
   private resolveFn = ({ name, args }: FnNode): number => {
     const fn = Math[name];
-    assert(
-      typeof fn === 'function',
-      `Expected ${name} to be a Math function in ${pp({ name, args }, 0)}`
+    const type = typeof fn;
+    this.expect(
+      type === 'function',
+      name,
+      `resolve to a function`,
+      `was ${type}`
     );
     return fn(...args.map(a => this.resolve(a)));
   };
@@ -135,7 +130,7 @@ export class Resolver {
   private resolveAccess = ({ id, index }: AccessNode): number => {
     const scope = this.scope;
     const target = scope[id];
-    assert(target, `Unable to resolve ${id} in scope ${pp(scope)}`);
+    this.assert(target, () => `failed to resolve access target ${id}`);
     if (index.kind === 'id' && index.id in target) {
       // TODO works in practice, but not sure if corret
       return target[index.id];
@@ -145,16 +140,19 @@ export class Resolver {
   };
 
   private resolveId = (id: string): Value => {
+    let value;
     if (id in this.scope) {
-      return this.scope[id];
+      value = this.scope[id];
     } else if (id in Math) {
-      return Math[id];
+      value = Math[id];
     } else {
       const idu = id.toUpperCase();
-      if (idu in Math) return Math[idu];
+      if (idu in Math) value = Math[idu];
     }
 
-    assert.fail(`unable to resolve id ${id} in scope ${pp(this.scope, 2)}`);
+    this.assert(value, () => `failed to resolve id ${id}`);
+
+    return value;
   };
 
   private resolveArith = ({ op, operands }: ArithNode) => {
@@ -174,6 +172,17 @@ export class Resolver {
         return false;
     }
   };
+
+  private assert(cond: boolean, msg: () => string) {
+    assert(cond, this.scope, msg);
+  }
+
+  private expect(cond: boolean, node: any, expected: string, actual: string) {
+    this.assert(
+      cond,
+      () => `Expected ${pp(node, 0)} to ${expected}, but ${actual}`
+    );
+  }
 }
 
 const ops: { [op: string]: (a: number, b: number) => number } = {
@@ -200,8 +209,16 @@ const funs: { [op: string]: (d: number, ...rest) => Fn } = {
     f0: UnaryOperator = Math.cos,
     f1: UnaryOperator = Math.sin
   ) => {
-    assert(0 <= d0 && d0 < d, `rotate: Expected 0 <= d0 = ${d0} < d = ${d}`);
-    assert(0 <= d1 && d1 < d, `rotate: Expected 0 <= d1 = ${d1} < d = ${d}`);
+    assert(
+      0 <= d0 && d0 < d,
+      null,
+      () => `rotate: Expected 0 <= d0 = ${d0} < d = ${d}`
+    );
+    assert(
+      0 <= d1 && d1 < d,
+      null,
+      () => `rotate: Expected 0 <= d1 = ${d1} < d = ${d}`
+    );
     return new Rotator(d, theta, d0, d1, f0, f1);
   },
   stereo: (d, to) => new Stereo(d, to)
