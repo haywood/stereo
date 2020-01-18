@@ -1,3 +1,4 @@
+import closure from '@ampproject/rollup-plugin-closure-compiler';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
@@ -11,7 +12,6 @@ import notify from 'rollup-plugin-notify';
 import pegjs from 'rollup-plugin-pegjs';
 import progress from 'rollup-plugin-progress';
 import scss from 'rollup-plugin-scss';
-import { terser } from 'rollup-plugin-terser';
 
 const out = path.resolve(__dirname, 'stereo');
 const watch = process.env.ROLLUP_WATCH === 'true';
@@ -19,8 +19,7 @@ const watch = process.env.ROLLUP_WATCH === 'true';
 const common = {
   output: {
     dir: out,
-    sourcemap: true,
-    plugins: watch ? [] : [terser()]
+    sourcemap: true
   },
   plugins: [
     globals(),
@@ -28,6 +27,7 @@ const common = {
     resolve(),
     commonjs(),
     typescript(),
+    closure(),
     progress(),
     notify()
   ]
