@@ -20,7 +20,7 @@ const common = {
   output: {
     dir: out,
     sourcemap: true,
-    plugins: [terser()]
+    plugins: watch ? [] : [terser()]
   },
   plugins: [
     globals(),
