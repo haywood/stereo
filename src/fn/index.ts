@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import { inf } from '../constants';
 import { Vector } from '../data';
 
@@ -78,6 +77,7 @@ export class CompositeFn implements Fn {
       f.fn(x.subarray(0, f.domain), y.subarray(0, f.d));
       for (let i = 0; i < y.length; i++) {
         if (!isFinite(y[i])) y[i] = Math.sign(y[i]) * inf;
+        if (isNaN(y[i])) y[i] = 0;
       }
       x.set(y);
     }
