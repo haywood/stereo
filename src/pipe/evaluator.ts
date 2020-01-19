@@ -102,7 +102,7 @@ export class Evaluator {
   };
 
   private computeColors = (data: Vector) => {
-    const { d, hv, offset, limit, resolver } = this;
+    const { d, hv, offset, limit } = this;
     const position = Data.position(data);
     const color = Data.color(data);
     const { extent } = this.scope;
