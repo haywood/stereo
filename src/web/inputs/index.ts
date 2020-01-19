@@ -3,7 +3,7 @@ import { Compiler } from '../../pipe/compiler';
 import { PipeNode } from '../../pipe/grammar.pegjs';
 import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
-import { render } from '../renderer';
+import { renderPng } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';
 import { TextInput } from './text';
@@ -64,10 +64,7 @@ export const inputs = {
   }),
 
   save: new ActionInput('save', async () => {
-    await render();
-    const blob = await new Promise(resolve =>
-      document.querySelector('canvas').toBlob(resolve)
-    );
+    const blob = await renderPng();
     const url = URL.createObjectURL(blob);
     try {
       const a = document.createElement('a');

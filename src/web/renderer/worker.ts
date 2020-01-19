@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import {
   BufferAttribute,
   BufferGeometry,
@@ -10,7 +9,6 @@ import {
   VertexColors,
   WebGLRenderer
 } from 'three';
-
 import { Data } from '../../data';
 
 class Renderer {
@@ -19,7 +17,11 @@ class Renderer {
   private camera: PerspectiveCamera;
   private points: Points;
 
-  constructor(canvas: OffscreenCanvas, width: number, height: number) {
+  constructor(
+    private readonly canvas: OffscreenCanvas,
+    width: number,
+    height: number
+  ) {
     this.renderer = new WebGLRenderer({ canvas });
 
     this.points = new Points(
@@ -64,6 +66,11 @@ class Renderer {
     this.renderer.render(this.scene, this.camera);
   };
 
+  renderPng() {
+    this.render();
+    return this.canvas.convertToBlob();
+  }
+
   update = ({ d, position, color }: Data) => {
     const { points } = this;
     const geometry = points.geometry as BufferGeometry;
@@ -94,6 +101,10 @@ export const worker = {
   },
 
   render: () => renderer.render(),
+
+  renderPng() {
+    return renderer.renderPng();
+  },
 
   update: (data: Data) => {
     renderer.update(data);

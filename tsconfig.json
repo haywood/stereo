@@ -5,7 +5,6 @@
     "module": "esnext",
     "moduleResolution": "node",
     "outDir": ".js-bin",
-    "rootDir": "src",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "downlevelIteration": true,

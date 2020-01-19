@@ -12,6 +12,8 @@ export const initRenderer = async (canvas: OffscreenCanvas) => {
 
 export const render = async () => worker.render();
 
+export const renderPng = async () => worker.renderPng();
+
 export const updateRenderer = async (data: Data) => {
   const extent = worker.update(data);
   subject.next(extent);
