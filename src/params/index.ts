@@ -4,10 +4,11 @@ import { Scope } from './scope';
 export type Params = {
   pipe: PipeNode;
   scope: Scope;
-  hv: HV;
+  hsv: HSV;
 };
 
-export type HV = {
+export type HSV = {
   h: Scalar;
+  s: Scalar;
   v: Scalar;
 };

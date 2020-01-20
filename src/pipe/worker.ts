@@ -12,7 +12,7 @@ const worker: PipelineWorker = {
     const evaluator = new Evaluator(
       params.scope,
       params.pipe,
-      params.hv,
+      params.hsv,
       chunk
     );
     evaluator.initialize(buffer);
@@ -22,7 +22,7 @@ const worker: PipelineWorker = {
     const evaluator = new Evaluator(
       params.scope,
       params.pipe,
-      params.hv,
+      params.hsv,
       chunk
     );
     evaluator.iterate(buffer);

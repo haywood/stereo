@@ -24,7 +24,7 @@ export const stopPool = async (): Promise<void> => {
 const getKey = (params: Params) =>
   JSON.stringify({
     pipe: params.pipe,
-    hv: params.hv
+    hv: params.hsv
   });
 
 export const runPipeline = async (params: Params) => {

@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { Data, Vector } from '../data';
 import { CompositeFn } from '../fn';
-import { HV } from '../params';
+import { HSV } from '../params';
 import { Scope } from '../params/scope';
 import { PipeNode, Scalar } from './grammar.pegjs';
 import { Resolver } from './resolver';
@@ -30,7 +30,7 @@ export class Evaluator {
   constructor(
     private readonly scope: Scope,
     ast: PipeNode,
-    private readonly hv: HV,
+    private readonly hsv: HSV,
     chunk: Chunk
   ) {
     this.resolver = new Resolver(scope);
@@ -103,7 +103,7 @@ export class Evaluator {
   };
 
   private computeColors = (data: Vector) => {
-    const { d, hv, offset, limit } = this;
+    const { d, hsv, offset, limit } = this;
     const position = Data.position(data);
     const color = Data.color(data);
     const { extent } = this.scope;
@@ -115,35 +115,45 @@ export class Evaluator {
         return m ? sign(pk) * min(1, abs(pk) / m) : 0;
       });
       this.scope.i = i;
-      const h = 360 * this.resolveNumber('h', hv.h);
-      const v = this.resolveNumber('v', hv.v);
-      const rgb = hsv2rgb(h, v);
+      const h = 360 * this.resolveNumber('h', hsv.h);
+      const s = this.resolveNumber('s', hsv.s);
+      const v = this.resolveNumber('v', hsv.v);
+      const rgb = hsv2rgb(h, s, v);
 
       color.set(rgb, i * 3);
     }
   };
 }
 
-function hsv2rgb(h: number, v: number): [number, number, number] {
+function hsv2rgb(h: number, s: number, v: number): [number, number, number] {
   // source: https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
   h = Math.max(0, Math.min(360, h));
+  s = Math.max(0, Math.min(1, s));
   v = Math.max(0, Math.min(1, v));
 
   const hprime = h / 60;
-  const c = v; // saturation fixed at 1
+  const c = v * s;
   const x = c * (1 - abs((hprime % 2) - 1));
+  const m = v - c;
+  let rgb: [number, number, number];
 
   if (hprime <= 1) {
-    return [c, x, 0];
+    rgb = [c, x, 0];
   } else if (hprime <= 2) {
-    return [x, c, 0];
+    rgb = [x, c, 0];
   } else if (hprime <= 3) {
-    return [0, c, x];
+    rgb = [0, c, x];
   } else if (hprime <= 4) {
-    return [0, x, c];
+    rgb = [0, x, c];
   } else if (hprime <= 5) {
-    return [x, 0, c];
+    rgb = [x, 0, c];
   } else if (hprime <= 6) {
-    return [c, 0, x];
+    rgb = [c, 0, x];
+  } else {
+    rgb = [0, 0, 0];
   }
+
+  rgb.forEach((vi, i) => (rgb[i] = vi + m));
+
+  return rgb;
 }

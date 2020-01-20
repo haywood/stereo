@@ -44,6 +44,11 @@ export const inputs = {
     stringify: print
   }),
 
+  s: new TextInput('s', '1', {
+    parse: s => compiler.compile(s, 'scalar'),
+    stringify: print
+  }),
+
   v: new TextInput('v', 'max(0.4, audio.power)', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print

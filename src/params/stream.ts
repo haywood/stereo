@@ -30,11 +30,12 @@ export const paramsStream = subject.asObservable();
         extent,
         audio
       };
-      const params = {
+      const params: Params = {
         pipe,
         scope,
-        hv: {
+        hsv: {
           h: inputs.h.value,
+          s: inputs.s.value,
           v: inputs.v.value
         }
       };
