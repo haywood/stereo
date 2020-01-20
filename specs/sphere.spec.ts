@@ -13,7 +13,9 @@ function test(d: number) {
 
   it(key, async () => {
     const sphere = new Sphere(d, 1);
+
     const mismatch = await compare(await draw(sphere), `sphere${key}`);
+
     expect(mismatch).toBeLessThan(0.5);
   });
 }
