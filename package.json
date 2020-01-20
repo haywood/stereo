@@ -27,6 +27,7 @@
     "karma": "^4.4.1",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^3.1.0",
+    "karma-mocha-reporter": "^2.2.5",
     "karma-rollup-preprocessor": "^7.0.3",
     "karma-source-map-support": "^1.4.0",
     "local-web-server": "^3.0.7",
