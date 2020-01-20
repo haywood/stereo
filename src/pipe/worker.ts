@@ -11,7 +11,7 @@ const worker = {
       params.hsv,
       chunk
     );
-    evaluator.iterate(buffer);
+    return evaluator.iterate(buffer);
   }
 };
 

@@ -7,7 +7,7 @@ import { PipeNode, Scalar } from './grammar.pegjs';
 import { Resolver } from './resolver';
 import { Chunk } from './types';
 
-const { abs, min, round, sign } = Math;
+const { abs, min, sign } = Math;
 
 export class EvaluationError extends Error {
   constructor(readonly context: string, readonly cause: Error) {
@@ -69,9 +69,20 @@ export class Evaluator {
     }
   }
 
-  iterate = (buffer: SharedArrayBuffer): void => {
+  iterate = (buffer: SharedArrayBuffer) => {
+    const { d, offset, limit } = this;
     const data = new Float32Array(buffer);
-    const { fn, n, offset, limit } = this;
+    const position = this.computePosition(data);
+    const color = this.computeColor(data, position);
+
+    return {
+      position: position.subarray(d * offset, d * limit),
+      color: color.subarray(3 * offset, 3 * limit)
+    };
+  };
+
+  private computePosition = (data: Vector) => {
+    const { fn, n, d, offset, limit } = this;
     const position = Data.position(data);
 
     let i = offset;
@@ -79,12 +90,11 @@ export class Evaluator {
       Data.set(position, y, i++, fn.d);
     }
 
-    this.computeColors(data);
+    return position;
   };
 
-  private computeColors = (data: Vector) => {
+  private computeColor = (data: Vector, position: Vector) => {
     const { d, hsv, offset, limit } = this;
-    const position = Data.position(data);
     const color = Data.color(data);
     const { extent } = this.scope;
 
@@ -102,6 +112,8 @@ export class Evaluator {
 
       color.set(rgb, i * 3);
     }
+
+    return color;
   };
 }
 
