@@ -1,10 +1,11 @@
 import assert from 'assert';
 import { Data, Vector } from '../data';
 import { CompositeFn } from '../fn';
+import { HV } from '../params';
+import { Scope } from '../params/scope';
 import { PipeNode, Scalar } from './grammar.pegjs';
 import { Resolver } from './resolver';
-import { Scope } from './scope';
-import { Chunk, HV } from './types';
+import { Chunk } from './types';
 
 const { abs, min, round, sign } = Math;
 

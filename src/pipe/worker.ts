@@ -1,6 +1,7 @@
 import { expose } from 'comlink';
+import { Params } from '../params';
 import { Evaluator } from './evaluator';
-import { Chunk, Params, PipelineWorker } from './types';
+import { Chunk, PipelineWorker } from './types';
 
 const worker: PipelineWorker = {
   initialize: (

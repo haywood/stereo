@@ -7,17 +7,9 @@ import Sphere from '../fn/sphere';
 import Spiral from '../fn/spiral';
 import Stereo from '../fn/stereo';
 import Torus from '../fn/torus';
+import { Scope } from '../params/scope';
 import { pp } from '../pp';
-import {
-  AccessNode,
-  ArithNode,
-  FnNode,
-  PipeNode,
-  Scalar,
-  StepNode,
-  Value
-} from './grammar.pegjs';
-import { Scope } from './scope';
+import { AccessNode, ArithNode, FnNode, PipeNode, Scalar, StepNode, Value } from './grammar.pegjs';
 import { Link, UnaryOperator } from './types';
 
 type Resolution = {

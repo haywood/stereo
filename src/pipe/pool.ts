@@ -1,7 +1,8 @@
 import { releaseProxy, Remote, wrap } from 'comlink';
 import { Data } from '../data';
+import { Params } from '../params';
 import { Resolver } from './resolver';
-import { Params, PipelineWorker } from './types';
+import { PipelineWorker } from './types';
 
 const data = new Map<string, SharedArrayBuffer>();
 

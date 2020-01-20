@@ -1,12 +1,12 @@
 import { Subject } from 'rxjs';
 import { Data } from '../data';
+import { Params } from '../params';
+import * as params from '../params/stream';
 import { runPipeline, startPool } from '../pipe/pool';
-import { Params } from '../pipe/types';
 import debug from './debug';
 import { error } from './error';
 import { inputs } from './inputs';
 import { TextInput } from './inputs/text';
-import * as params from './params';
 
 const subject = new Subject<Data>();
 
