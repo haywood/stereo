@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Data, Vector } from '../data';
+import { Vector } from '../data';
 import { CompositeFn } from '../fn';
 import { HSV } from '../params';
 import { Scope } from '../params/scope';
@@ -23,7 +23,6 @@ export class Evaluator {
   private readonly n: number;
   private readonly fn: CompositeFn;
   private readonly offset: number;
-  private readonly limit: number;
   private readonly size: number;
   private readonly resolver: Resolver;
 
@@ -47,7 +46,6 @@ export class Evaluator {
     this.n = n;
     this.fn = fn;
     this.offset = offset;
-    this.limit = limit;
     this.size = limit - offset;
   }
 
@@ -83,12 +81,12 @@ export class Evaluator {
   };
 
   private computePosition = () => {
-    const { fn, n, d, offset, limit, size } = this;
+    const { fn, n, d, offset, size } = this;
     const position = new Float32Array(d * size);
 
     let i = 0;
-    for (const y of fn.sample(n, offset, limit)) {
-      Data.set(position, y, i++, d);
+    for (const y of fn.sample(n, offset, offset + size)) {
+      position.set(y, d * i++);
     }
 
     return position;
@@ -100,7 +98,7 @@ export class Evaluator {
     const { extent } = this.scope;
 
     for (let i = 0; i < size; i++) {
-      const p = Data.get(position, i, d);
+      const p = position.subarray(i * d, (i + 1) * d);
       this.scope.p = p.map((pk, k) => {
         const m = extent[k];
         return m ? sign(pk) * min(1, abs(pk) / m) : 0;

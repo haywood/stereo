@@ -1,6 +1,5 @@
 import 'resemblejs';
 import { ResembleComparisonResult } from 'resemblejs';
-import { Data } from '../src/data';
 import { Fn } from '../src/fn';
 import { worker } from '../src/web/renderer/worker';
 
@@ -17,7 +16,7 @@ export async function draw(fn: Fn, n: number = 20_000) {
   canvas.width = width;
   canvas.height = height;
   worker.init(canvas, width, height);
-  worker.update(new Data(n, fn.d, position, color));
+  worker.update({ d: fn.d, position, color });
   return worker.renderPng();
 }
 

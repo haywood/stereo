@@ -17,23 +17,28 @@ export const stopPool = async (): Promise<void> => {
 };
 
 export const runPipeline = async (params: Params) => {
-  let buffer: ArrayBuffer, data: Float32Array;
   const n = params.pipe.n;
-
   const size = Math.round(n / poolSize);
+
   const promises = workers.map(async (w: Remote<Worker>, i) => {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
     const { d, position, color } = await w.iterate(params, chunk);
-    if (!buffer) {
-      buffer = Data.bufferFor(n, 1, d);
-      data = new Float32Array(buffer);
-    }
-    Data.position(data).set(position, d * offset);
-    Data.color(data).set(color, 3 * offset);
+    return { d, position, color, offset };
   });
 
-  await Promise.all(promises);
+  const results = await Promise.all(promises);
+  const [{ d }] = results;
+  const data: Data = {
+    d,
+    position: new Float32Array(d * n),
+    color: new Float32Array(3 * n)
+  };
 
-  return buffer.slice(0);
+  results.forEach(({ d, position, color, offset }) => {
+    data.position.set(position, d * offset);
+    data.color.set(color, 3 * offset);
+  });
+
+  return data;
 };

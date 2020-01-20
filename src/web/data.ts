@@ -36,8 +36,8 @@ const webWorkerSource = async (): Promise<Source> => {
       // TODO i feel like there's a more rx-y way to do this
       inFlight = getData(params);
       try {
-        const buffer = await inFlight;
-        subject.next(Data.fromBuffer(buffer));
+        const data = await inFlight;
+        subject.next(data);
       } catch (err) {
         if (['pipe', 'h', 'v'].includes(err.context)) {
           inputs[err.context].markInvalid(err, 0);

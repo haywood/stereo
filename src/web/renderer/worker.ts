@@ -69,10 +69,10 @@ class Renderer {
   renderPng() {
     this.render();
     const canvas = this.canvas;
-    if (canvas instanceof OffscreenCanvas) {
-      return canvas.convertToBlob();
-    } else {
+    if (canvas instanceof HTMLCanvasElement) {
       return new Promise(r => canvas.toBlob(r));
+    } else {
+      return canvas.convertToBlob();
     }
   }
 
