@@ -10,7 +10,9 @@ const width = Number(query.get('width'));
 const height = Number(query.get('height'));
 const fixedSize = !!width && !!height;
 
-export const initRenderer = async (canvas: OffscreenCanvas) => {
+export const initRenderer = async (
+  canvas: HTMLCanvasElement | OffscreenCanvas
+) => {
   const extent = worker.init(
     canvas,
     fixedSize ? width : window.innerWidth,

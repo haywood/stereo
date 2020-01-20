@@ -16,7 +16,7 @@ export async function draw(fn: Fn, n: number = 20_000) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  worker.init(canvas.transferControlToOffscreen(), width, height);
+  worker.init(canvas, width, height);
   worker.update(new Data(n, fn.d, position, color));
   return worker.renderPng();
 }

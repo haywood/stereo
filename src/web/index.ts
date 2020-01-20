@@ -30,7 +30,7 @@ document.body.onmousemove = () => {
 document.onreadystatechange = async () => {
   if (document.readyState !== 'complete') return;
 
-  const canvas = document.querySelector('canvas').transferControlToOffscreen();
+  const canvas = document.querySelector('canvas');
   await initRenderer(canvas);
 
   dataStream.subscribe(

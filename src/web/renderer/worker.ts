@@ -18,7 +18,7 @@ class Renderer {
   private points: Points;
 
   constructor(
-    private readonly canvas: OffscreenCanvas,
+    private readonly canvas: HTMLCanvasElement | OffscreenCanvas,
     width: number,
     height: number
   ) {
@@ -68,7 +68,12 @@ class Renderer {
 
   renderPng() {
     this.render();
-    return this.canvas.convertToBlob();
+    const canvas = this.canvas;
+    if (canvas instanceof OffscreenCanvas) {
+      return canvas.convertToBlob();
+    } else {
+      return new Promise(r => canvas.toBlob(r));
+    }
   }
 
   update = ({ d, position, color }: Data) => {
@@ -89,7 +94,11 @@ class Renderer {
 
 let renderer: Renderer;
 export const worker = {
-  init: (canvas: OffscreenCanvas, width: number, height: number) => {
+  init: (
+    canvas: HTMLCanvasElement | OffscreenCanvas,
+    width: number,
+    height: number
+  ) => {
     renderer = new Renderer(canvas, width, height);
     return renderer.extent;
   },
