@@ -7,13 +7,11 @@ import { PipelineWorker } from './types';
 const data = new Map<string, SharedArrayBuffer>();
 
 export const poolSize = navigator.hardwareConcurrency;
-const workers = new Array<Promise<Remote<PipelineWorker>>>(poolSize);
+const workers = new Array<Remote<PipelineWorker>>(poolSize);
 
 export const startPool = async () => {
   for (let i = 0; i < workers.length; i++) {
-    workers[i] = new Promise(r =>
-      r(wrap<PipelineWorker>(new Worker('/stereo/pipe/worker.js')))
-    );
+    workers[i] = wrap<PipelineWorker>(new Worker('/stereo/pipe/worker.js'));
   }
 };
 
@@ -35,8 +33,8 @@ export const runPipeline = async (params: Params) => {
 
   if (!cached) {
     const resolver = new Resolver(params.scope);
-    const { staticFn, dynamicFn } = resolver.resolve(params.pipe);
-    buffer = Data.bufferFor(n, staticFn.d, dynamicFn.d);
+    const { fn } = resolver.resolve(params.pipe);
+    buffer = Data.bufferFor(n, 1, fn.d);
     data.set(key, buffer);
   }
 
@@ -44,10 +42,7 @@ export const runPipeline = async (params: Params) => {
   const promises = workers.map(async (w, i) => {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
-    if (!cached) {
-      await (await w).initialize(params, chunk, buffer);
-    }
-    await (await w).iterate(params, chunk, buffer);
+    await w.iterate(params, chunk, buffer);
   });
   await Promise.all(promises);
 

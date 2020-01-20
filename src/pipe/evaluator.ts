@@ -21,8 +21,7 @@ export class EvaluationError extends Error {
 
 export class Evaluator {
   private readonly n: number;
-  private readonly staticFn: CompositeFn;
-  private readonly dynaicFn: CompositeFn;
+  private readonly fn: CompositeFn;
   private readonly offset: number;
   private readonly limit: number;
   private readonly resolver: Resolver;
@@ -34,7 +33,7 @@ export class Evaluator {
     chunk: Chunk
   ) {
     this.resolver = new Resolver(scope);
-    const { n, staticFn, dynamicFn } = this.resolvePipe(ast);
+    const { n, fn } = this.resolvePipe(ast);
     const offset = chunk.offset;
     const size = chunk.size;
     const limit = offset + size;
@@ -45,14 +44,13 @@ export class Evaluator {
     );
 
     this.n = n;
-    this.staticFn = staticFn;
-    this.dynaicFn = dynamicFn;
+    this.fn = fn;
     this.offset = offset;
     this.limit = limit;
   }
 
   private get d() {
-    return this.dynaicFn.d;
+    return this.fn.d;
   }
 
   private resolvePipe(node: PipeNode) {
@@ -71,32 +69,14 @@ export class Evaluator {
     }
   }
 
-  initialize = (buffer: SharedArrayBuffer): void => {
-    const data = new Float32Array(buffer);
-    const { n, staticFn: init, offset, limit } = this;
-    const input = Data.input(data);
-    let i = offset;
-    for (const y of init.sample(n, offset, limit)) {
-      Data.set(input, y, i++, init.d);
-    }
-  };
-
   iterate = (buffer: SharedArrayBuffer): void => {
     const data = new Float32Array(buffer);
-    const { staticFn: init, dynaicFn: iter, scope, n, offset, limit } = this;
-    const input = Data.input(data);
+    const { fn, n, offset, limit } = this;
     const position = Data.position(data);
 
-    assert.equal(data[Data.nOffset], n, `n(data) != n(evaluator)`);
-    assert.equal(data[Data.inputOffset], init.d, `d0(data) != d0(evaluator)`);
-    assert.equal(
-      data[Data.positionOffset(data)],
-      iter.d,
-      'd(data) != d(evaluator)'
-    );
-
-    for (let i = offset; i < limit; i++) {
-      iter.fn(Data.get(input, i, init.d), Data.get(position, i, iter.d));
+    let i = offset;
+    for (const y of fn.sample(n, offset, limit)) {
+      Data.set(position, y, i++, fn.d);
     }
 
     this.computeColors(data);

@@ -1,7 +1,6 @@
 import { CompositeFn, Fn } from '../fn';
 import Cube from '../fn/cube';
 import FuckedUpTorus from '../fn/fucked_up_torus';
-import { Identity } from '../fn/identity';
 import Rotator from '../fn/rotator';
 import Sphere from '../fn/sphere';
 import Spiral from '../fn/spiral';
@@ -9,13 +8,20 @@ import Stereo from '../fn/stereo';
 import Torus from '../fn/torus';
 import { Scope } from '../params/scope';
 import { pp } from '../pp';
-import { AccessNode, ArithNode, FnNode, PipeNode, Scalar, StepNode, Value } from './grammar.pegjs';
-import { Link, UnaryOperator } from './types';
+import {
+  AccessNode,
+  ArithNode,
+  FnNode,
+  PipeNode,
+  Scalar,
+  StepNode,
+  Value
+} from './grammar.pegjs';
+import { UnaryOperator } from './types';
 
 type Resolution = {
   n: number;
-  staticFn: CompositeFn;
-  dynamicFn: CompositeFn;
+  fn: CompositeFn;
 };
 
 function assert(cond: boolean, scope: Scope, msg: () => string) {
@@ -69,42 +75,18 @@ export class Resolver {
 
   private resolvePipe = (pipe: PipeNode): Resolution => {
     const [head, ...tail] = pipe.steps;
-    const links: Link[] = [];
-    const link = this.resolveStep(pipe.d0, head);
-
-    links.push(link);
+    const fn = new CompositeFn.Builder().add(this.resolveStep(pipe.d0, head));
 
     for (let i = 0; i < tail.length; i++) {
-      links.push(this.resolveStep(links[i].fn.d, tail[i]));
+      fn.add(this.resolveStep(fn.d, tail[i]));
     }
 
-    const [staticFn, dynamicFn] = this.buildComposites(links);
-    return { n: pipe.n, staticFn, dynamicFn };
+    return { n: pipe.n, fn: fn.build() };
   };
 
-  private buildComposites = (links: Link[]) => {
-    let builder = new CompositeFn.Builder();
-    while (links.length && !links[0].isDynamic) {
-      builder.add(links.shift().fn);
-    }
-
-    const init = builder.build();
-    builder = new CompositeFn.Builder().add(new Identity(init.d));
-
-    while (links.length) {
-      builder.add(links.shift().fn);
-    }
-
-    const iter = builder.build();
-    return [init, iter];
-  };
-
-  private resolveStep = (d0: number, { type, args }: StepNode): Link => {
+  private resolveStep = (d0: number, { type, args }: StepNode): Fn => {
     const d = ranges[type](d0);
-    const fn = funs[type](d, ...args.map(a => this.resolve(a)));
-    const isDynamic = args.some(this.isNodeDynamic);
-
-    return { fn, isDynamic };
+    return funs[type](d, ...args.map(a => this.resolve(a)));
   };
 
   private resolveFn = ({ name, args }: FnNode): number => {

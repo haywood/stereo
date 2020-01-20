@@ -19,6 +19,5 @@ export type Chunk = {
 };
 
 export type PipelineWorker = {
-  initialize(params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void;
   iterate(params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void;
 };

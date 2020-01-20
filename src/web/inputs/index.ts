@@ -15,6 +15,7 @@ const n = 2000 * poolSize;
 const minDbs = parseInt(
   document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
+const audioWorkletAvailable = !!new AudioContext().audioWorklet;
 
 const compiler = new Compiler();
 export const inputs = {
@@ -57,7 +58,7 @@ export const inputs = {
   animate: new ToggleInput('animate', '1'),
 
   mic: new ToggleInput('mic', '0', {
-    disabled: !new AudioContext().audioWorklet
+    disabled: !audioWorkletAvailable
   }),
 
   fullscreen: new ToggleInput('fullscreen', '0', {
@@ -65,7 +66,7 @@ export const inputs = {
   }),
 
   allowedDbs: new RangeInput('allowed_db_range', `${minDbs / 2}, -30`, {
-    disabled: !new AudioContext().audioWorklet
+    disabled: !audioWorkletAvailable
   }),
 
   save: new ActionInput('save', async () => {
