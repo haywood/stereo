@@ -4,14 +4,14 @@ import { Evaluator } from './evaluator';
 import { Chunk } from './types';
 
 const worker = {
-  iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer) => {
+  iterate: (params: Params, chunk: Chunk) => {
     const evaluator = new Evaluator(
       params.scope,
       params.pipe,
       params.hsv,
       chunk
     );
-    return evaluator.iterate(buffer);
+    return evaluator.iterate();
   }
 };
 

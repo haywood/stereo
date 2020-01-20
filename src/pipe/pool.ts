@@ -1,7 +1,6 @@
 import { releaseProxy, Remote, wrap } from 'comlink';
 import { Data } from '../data';
 import { Params } from '../params';
-import { Resolver } from './resolver';
 import { newWorker, Worker } from './worker';
 
 export const poolSize = navigator.hardwareConcurrency;
@@ -18,19 +17,22 @@ export const stopPool = async (): Promise<void> => {
 };
 
 export const runPipeline = async (params: Params) => {
+  let buffer: ArrayBuffer, data: Float32Array;
   const n = params.pipe.n;
-  const { fn } = new Resolver(params.scope).resolve(params.pipe);
-  const buffer = Data.bufferFor(n, 1, fn.d);
-  const data = new Float32Array(buffer);
 
   const size = Math.round(n / poolSize);
   const promises = workers.map(async (w: Remote<Worker>, i) => {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
-    const { position, color } = await w.iterate(params, chunk, buffer);
-    Data.position(data).set(position, fn.d * offset);
+    const { d, position, color } = await w.iterate(params, chunk);
+    if (!buffer) {
+      buffer = Data.bufferFor(n, 1, d);
+      data = new Float32Array(buffer);
+    }
+    Data.position(data).set(position, d * offset);
     Data.color(data).set(color, 3 * offset);
   });
+
   await Promise.all(promises);
 
   return buffer.slice(0);

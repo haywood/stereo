@@ -24,6 +24,7 @@ export class Evaluator {
   private readonly fn: CompositeFn;
   private readonly offset: number;
   private readonly limit: number;
+  private readonly size: number;
   private readonly resolver: Resolver;
 
   constructor(
@@ -47,6 +48,7 @@ export class Evaluator {
     this.fn = fn;
     this.offset = offset;
     this.limit = limit;
+    this.size = limit - offset;
   }
 
   private get d() {
@@ -69,36 +71,35 @@ export class Evaluator {
     }
   }
 
-  iterate = (buffer: SharedArrayBuffer) => {
-    const { d, offset, limit } = this;
-    const data = new Float32Array(buffer);
-    const position = this.computePosition(data);
-    const color = this.computeColor(data, position);
+  iterate = () => {
+    const position = this.computePosition();
+    const color = this.computeColor(position);
 
     return {
-      position: position.subarray(d * offset, d * limit),
-      color: color.subarray(3 * offset, 3 * limit)
+      d: this.d,
+      position,
+      color
     };
   };
 
-  private computePosition = (data: Vector) => {
-    const { fn, n, d, offset, limit } = this;
-    const position = Data.position(data);
+  private computePosition = () => {
+    const { fn, n, d, offset, limit, size } = this;
+    const position = new Float32Array(d * size);
 
-    let i = offset;
+    let i = 0;
     for (const y of fn.sample(n, offset, limit)) {
-      Data.set(position, y, i++, fn.d);
+      Data.set(position, y, i++, d);
     }
 
     return position;
   };
 
-  private computeColor = (data: Vector, position: Vector) => {
-    const { d, hsv, offset, limit } = this;
-    const color = Data.color(data);
+  private computeColor = (position: Vector) => {
+    const { d, hsv, size } = this;
+    const color = new Float32Array(3 * size);
     const { extent } = this.scope;
 
-    for (let i = offset; i < limit; i++) {
+    for (let i = 0; i < size; i++) {
       const p = Data.get(position, i, d);
       this.scope.p = p.map((pk, k) => {
         const m = extent[k];
