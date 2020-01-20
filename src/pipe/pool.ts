@@ -2,14 +2,14 @@ import { releaseProxy, Remote, wrap } from 'comlink';
 import { Data } from '../data';
 import { Params } from '../params';
 import { Resolver } from './resolver';
-import { PipelineWorker } from './types';
+import { newWorker, Worker } from './worker';
 
 export const poolSize = navigator.hardwareConcurrency;
-const workers = new Array<Remote<PipelineWorker>>(poolSize);
+const workers = new Array<Remote<Worker>>(poolSize);
 
 export const startPool = async () => {
   for (let i = 0; i < workers.length; i++) {
-    workers[i] = wrap<PipelineWorker>(new Worker('/stereo/pipe/worker.js'));
+    workers[i] = wrap<Worker>(newWorker());
   }
 };
 
@@ -23,7 +23,7 @@ export const runPipeline = async (params: Params) => {
   const buffer = Data.bufferFor(n, 1, fn.d);
 
   const size = Math.round(n / poolSize);
-  const promises = workers.map(async (w, i) => {
+  const promises = workers.map(async (w: Remote<Worker>, i) => {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
     await w.iterate(params, chunk, buffer);

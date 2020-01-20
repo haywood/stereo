@@ -1,10 +1,10 @@
 import { expose } from 'comlink';
 import { Params } from '../params';
 import { Evaluator } from './evaluator';
-import { Chunk, PipelineWorker } from './types';
+import { Chunk } from './types';
 
-const worker: PipelineWorker = {
-  iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer): void => {
+const worker = {
+  iterate: (params: Params, chunk: Chunk, buffer: SharedArrayBuffer) => {
     const evaluator = new Evaluator(
       params.scope,
       params.pipe,
@@ -14,5 +14,9 @@ const worker: PipelineWorker = {
     evaluator.iterate(buffer);
   }
 };
+
+export type Worker = typeof worker;
+
+export const newWorker = () => new Worker('/stereo/pipe/worker.js');
 
 expose(worker);
