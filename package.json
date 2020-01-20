@@ -32,7 +32,7 @@
     "karma-rollup-preprocessor": "^7.0.3",
     "karma-source-map-support": "^1.4.0",
     "local-web-server": "^3.0.7",
-    "node-sass": "^4.13.0",
+    "node-sass": "^4.13.1",
     "pegjs": "^0.10.0",
     "prettier": "^1.19.1",
     "prettier-plugin-import-sort": "0.0.3",
