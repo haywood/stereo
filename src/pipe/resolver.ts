@@ -168,12 +168,12 @@ const ops: { [op: string]: (a: number, b: number) => number } = {
   '^': (a, b) => a ** b
 };
 
-const funs: { [op: string]: (d: number, ...rest) => Fn } = {
+const funs: { [op: string]: (d: number, ...rest: any) => Fn } = {
   cube: (d, l) => new Cube(d, l),
   sphere: (d, r: number) => new Sphere(d, r),
   spiral: (d, a: number, k: number) =>
     new Spiral(d, new Array(d).fill(a), new Array(d - 1).fill(k)),
-  torus: (d, r: number, t: number) => new Torus(d, r, t),
+  torus: (d, ...r: number[]) => new Torus(d, new Float32Array(r)),
   fucked_up_torus: (d, r: number, t: number) => new FuckedUpTorus(d, r, t),
   rotate: (
     d: number,

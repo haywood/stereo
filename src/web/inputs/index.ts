@@ -23,7 +23,7 @@ export const inputs = {
     'pipe',
     `${n}
       =>3
-      =>torus(1, 1)
+      =>torus(1, 1, 1)
       =>R(theta, 0, 1, cos, tan)
       =>R(theta, 0, 2)
       =>R(theta, 0, 3)

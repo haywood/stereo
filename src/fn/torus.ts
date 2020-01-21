@@ -1,17 +1,17 @@
 import assert from 'assert';
-
+import { Fn } from '.';
 import { Vector } from '../data';
 import Cube from './cube';
 import Rotator from './rotator';
 import Sphere from './sphere';
-import { Fn } from '.';
 
 export default class Torus implements Fn {
-  private readonly cross: Sphere;
-
-  constructor(readonly d: number, readonly r: number, readonly t: number) {
-    assert(d > 2, `torus is only defined for d > 2; got ${d}`);
-    this.cross = new Sphere(d - 1, t);
+  constructor(readonly d: number, readonly r: Float32Array) {
+    assert(d > 2, `torus: expected d = ${d} > 2`);
+    assert(
+      r.length == this.domain,
+      `torus: expected r.length = ${r.length} == ${this.domain}`
+    );
   }
 
   get domain() {
@@ -26,18 +26,14 @@ export default class Torus implements Fn {
   };
 
   fn = (theta: Vector, y: Vector = new Float32Array(this.d)) => {
-    const { cross, d, r } = this;
-    assert.equal(
-      theta.length,
-      d - 1,
-      `torus expects an input of ${d - 1}; got ${theta.length}`
-    );
-    const rotator = new Rotator(d, theta[d - 2], 0, d - 1);
-
-    cross.fn(theta.subarray(0, d - 2), y.subarray(0, d - 1));
-    y[0] += r;
-    rotator.fn(y, y);
-
+    const { d, domain, r } = this;
+    const circle = new Sphere(2, r[0]);
+    circle.fn(theta.subarray(0, 1), y.subarray(0, 2));
+    for (let i = 1; i < domain; i++) {
+      y[0] += r[i];
+      const rotator = new Rotator(d, theta[i], i - 1, i + 1);
+      rotator.fn(y, y);
+    }
     return y;
   };
 }
