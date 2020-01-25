@@ -78,14 +78,16 @@ export class Resolver {
     const fn = new CompositeFn.Builder().add(this.resolveStep(pipe.d0, head));
 
     for (let i = 0; i < tail.length; i++) {
-      fn.add(this.resolveStep(fn.d, tail[i]));
+      const step = tail[i];
+      const d0 = fn.d;
+      const d = ranges[step.type](d0);
+      fn.add(this.resolveStep(d, step));
     }
 
     return { n: pipe.n, fn: fn.build() };
   };
 
-  private resolveStep = (d0: number, { type, args }: StepNode): Fn => {
-    const d = ranges[type](d0);
+  private resolveStep = (d: number, { type, args }: StepNode): Fn => {
     return funs[type](d, ...args.map(a => this.resolve(a)));
   };
 

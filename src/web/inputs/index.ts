@@ -22,7 +22,7 @@ export const inputs = {
   pipe: new TextInput<PipeNode>(
     'pipe',
     `${n}
-      =>3
+      =>4
       =>torus(1, 1, 1)
       =>R(theta, 0, 1, cos, tan)
       =>R(theta, 0, 2)
