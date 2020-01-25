@@ -1,7 +1,9 @@
 import assert from 'assert';
-import { Fn } from '.';
+
 import { Vector } from '../data';
 import Cube from './cube';
+import { Polar } from './polar';
+import { Fn } from '.';
 
 export default class Sphere implements Fn {
   private readonly root: Float32Array;
@@ -24,14 +26,6 @@ export default class Sphere implements Fn {
     assert.equal(phi.length, d - 1);
     assert.equal(y.length, d);
 
-    y[0] = r;
-    for (let i = 1; i < y.length; i++) {
-      const sin = Math.sin(phi[i - 1]);
-      const cos = Math.cos(phi[i - 1]);
-      y[i] = y[0] * sin;
-      y[0] *= cos;
-    }
-
-    return y;
+    return Polar.from(r, phi, y);
   };
 }

@@ -173,8 +173,7 @@ const ops: { [op: string]: (a: number, b: number) => number } = {
 const funs: { [op: string]: (d: number, ...rest: any) => Fn } = {
   cube: (d, l) => new Cube(d, l),
   sphere: (d, r: number) => new Sphere(d, r),
-  spiral: (d, a: number, k: number) =>
-    new Spiral(d, new Array(d).fill(a), new Array(d - 1).fill(k)),
+  spiral: (d, theta, ...a: number[]) => new Spiral(d, theta, a),
   torus: (d, ...r: number[]) => new Torus(d, new Float32Array(r)),
   fucked_up_torus: (d, r: number, t: number) => new FuckedUpTorus(d, r, t),
   rotate: (

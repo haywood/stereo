@@ -1,15 +1,30 @@
 import assert from 'assert';
 
 import { Vector } from '../data';
-import Cube from './cube';
-import Sphere from './sphere';
+import Interval from './interval';
+import { Polar } from './polar';
 import { Fn } from '.';
 
 export default class Spiral implements Fn {
-  private readonly sphere: Sphere;
-
-  constructor(readonly d: number, readonly a: number[], readonly k: number[]) {
-    this.sphere = new Sphere(d, 1);
+  constructor(
+    /**
+     * The dimension of the spiral.
+     */
+    readonly d: number,
+    /**
+     * The extent of curl of the spiral, i.e. the max angle.
+     */
+    readonly theta: number,
+    /**
+     * The factor by which the radius increases in each dimension.
+     */
+    readonly a: number[]
+  ) {
+    assert.equal(
+      a.length,
+      d,
+      `spiral: Expected a to be of dimension ${d}, but was ${a.length}`
+    );
   }
 
   get domain() {
@@ -17,26 +32,30 @@ export default class Spiral implements Fn {
   }
 
   sample = function*(n: number, offset: number, limit: number) {
-    const cube = new Cube(this.domain, 4 * Math.PI);
-    for (const phi of cube.sample(n, offset, limit)) {
-      yield this.fn(phi);
+    const interval = new Interval(
+      this.domain,
+      new Array(this.domain).fill(0),
+      new Array(this.domain).fill(1)
+    );
+
+    for (const x of interval.sample(n, offset, limit)) {
+      yield this.fn(x);
     }
   };
 
-  fn = (phi: Float32Array, y: Vector = new Float32Array(this.d)) => {
-    const { a, k, domain, d } = this;
-    assert.equal(phi.length, d - 1);
+  fn = (x: Float32Array, y: Vector = new Float32Array(this.d)) => {
+    const { domain, d, theta, a } = this;
+    assert.equal(x.length, domain);
     assert.equal(y.length, d);
 
-    this.sphere.fn(phi, y);
-    let x = 0;
-    for (let i = 0; i < domain; i++) {
-      x += k[i] * phi[i];
+    const phi = x.map(xi => xi * theta);
+    Polar.from(1, phi, y);
+
+    y[0] *= a[0] * phi[0];
+    for (let i = 1; i < d; i++) {
+      y[i] *= a[i] * phi[i - 1];
     }
-    const r = Math.exp(x);
-    for (let i = 0; i < d; i++) {
-      y[i] = y[i] * a[i] * r;
-    }
+
     return y;
   };
 }

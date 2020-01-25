@@ -1,4 +1,5 @@
 import assert from 'assert';
+
 import {
   BufferAttribute,
   BufferGeometry,
@@ -9,6 +10,7 @@ import {
   VertexColors,
   WebGLRenderer
 } from 'three';
+
 import { Data } from '../../data';
 
 class Renderer {
@@ -40,7 +42,8 @@ class Renderer {
 
   private get z() {
     const s = this.points.geometry.boundingSphere;
-    return s ? Math.min(5, s.center.z + s.radius + 1) : 5;
+    if (!s || isNaN(s.radius)) return 5;
+    return Math.min(5, s.center.z + s.radius + 1);
   }
 
   setSize = (width: number, height: number) => {

@@ -49,7 +49,7 @@ sphere 'sphere' = type:$'sphere'i args:fn_args {
 }
 
 spiral 'spiral' = type:$'spiral'i args:fn_args {
-  return step(type, args, 2);
+  return step(type, args, 1, Infinity);
 }
 
 torus 'torus' = type:$'torus'i args:fn_args {
