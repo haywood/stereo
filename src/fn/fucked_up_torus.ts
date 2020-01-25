@@ -1,9 +1,8 @@
 import assert from 'assert';
-
-import { Vector } from '../data';
+import { Fn } from '.';
+import { Vector } from '../types';
 import Cube from './cube';
 import Sphere from './sphere';
-import { Fn } from '.';
 
 // This shape does not implement a torus. It used to,
 // but then I changed the way Rotator works, which

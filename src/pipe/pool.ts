@@ -1,14 +1,15 @@
-import { releaseProxy, Remote, wrap } from 'comlink';
-import { Data } from '../data';
+import { Remote, releaseProxy, wrap } from 'comlink';
+
 import { Params } from '../params';
-import { newWorker, Worker } from './worker';
+import { Data } from '../types';
+import { PipeWorker } from './worker';
 
 export const poolSize = navigator.hardwareConcurrency;
-const workers = new Array<Remote<Worker>>(poolSize);
+const workers = new Array<Remote<PipeWorker>>(poolSize);
 
 export const startPool = async () => {
   for (let i = 0; i < workers.length; i++) {
-    workers[i] = wrap<Worker>(newWorker());
+    workers[i] = wrap<PipeWorker>(new Worker('./worker.ts'));
   }
 };
 
@@ -20,7 +21,7 @@ export const runPipeline = async (params: Params) => {
   const n = params.pipe.n;
   const size = Math.round(n / poolSize);
 
-  const promises = workers.map(async (w: Remote<Worker>, i) => {
+  const promises = workers.map(async (w: Remote<PipeWorker>, i) => {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
     const { d, position, color } = await w.iterate(params, chunk);

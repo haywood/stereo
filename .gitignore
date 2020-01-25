@@ -7,3 +7,4 @@ report.*.json
 grammar.js
 dist/
 stereo/
+.cache/

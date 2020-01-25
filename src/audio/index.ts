@@ -1,5 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import { inputs } from '../web/inputs';
+
+import { inputs } from '../inputs';
 import { AUDIO_PLACEHOLDER } from './constants';
 import { AudioGraph } from './graph';
 import { Audio } from './types';

@@ -1,7 +1,7 @@
 import 'multirange/multirange.css';
 import { dataStream } from './data';
 import debug from './debug';
-import './global.scss';
+import './index.scss';
 import { Overlay } from './overlay';
 import { initRenderer, updateRenderer } from './renderer';
 

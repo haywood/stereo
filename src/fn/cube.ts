@@ -1,6 +1,6 @@
-import { Vector } from '../data';
-import Interval from './interval';
 import { Fn } from '.';
+import { Vector } from '../types';
+import Interval from './interval';
 
 export default class Cube implements Fn {
   private readonly interval: Interval;

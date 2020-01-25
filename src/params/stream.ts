@@ -1,16 +1,17 @@
-import { combineLatest, interval, Subject } from 'rxjs';
-import { Params } from '.';
+import { Subject, combineLatest, interval } from 'rxjs';
+
 import { audioStream } from '../audio';
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import { Audio } from '../audio/types';
 import { inf } from '../constants';
+import { error } from '../error';
+import { inputs } from '../inputs';
 import { Simplifier } from '../pipe/simplifier';
-import { fps } from '../web/constants';
-import { error } from '../web/error';
-import { inputs } from '../web/inputs';
-import { extentStream } from '../web/renderer';
+import { extentStream } from '../renderer';
 import { Scope } from './scope';
+import { Params } from '.';
 
+const fps = 60;
 const subject = new Subject<Params>();
 export const paramsStream = subject.asObservable();
 

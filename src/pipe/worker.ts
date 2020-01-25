@@ -1,4 +1,5 @@
 import { expose } from 'comlink';
+
 import { Params } from '../params';
 import { Evaluator } from './evaluator';
 import { Chunk } from './types';
@@ -15,8 +16,6 @@ const worker = {
   }
 };
 
-export type Worker = typeof worker;
-
-export const newWorker = () => new Worker('/stereo/pipe/worker.js');
+export type PipeWorker = typeof worker;
 
 expose(worker);

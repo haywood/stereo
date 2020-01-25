@@ -1,8 +1,7 @@
 import assert from 'assert';
-
-import { Vector } from '../data';
-import Cube from './cube';
 import { Fn } from '.';
+import { Vector } from '../types';
+import Cube from './cube';
 
 export default class Rotator implements Fn {
   readonly r0: number;

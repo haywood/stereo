@@ -1,6 +1,7 @@
 import { Subject } from 'rxjs';
-import { error } from '../web/error';
-import { inputs } from '../web/inputs';
+
+import { error } from '../error';
+import { inputs } from '../inputs';
 import { AUDIO_PLACEHOLDER, binCount } from './constants';
 import { Spectrum } from './spectrum';
 import { Audio } from './types';
@@ -8,7 +9,7 @@ import { Audio } from './types';
 export class AudioGraph {
   static create = async (mediaStream: MediaStream, subject: Subject<Audio>) => {
     const ctx = new AudioContext();
-    await ctx.audioWorklet.addModule('/stereo/audio/worklet.js');
+    await ctx.audioWorklet.addModule('audio/worklet.js');
     const source = new MediaStreamAudioSourceNode(ctx, { mediaStream });
     return new AudioGraph(ctx, source, subject);
   };

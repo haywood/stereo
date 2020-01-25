@@ -1,4 +1,4 @@
-import { pp } from '../pp';
+import { pp } from './pp';
 
 export const error = (err: any): void => {
   if (err instanceof Error) {

@@ -1,8 +1,8 @@
-import { print } from '../../pipe/ast';
-import { Compiler } from '../../pipe/compiler';
-import { PipeNode } from '../../pipe/grammar.pegjs';
-import { poolSize } from '../../pipe/pool';
 import debug from '../debug';
+import { print } from '../pipe/ast';
+import { Compiler } from '../pipe/compiler';
+import { PipeNode } from '../pipe/grammar.pegjs';
+import { poolSize } from '../pipe/pool';
 import { renderPng } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';

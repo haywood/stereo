@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { Vector } from '../data';
+import { Vector } from '../types';
 import Cube from './cube';
 import { Polar } from './polar';
 import { Fn } from '.';

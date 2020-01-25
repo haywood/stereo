@@ -1,8 +1,8 @@
 import assert from 'assert';
-import { Vector } from '../data';
 import { CompositeFn } from '../fn';
 import { HSV } from '../params';
 import { Scope } from '../params/scope';
+import { Vector } from '../types';
 import { PipeNode, Scalar } from './grammar.pegjs';
 import { Resolver } from './resolver';
 import { Chunk } from './types';

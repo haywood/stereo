@@ -1,4 +1,7 @@
 declare module '*.pegjs' {
+  declare const grammar: string;
+  export default grammar;
+
   export function parse(spec: string): PipeNode;
   export function parse(spec: string, options: { startRule: 'scalar' }): Scalar;
 

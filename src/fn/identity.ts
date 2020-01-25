@@ -1,7 +1,6 @@
 import assert from 'assert';
-
-import { Vector } from '../data';
 import { Fn } from '.';
+import { Vector } from '../types';
 
 export class Identity implements Fn {
   readonly domain: number;
