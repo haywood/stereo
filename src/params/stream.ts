@@ -27,7 +27,6 @@ export const paramsStream = subject.asObservable();
       const scope: Scope = {
         t: count++ / fps,
         inf,
-        n: pipe.n,
         extent,
         audio
       };

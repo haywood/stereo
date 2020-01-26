@@ -75,6 +75,9 @@ export class Resolver {
 
   private resolvePipe = (pipe: PipeNode): Resolution => {
     const [head, ...tail] = pipe.steps;
+    const n = this.resolve(pipe.n, 'number');
+    this.expect(n > 0, 'n', 'be positive', `was ${n}`);
+
     const fn = new CompositeFn.Builder().add(this.resolveStep(pipe.d0, head));
 
     for (let i = 0; i < tail.length; i++) {
@@ -84,7 +87,7 @@ export class Resolver {
       fn.add(this.resolveStep(d, step));
     }
 
-    return { n: pipe.n, fn: fn.build() };
+    return { n, fn: fn.build() };
   };
 
   private resolveStep = (d: number, { type, args }: StepNode): Fn => {

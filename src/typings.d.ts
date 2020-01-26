@@ -7,7 +7,7 @@ declare module '*.pegjs' {
 
   export type PipeNode = {
     kind: 'pipe';
-    n: number;
+    n: Scalar;
     d0: number;
     steps: StepNode[];
   };

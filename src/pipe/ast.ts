@@ -36,7 +36,7 @@ export function print(node: any) {
 }
 
 function printPipe(node: PipeNode): string {
-  return [node.n, node.d0, ...node.steps.map(print)].join('\n  =>');
+  return [print(node.n), node.d0, ...node.steps.map(print)].join('\n  =>');
 }
 
 function printStep(node: StepNode): string {

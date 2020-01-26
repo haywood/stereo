@@ -2,6 +2,7 @@ import { Remote, releaseProxy, wrap } from 'comlink';
 
 import { Params } from '../params';
 import { Data } from '../types';
+import { Resolver } from './resolver';
 import { PipeWorker } from './worker';
 
 export const poolSize = navigator.hardwareConcurrency;
@@ -18,7 +19,8 @@ export const stopPool = async (): Promise<void> => {
 };
 
 export const runPipeline = async (params: Params) => {
-  const n = params.pipe.n;
+  const resolver = new Resolver(params.scope);
+  const n = resolver.resolve(params.pipe.n, 'number');
   const size = Math.round(n / poolSize);
 
   const promises = workers.map(async (w: Remote<PipeWorker>, i) => {

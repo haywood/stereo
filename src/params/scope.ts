@@ -5,8 +5,5 @@ export type Scope = {
   inf: number;
   extent: [number, number, number];
   audio: Audio;
-  n?: number;
   p?: Float32Array;
-  i?: number;
-  max?: number;
 };
