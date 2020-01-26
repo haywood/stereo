@@ -21,14 +21,20 @@ export const stopPool = async (): Promise<void> => {
 export const runPipeline = async (params: Params) => {
   const resolver = new Resolver(params.scope);
   const n = resolver.resolve(params.pipe.n, 'number');
-  const size = Math.round(n / poolSize);
+  const chunkCount = n < 2000 ? 1 : poolSize;
+  const size = Math.round(n / chunkCount);
 
-  const promises = workers.map(async (w: Remote<PipeWorker>, i) => {
+  const promises = [];
+  for (let i = 0; i < chunkCount; i++) {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
-    const { d, position, color } = await w.iterate(params, chunk);
-    return { d, position, color, offset };
-  });
+    const promise = workers[i]
+      .iterate(params, chunk)
+      .then(({ d, position, color }) => {
+        return { d, position, color, offset };
+      });
+    promises.push(promise);
+  }
 
   const results = await Promise.all(promises);
   const [{ d }] = results;

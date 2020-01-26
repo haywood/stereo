@@ -13,7 +13,8 @@
     "three": "^0.111.0"
   },
   "browserslist": [
-    "last 2 Chrome versions"
+    "last 2 Chrome versions",
+    "last 2 Firefox versions"
   ],
   "devDependencies": {
     "@ampproject/rollup-plugin-closure-compiler": "^0.20.0",

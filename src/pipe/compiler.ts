@@ -1,4 +1,3 @@
-import Interval from '../fn/interval';
 import { PipeNode, Scalar } from './grammar.pegjs';
 import { Parser } from './parser';
 
@@ -17,14 +16,7 @@ export class Compiler {
   }
 
   private compilePipe = (expr: string): PipeNode => {
-    const ast = Parser.parsePipe(expr);
-    // Due to the way that sampling is implemented, the actual
-    // number of points generated will not be exactly the n specified
-    // by the user, unless n happens to be the dth power of some number.
-    // The below expression computes the exact number of points that will
-    // be generated.
-    ast.n = Interval.nPerLevel(ast.d0, ast.n) ** ast.d0;
-    return ast;
+    return Parser.parsePipe(expr);
   };
 
   private compileScalar = (expr: string): Scalar => {

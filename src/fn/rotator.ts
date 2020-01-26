@@ -1,7 +1,8 @@
 import assert from 'assert';
-import { Fn } from '.';
+
 import { Vector } from '../types';
-import Cube from './cube';
+import Lattice from './lattice';
+import { Fn } from '.';
 
 export default class Rotator implements Fn {
   readonly r0: number;
@@ -24,8 +25,8 @@ export default class Rotator implements Fn {
   }
 
   sample = function*(n: number, offset: number, limit: number) {
-    const cube = new Cube(this.domain, 2);
-    for (const p of cube.sample(n, offset, limit)) {
+    const lattice = new Lattice(this.domain, 2);
+    for (const p of lattice.sample(n, offset, limit)) {
       yield this.fn(p);
     }
   };

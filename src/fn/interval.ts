@@ -1,6 +1,7 @@
 import assert from 'assert';
-import { Fn } from '.';
+
 import { Vector } from '../types';
+import { Fn } from '.';
 
 export default class Interval implements Fn {
   readonly domain: number;
@@ -20,34 +21,30 @@ export default class Interval implements Fn {
    * @returns A mapping of the vector into this interval.
    */
   fn = (x: Float32Array, y: Vector = new Float32Array(this.d)) => {
-    const { a, b, d } = this;
-    assert.equal(x.length, d);
+    const { domain, d, a, b } = this;
+
+    assert.equal(x.length, domain);
     assert.equal(y.length, d);
+
     for (let i = 0; i < d; i++) {
       y[i] = a[i] + x[i] * (b[i] - a[i]);
     }
+
     return y;
   };
 
   sample = function*(n: number, offset: number, limit: number) {
     const { d, fn } = this;
-    n = Interval.nPerLevel(d, n);
-    const points: number[][] = [[]];
-    let i = 0;
-
-    while (points.length && i < limit) {
-      const p = points.pop()!;
-      if (p.length < d) {
-        points.push(...successors(p));
-      } else if (i++ >= offset) {
-        yield fn(p);
+    // b needs to be an integer or the shape is distorted
+    const b = Math.round(n ** (1 / d));
+    const x = new Float32Array(d);
+    for (let i = offset; i < limit; i++) {
+      for (let k = 0; k < d; k++) {
+        const exp = d - k - 1;
+        const n = Math.round(i / b ** exp);
+        x[k] = (n % b) / (b - 1);
       }
-    }
-
-    function* successors(p: number[]): Generator<number[]> {
-      for (let i = 0; i < n; i++) {
-        yield [...p, i / n];
-      }
+      yield fn(x);
     }
   };
 }

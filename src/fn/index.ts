@@ -1,4 +1,5 @@
 import assert from 'assert';
+
 import { inf } from '../constants';
 import { Vector } from '../types';
 

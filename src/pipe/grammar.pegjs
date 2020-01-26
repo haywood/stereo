@@ -33,6 +33,7 @@ steps =
 
 step =
   cube
+  / lattice
   / sphere
   / spiral
   / torus
@@ -41,6 +42,10 @@ step =
   / stereo
 
 cube 'cube' = type:$'cube'i args:fn_args {
+  return step(type, args, 1);
+}
+
+lattice 'lattice' = type:$'lattice'i args:fn_args {
   return step(type, args, 1);
 }
 

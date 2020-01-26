@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { Vector } from '../types';
-import Cube from './cube';
+import Lattice from './lattice';
 import { Polar } from './polar';
 import { Fn } from '.';
 
@@ -15,8 +15,8 @@ export default class Sphere implements Fn {
   }
 
   sample = function*(n: number, offset: number, limit: number) {
-    const cube = new Cube(this.domain, 2 * Math.PI);
-    for (const phi of cube.sample(n, offset, limit)) {
+    const lattice = new Lattice(this.domain, 2 * Math.PI);
+    for (const phi of lattice.sample(n, offset, limit)) {
       yield this.fn(phi);
     }
   };

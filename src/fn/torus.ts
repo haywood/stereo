@@ -1,9 +1,10 @@
 import assert from 'assert';
-import { Fn } from '.';
+
 import { Vector } from '../types';
-import Cube from './cube';
+import Lattice from './lattice';
 import Rotator from './rotator';
 import Sphere from './sphere';
+import { Fn } from '.';
 
 export default class Torus implements Fn {
   constructor(readonly d: number, readonly r: Float32Array) {
@@ -19,8 +20,8 @@ export default class Torus implements Fn {
   }
 
   sample = function*(n: number, offset: number, limit: number) {
-    const cube = new Cube(this.domain, 2 * Math.PI);
-    for (const phi of cube.sample(n, offset, limit)) {
+    const lattice = new Lattice(this.domain, 2 * Math.PI);
+    for (const phi of lattice.sample(n, offset, limit)) {
       yield this.fn(phi);
     }
   };

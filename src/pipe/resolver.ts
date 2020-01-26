@@ -1,6 +1,7 @@
 import { CompositeFn, Fn } from '../fn';
 import Cube from '../fn/cube';
 import FuckedUpTorus from '../fn/fucked_up_torus';
+import Lattice from '../fn/lattice';
 import Rotator from '../fn/rotator';
 import Sphere from '../fn/sphere';
 import Spiral from '../fn/spiral';
@@ -175,6 +176,7 @@ const ops: { [op: string]: (a: number, b: number) => number } = {
 
 const funs: { [op: string]: (d: number, ...rest: any) => Fn } = {
   cube: (d, l) => new Cube(d, l),
+  lattice: (d, l) => new Lattice(d, l),
   sphere: (d, r: number) => new Sphere(d, r),
   spiral: (d, theta, ...a: number[]) => new Spiral(d, theta, a),
   torus: (d, ...r: number[]) => new Torus(d, new Float32Array(r)),
@@ -210,6 +212,7 @@ type Ranges = {
 
 const ranges: Ranges = {
   cube: domain => domain,
+  lattice: domain => domain,
   sphere: domain => domain + 1,
   spiral: domain => domain + 1,
   torus: domain => domain + 1,

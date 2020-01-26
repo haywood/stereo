@@ -1,8 +1,9 @@
 import assert from 'assert';
-import { Fn } from '.';
+
 import { Vector } from '../types';
-import Cube from './cube';
+import Lattice from './lattice';
 import Sphere from './sphere';
+import { Fn } from '.';
 
 // This shape does not implement a torus. It used to,
 // but then I changed the way Rotator works, which
@@ -23,8 +24,8 @@ export default class FuckedUpTorus implements Fn {
   }
 
   sample = function*(n: number, offset: number, limit: number) {
-    const cube = new Cube(this.domain, 2 * Math.PI);
-    for (const phi of cube.sample(n, offset, limit)) {
+    const lattice = new Lattice(this.domain, 2 * Math.PI);
+    for (const phi of lattice.sample(n, offset, limit)) {
       yield this.fn(phi);
     }
   };
