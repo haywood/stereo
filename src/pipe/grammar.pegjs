@@ -93,6 +93,8 @@ multiplicative =
   a:exponential _ op:('*' / '/') _ b:multiplicative {
     return arith(op, a, b);
   }
+  / a:number b:id { return arith('*', a, b); }
+  / a:number lparen b:scalar rparen { return arith('*', a, b); }
   / exponential
 
 exponential =
@@ -103,7 +105,7 @@ exponential =
 
 term 'term' =
   op:'-' a:term { return arith(op, a); }
-  / value:number { return {kind: 'number', value}; }
+  / number
   / name:identifier args:fn_args {
     return {kind: 'fn', name: name.toLowerCase(), args};
   }
@@ -123,8 +125,8 @@ fn_args_list =
 /** TERMINALS */
 
 number 'number' =
-  _ f:float _ { return parseFloat(f); }
-  / _ i:int _ { return parseInt(i); }
+  _ f:float _ { return {kind: 'number', value: parseFloat(f)}; }
+  / _ i:int _ { return {kind: 'number', value: parseInt(i)}; }
 
 identifier 'identifier' = _ id:$([a-zA-Z] [a-zA-Z0-9]*) _ { return id; }
 
