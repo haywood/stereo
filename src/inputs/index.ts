@@ -22,11 +22,11 @@ export const inputs = {
   pipe: new TextInput<PipeNode>(
     'pipe',
     `${n}
-      =>4
-      =>torus(1, 1, 1)
+      =>3
+      =>spiral(10pi, 1, 1/2, 1/4)
       =>R(theta, 0, 1, cos, tan)
-      =>R(theta, 0, 2)
-      =>R(theta, 0, 3)
+      =>R(theta, 0, 2, cos, tan)
+      =>R(theta, 1, 2, cos, tan)
       =>stereo(3)`,
     {
       persistent: true,
