@@ -12546,7 +12546,7 @@ var __awaiter = void 0 && (void 0).__awaiter || function (thisArg, _arguments, P
   });
 };
 
-const poolSize = navigator.hardwareConcurrency;
+const poolSize = navigator.hardwareConcurrency || 2;
 exports.poolSize = poolSize;
 const workers = new Array(poolSize);
 
@@ -48083,7 +48083,7 @@ var __awaiter = void 0 && (void 0).__awaiter || function (thisArg, _arguments, P
 // that each chunk is size 2000
 const n = 2000 * _pool.poolSize;
 const minDbs = parseInt(document.querySelector('#allowed_db_range_input input').min);
-const audioWorkletAvailable = !!new AudioContext().audioWorklet;
+const audioWorkletAvailable = window.AudioContext && !!new AudioContext().audioWorklet;
 const compiler = new _compiler.Compiler();
 const inputs = {
   pipe: new _text.TextInput('pipe', `${n}
@@ -48937,7 +48937,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53785" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54724" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
