@@ -15,9 +15,10 @@ const n = 2000 * poolSize;
 const minDbs = parseInt(
   document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
-const audioWorkletAvailable = !!new AudioContext().audioWorklet;
-
+const audioWorkletAvailable =
+  window.AudioContext && !!new AudioContext().audioWorklet;
 const compiler = new Compiler();
+
 export const inputs = {
   pipe: new TextInput<PipeNode>(
     'pipe',

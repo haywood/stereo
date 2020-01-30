@@ -5,7 +5,7 @@ import { Data } from '../types';
 import { Resolver } from './resolver';
 import { PipeWorker } from './worker';
 
-export const poolSize = navigator.hardwareConcurrency;
+export const poolSize = navigator.hardwareConcurrency || 2;
 const workers = new Array<Remote<PipeWorker>>(poolSize);
 
 export const startPool = async () => {
