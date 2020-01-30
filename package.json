@@ -62,7 +62,7 @@
     "dev": "nodemon --watch scripts scripts/dev.js",
     "predist": "git clean -fd dist",
     "dist": "NODE_ENV=production node scripts/dist.js",
-    "publish": "npm run dist && gh-pages -d stereo"
+    "publish": "npm run dist && gh-pages --dist dist --dest stereo"
   },
   "prettier": {
     "singleQuote": true
