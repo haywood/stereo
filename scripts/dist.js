@@ -1,4 +1,6 @@
 const { newBundler, root } = require('./bundler');
 const path = require('path');
 
-newBundler().bundle();
+const outDir = path.resolve(root, 'stereo');
+
+newBundler({ outDir }).bundle();

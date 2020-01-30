@@ -60,9 +60,9 @@
   "license": "ISC",
   "scripts": {
     "dev": "nodemon --watch scripts scripts/dev.js",
-    "predist": "git clean -fd dist",
+    "predist": "git clean -fd stereo",
     "dist": "NODE_ENV=production node scripts/dist.js",
-    "publish": "npm run dist && gh-pages --dist dist --dest stereo"
+    "publish": "npm run dist && gh-pages -d stereo"
   },
   "prettier": {
     "singleQuote": true
