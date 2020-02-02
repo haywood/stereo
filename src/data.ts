@@ -1,11 +1,12 @@
 import { Subject } from 'rxjs';
+
 import debug from './debug';
 import { error } from './error';
 import { inputs } from './inputs';
 import { TextInput } from './inputs/text';
 import { Params } from './params';
 import * as params from './params/stream';
-import { runPipeline, startPool } from './pipe/pool';
+import { runPipeline } from './pipe/pool';
 import { Data } from './types';
 
 const subject = new Subject<Data>();
@@ -17,8 +18,6 @@ type Source = {
 };
 
 const webWorkerSource = async (): Promise<Source> => {
-  await startPool();
-
   return { getData: (params: Params) => runPipeline(params) };
 };
 

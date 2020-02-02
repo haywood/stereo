@@ -1,28 +1,29 @@
-import { Remote, releaseProxy, wrap } from 'comlink';
-
+import { releaseProxy, Remote, wrap } from 'comlink';
 import { Params } from '../params';
 import { Data } from '../types';
 import { Resolver } from './resolver';
 import { PipeWorker } from './worker';
 
-export const poolSize = navigator.hardwareConcurrency || 2;
-const workers = new Array<Remote<PipeWorker>>(poolSize);
+export const maxPoolSize = navigator.hardwareConcurrency || 2;
+const workers: Remote<PipeWorker>[] = [];
 
-export const startPool = async () => {
-  for (let i = 0; i < workers.length; i++) {
-    workers[i] = wrap<PipeWorker>(new Worker('./worker.ts'));
+function adjustPoolSize(targetSize: number) {
+  while (workers.length < targetSize) {
+    workers.push(wrap<PipeWorker>(new Worker('./worker.ts')));
   }
-};
 
-export const stopPool = async (): Promise<void> => {
-  workers.forEach(w => w[releaseProxy]());
-};
+  while (workers.length > targetSize) {
+    workers.pop()[releaseProxy]();
+  }
+}
 
 export const runPipeline = async (params: Params) => {
   const resolver = new Resolver(params.scope);
   const n = resolver.resolve(params.pipe.n, 'number');
-  const chunkCount = n < 2000 ? 1 : poolSize;
+  const chunkCount = Math.min(maxPoolSize, Math.max(1, Math.floor(n / 16_000)));
   const size = Math.round(n / chunkCount);
+
+  adjustPoolSize(chunkCount);
 
   const promises = [];
   for (let i = 0; i < chunkCount; i++) {

@@ -2,7 +2,6 @@ import debug from '../debug';
 import { print } from '../pipe/ast';
 import { Compiler } from '../pipe/compiler';
 import { PipeNode } from '../pipe/grammar.pegjs';
-import { poolSize } from '../pipe/pool';
 import { renderPng } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';
@@ -11,7 +10,7 @@ import { ToggleInput } from './toggle';
 
 // Points generation is done in parallel, so pick n such
 // that each chunk is size 2000
-const n = 2000 * poolSize;
+const n = 2_000 * navigator.hardwareConcurrency || 10_000;
 const minDbs = parseInt(
   document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
