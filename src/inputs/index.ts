@@ -1,3 +1,4 @@
+import screenfull from 'screenfull';
 import debug from '../debug';
 import { print } from '../pipe/ast';
 import { Compiler } from '../pipe/compiler';
@@ -65,7 +66,7 @@ export const inputs = {
   }),
 
   fullscreen: new ToggleInput('fullscreen', '0', {
-    disabled: !document.fullscreenEnabled
+    disabled: !screenfull.isEnabled
   }),
 
   allowedDbs: new RangeInput('allowed_db_range', `${minDbs / 2}, -30`, {

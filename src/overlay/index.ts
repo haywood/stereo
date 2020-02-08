@@ -1,6 +1,10 @@
-import assert from 'assert';
-import { inputs } from '../inputs';
 import './overlay.scss';
+
+import assert from 'assert';
+
+import screenfull from 'screenfull';
+
+import { inputs } from '../inputs';
 
 export class Overlay {
   readonly domElement = document.getElementById('overlay');
@@ -59,10 +63,10 @@ export class Overlay {
       input.setup(el);
     }
 
-    if (!inputs.fullscreen.disabled) {
+    if (screenfull.isEnabled) {
       inputs.fullscreen.stream.subscribe(({ newValue }) => {
-        if (newValue) document.body.requestFullscreen();
-        else if (document.fullscreenElement) document.exitFullscreen();
+        if (newValue) screenfull.request();
+        else if (screenfull.element) screenfull.exit();
       });
     }
   };
