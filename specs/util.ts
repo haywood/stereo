@@ -1,7 +1,6 @@
-import 'resemblejs';
-import { ResembleComparisonResult } from 'resemblejs';
+import resemble, { ResembleComparisonResult } from 'resemblejs';
 import { Fn } from '../src/fn';
-import { worker } from '../src/web/renderer/worker';
+import { worker } from '../src/renderer/worker';
 
 export async function draw(fn: Fn, n: number = 20_000) {
   const position = new Float32Array(n * fn.d);

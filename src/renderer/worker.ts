@@ -69,7 +69,7 @@ class Renderer {
     this.renderer.render(this.scene, this.camera);
   };
 
-  renderPng() {
+  renderPng(): Promise<Blob> {
     this.render();
     const canvas = this.canvas;
     if (canvas instanceof HTMLCanvasElement) {

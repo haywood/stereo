@@ -1,12 +1,4 @@
 // Karma configuration
-const commonjs = require('@rollup/plugin-commonjs');
-const resolve = require('@rollup/plugin-node-resolve');
-const typescript = require('@rollup/plugin-typescript');
-const path = require('path');
-const builtins = require('rollup-plugin-node-builtins');
-const globals = require('rollup-plugin-node-globals');
-const notify = require('rollup-plugin-notify');
-const progress = require('rollup-plugin-progress');
 
 module.exports = function(config) {
   config.set({
@@ -15,14 +7,18 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'source-map-support'],
+    frameworks: ['jasmine', 'parcel'],
 
     // list of files / patterns to load in the browser
     files: [
-      'specs/**/*.spec.ts',
+      {
+        pattern: 'specs/**/*.spec.ts',
+        watched: false,
+        included: false
+      },
       {
         pattern: 'specs/**/*.png',
-        watched: true,
+        watched: false,
         included: false,
         served: true
       }
@@ -34,7 +30,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'specs/**/*.spec.ts': ['rollup']
+      'specs/**/*.spec.ts': ['parcel']
     },
 
     // test results reporter to use
@@ -65,24 +61,6 @@ module.exports = function(config) {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
-
-    rollupPreprocessor: {
-      context: 'window',
-      output: {
-        format: 'iife',
-        sourcemap: 'inline',
-        dir: path.resolve(__dirname, '.specs')
-      },
-      plugins: [
-        globals(),
-        builtins(),
-        resolve(),
-        commonjs(),
-        typescript(),
-        progress(),
-        notify()
-      ]
-    }
+    concurrency: Infinity
   });
 };
