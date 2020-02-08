@@ -31,6 +31,7 @@ export const runPipeline = async (params: Params) => {
   adjustPoolSize(chunkCount);
 
   const promises = [];
+  const chunks = [];
   for (let i = 0; i < chunkCount; i++) {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
@@ -40,9 +41,12 @@ export const runPipeline = async (params: Params) => {
         return { d, position, color, offset };
       });
     promises.push(promise);
+    chunks.push(chunk);
   }
+  debug('chunks', chunks);
 
   const results = await Promise.all(promises);
+  debug('results', results);
   const [{ d }] = results;
   const data: Data = {
     d,
