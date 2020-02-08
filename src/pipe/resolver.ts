@@ -178,7 +178,7 @@ const funs: { [op: string]: (d: number, ...rest: any) => Fn } = {
   cube: (d, l) => new Cube(d, l),
   lattice: (d, l) => new Lattice(d, l),
   sphere: (d, r: number) => new Sphere(d, r),
-  spiral: (d, theta, ...a: number[]) => new Spiral(d, theta, a),
+  spiral: (d, theta: number, r: number) => new Spiral(d, theta, r),
   torus: (d, ...r: number[]) => new Torus(d, new Float32Array(r)),
   fucked_up_torus: (d, r: number, t: number) => new FuckedUpTorus(d, r, t),
   rotate: (

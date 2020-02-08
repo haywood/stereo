@@ -1,29 +1,35 @@
 import assert from 'assert';
 
+import { norm } from '../reducable';
 import { Vector } from '../types';
 import Interval from './interval';
 import { Polar } from './polar';
 import { Fn } from '.';
 
 export default class Spiral implements Fn {
+  private readonly interval: Interval;
+
   constructor(
     /**
      * The dimension of the spiral.
      */
     readonly d: number,
     /**
-     * The extent of curl of the spiral, i.e. the max angle.
+     * The extent of curl of the spiral, i.e. the max angle in each
+     * dimension.
      */
     readonly theta: number,
     /**
-     * The factor by which the radius increases in each dimension.
+     * The radial factor. This is multiplied by the magnitude
+     * of the input angle vector to determine the magnitude
+     * of the output.
      */
-    readonly a: number[]
+    readonly r: number
   ) {
-    assert.equal(
-      a.length,
-      d,
-      `spiral: Expected a to be of dimension ${d}, but was ${a.length}`
+    this.interval = new Interval(
+      this.domain,
+      new Array(this.domain).fill(0),
+      new Array(this.domain).fill(theta)
     );
   }
 
@@ -32,30 +38,16 @@ export default class Spiral implements Fn {
   }
 
   sample = function*(n: number, offset: number, limit: number) {
-    const interval = new Interval(
-      this.domain,
-      new Array(this.domain).fill(0),
-      new Array(this.domain).fill(1)
-    );
-
-    for (const x of interval.sample(n, offset, limit)) {
+    for (const x of this.interval.sample(n, offset, limit)) {
       yield this.fn(x);
     }
   };
 
-  fn = (x: Float32Array, y: Vector = new Float32Array(this.d)) => {
-    const { domain, d, theta, a } = this;
-    assert.equal(x.length, domain);
+  fn = (phi: Float32Array, y: Vector = new Float32Array(this.d)) => {
+    const { domain, d, r } = this;
+    assert.equal(phi.length, domain);
     assert.equal(y.length, d);
 
-    const phi = x.map(xi => xi * theta);
-    Polar.from(1, phi, y);
-
-    y[0] *= a[0] * phi[0];
-    for (let i = 1; i < d; i++) {
-      y[i] *= a[i] * phi[i - 1];
-    }
-
-    return y;
+    return Polar.from(r * norm(phi), phi, y);
   };
 }

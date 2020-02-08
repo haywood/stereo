@@ -22,11 +22,14 @@ export const inputs = {
   pipe: new TextInput<PipeNode>(
     'pipe',
     `${n}
-      =>3
-      =>spiral(10pi, 1, 1/2, 1/4)
-      =>R(theta, 0, 1, cos, tan)
-      =>R(theta, 0, 2, cos, tan)
-      =>R(theta, 1, 2, cos, tan)
+      =>4
+      =>spiral(20pi, 0.1)
+      =>R(theta, 0, 1)
+      =>R(theta, 0, 2)
+      =>R(theta, 0, 3)
+      =>R(theta, 1, 2)
+      =>R(theta, 1, 3)
+      =>R(theta, 2, 3)
       =>stereo(3)`,
     {
       persistent: true,
@@ -35,7 +38,7 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', 'pi * (t / 100 + audio.power + audio.onset)', {
+  theta: new TextInput('theta', 'pi * (t / 23 + audio.power + audio.onset)', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),

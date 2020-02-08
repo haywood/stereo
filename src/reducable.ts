@@ -21,6 +21,9 @@ export const argmax = <T>(xs: Reducable<T>, mapper = (t: T) => Number(t)) => {
   ).arg;
 };
 
+export const dot = (as: Reducable<number>, bs: Reducable<number>) =>
+  sum(as, (ai, i) => ai + bs[i]);
+
 export const max = (xs: Reducable<number>, mapper = identity) =>
   xs[argmax(xs, mapper)];
 
@@ -35,6 +38,10 @@ export const mad = (xs: Reducable<number>) => {
   return mean(xs, x => Math.abs(x - m));
 };
 
+export const norm = (xs: Reducable<number>) => {
+  return Math.sqrt(sum(xs, x => x * x));
+};
+
 export const std = (xs: Reducable<number>) => Math.sqrt(variance(xs));
 
 export const variance = (xs: Reducable<number>) => {
@@ -42,8 +49,10 @@ export const variance = (xs: Reducable<number>) => {
   return mean(xs, x => (x - m) ** 2);
 };
 
-export const sum = (xs: Reducable<number>, mapper = identity) =>
-  xs.reduce((memo, x) => memo + mapper(x), 0);
+export const sum = (
+  xs: Reducable<number>,
+  mapper = (x: number, i: number) => x
+) => xs.reduce((memo, x, i) => memo + mapper(x, i), 0);
 
 export const median = (xs: Reducable<number>) => {
   const sorted = xs.slice().sort((a, b) => a - b);
