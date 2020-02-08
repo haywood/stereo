@@ -1,7 +1,9 @@
 import 'multirange/multirange.css';
+
+import './index.scss';
+
 import { dataStream } from './data';
 import debug from './debug';
-import './index.scss';
 import { Overlay } from './overlay';
 import { initRenderer, updateRenderer } from './renderer';
 
@@ -31,6 +33,10 @@ document.onreadystatechange = async () => {
   if (document.readyState !== 'complete') return;
 
   const canvas = document.querySelector('canvas');
+  const stream = (canvas as any).captureStream(1);
+  const video = document.querySelector('video');
+  video.srcObject = stream;
+
   await initRenderer(canvas);
 
   dataStream.subscribe(
