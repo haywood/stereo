@@ -12,6 +12,11 @@ import {
 import debug from '../debug';
 import { Data, DataChunk } from '../types';
 
+const pointSize = (() => {
+  const hypot = Math.hypot(window.screen.width, window.screen.height);
+  return hypot / 200_000;
+})();
+
 class Renderer {
   private renderer: WebGLRenderer;
   private scene: Scene;
@@ -45,8 +50,6 @@ class Renderer {
   }
 
   setSize = (width: number, height: number) => {
-    const hypot = Math.hypot(width, height);
-    const pointSize = hypot / 200_000;
     const near = pointSize,
       far = 10 / pointSize;
     const aspect = width / height;

@@ -1,4 +1,5 @@
 import screenfull from 'screenfull';
+
 import debug from '../debug';
 import { print } from '../pipe/ast';
 import { Compiler } from '../pipe/compiler';
@@ -11,7 +12,7 @@ import { ToggleInput } from './toggle';
 
 // A good default. Reasonable level of detail without too much resource
 // consumption.
-const n = 10_000;
+const n = Math.round((window.screen.width * window.screen.height) / 50);
 const minDbs = parseInt(
   document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
