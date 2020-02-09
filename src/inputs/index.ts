@@ -25,7 +25,7 @@ export const inputs = {
     'pipe',
     `${n}
       =>4
-      =>spiral(20pi, 0.1)
+      =>torus(1, 1, 1)
       =>R(theta, 0, 1)
       =>R(theta, 0, 2)
       =>R(theta, 0, 3)
@@ -40,7 +40,7 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', 'pi * (t / 23 + audio.power + audio.onset)', {
+  theta: new TextInput('theta', 'pi * (t / 23 + audio.power)', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
@@ -55,7 +55,7 @@ export const inputs = {
     stringify: print
   }),
 
-  v: new TextInput('v', 'max(0.4, audio.power)', {
+  v: new TextInput('v', '1', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
