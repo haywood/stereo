@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import {
   BufferAttribute,
   BufferGeometry,
@@ -10,7 +9,6 @@ import {
   VertexColors,
   WebGLRenderer
 } from 'three';
-
 import { Data } from '../../data';
 
 class Renderer {
@@ -25,14 +23,6 @@ class Renderer {
     height: number
   ) {
     this.renderer = new WebGLRenderer({ canvas });
-
-    this.points = new Points(
-      new BufferGeometry(),
-      new PointsMaterial({
-        vertexColors: VertexColors,
-        size: 0.01
-      })
-    );
 
     this.setSize(width, height);
 
@@ -51,6 +41,15 @@ class Renderer {
       far = 1000;
     const aspect = width / height;
     const fov = 100;
+
+    const hypot = Math.hypot(width, height);
+    this.points = new Points(
+      new BufferGeometry(),
+      new PointsMaterial({
+        vertexColors: VertexColors,
+        size: hypot / 100_000
+      })
+    );
 
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
