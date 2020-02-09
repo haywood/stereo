@@ -35,6 +35,7 @@ class Renderer {
 
     this.scene = new Scene();
     this.scene.add(this.points);
+    this.renderer.setAnimationLoop(this.render);
   }
 
   private get z() {
@@ -61,7 +62,6 @@ class Renderer {
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
     this.camera.position.z = this.z;
-    this.renderer.setAnimationLoop(this.render);
   };
 
   get extent(): [number, number, number] {
