@@ -54,6 +54,7 @@ class Renderer {
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
     this.camera.position.z = this.z;
+    this.renderer.setAnimationLoop(this.render);
   };
 
   get extent(): [number, number, number] {
@@ -89,8 +90,6 @@ class Renderer {
 
     if (d > 2) geometry.computeBoundingSphere();
     this.camera.position.z = this.z;
-
-    this.render();
   };
 }
 
