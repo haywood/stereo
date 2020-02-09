@@ -54,7 +54,7 @@ class Renderer {
       new BufferGeometry(),
       new PointsMaterial({
         vertexColors: VertexColors,
-        size: hypot / 200_000
+        size: hypot / 100_000
       })
     );
 
