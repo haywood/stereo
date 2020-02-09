@@ -9,9 +9,9 @@ import { RangeInput } from './range';
 import { TextInput } from './text';
 import { ToggleInput } from './toggle';
 
-// Points generation is done in parallel, so pick n such
-// that each chunk is size 2000
-const n = 2_000 * navigator.hardwareConcurrency || 10_000;
+// A good default. Reasonable level of detail without too much resource
+// consumption.
+const n = 10_000;
 const minDbs = parseInt(
   document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
