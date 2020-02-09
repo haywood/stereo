@@ -7,9 +7,9 @@ import { TextInput } from './inputs/text';
 import { Params } from './params';
 import * as params from './params/stream';
 import { runPipeline } from './pipe/pool';
-import { Data } from './types';
+import { DataChunk } from './types';
 
-const subject = new Subject<Data>();
+const subject = new Subject<DataChunk>();
 
 export const dataStream = subject.asObservable();
 
@@ -18,7 +18,7 @@ type Source = {
 };
 
 const webWorkerSource = async (): Promise<Source> => {
-  return { getData: (params: Params) => runPipeline(params) };
+  return { getData: (params: Params) => runPipeline(params, subject) };
 };
 
 (async () => {
@@ -35,8 +35,7 @@ const webWorkerSource = async (): Promise<Source> => {
       // TODO i feel like there's a more rx-y way to do this
       inFlight = getData(params);
       try {
-        const data = await inFlight;
-        subject.next(data);
+        await inFlight;
       } catch (err) {
         if (['pipe', 'h', 'v'].includes(err.context)) {
           inputs[err.context].markInvalid(err, 0);

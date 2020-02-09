@@ -9,13 +9,20 @@ import {
   VertexColors,
   WebGLRenderer
 } from 'three';
-import { Data } from '../../data';
+import debug from '../debug';
+import { Data, DataChunk } from '../types';
 
 class Renderer {
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
   private points: Points;
+  private data: Data = {
+    n: 0,
+    d: 3,
+    position: new Float32Array(),
+    color: new Float32Array()
+  };
 
   constructor(
     private readonly canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -79,11 +86,28 @@ class Renderer {
     }
   }
 
-  update = ({ d, position, color }: Data) => {
+  update = (chunk: DataChunk) => {
+    if (chunk.n != this.data.n || chunk.d != this.data.d) {
+      const { n, d } = chunk;
+      this.data = {
+        n,
+        d,
+        position: new Float32Array(n * d),
+        color: new Float32Array(n * 3)
+      };
+    }
     const { points } = this;
     const geometry = points.geometry as BufferGeometry;
-    assert.equal(position.length % d, 0);
-    assert.equal(color.length % 3, 0);
+    const { n, d, position, color } = this.data;
+
+    assert(
+      chunk.offset + chunk.size <= n,
+      `renderer: expected chunk.offset + chunk.size = ${chunk.offset +
+        chunk.size} <= n = ${n}`
+    );
+    position.set(chunk.position, chunk.offset * d);
+    color.set(chunk.color, chunk.offset * 3);
+    debug('data', this.data);
 
     geometry.setAttribute('position', new BufferAttribute(position, d));
     geometry.setAttribute('color', new BufferAttribute(color, 3));
@@ -116,8 +140,8 @@ export const worker = {
     return renderer.renderPng();
   },
 
-  update: (data: Data) => {
-    renderer.update(data);
+  update: (chunk: DataChunk) => {
+    renderer.update(chunk);
     return renderer.extent;
   }
 };

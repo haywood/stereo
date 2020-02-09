@@ -3,7 +3,6 @@ import 'multirange/multirange.css';
 import './index.scss';
 
 import { dataStream } from './data';
-import debug from './debug';
 import { Overlay } from './overlay';
 import { initRenderer, updateRenderer } from './renderer';
 
@@ -40,9 +39,8 @@ document.onreadystatechange = async () => {
   await initRenderer(canvas);
 
   dataStream.subscribe(
-    async data => {
-      await updateRenderer(data);
-      debug('data', data);
+    async chunk => {
+      await updateRenderer(chunk);
       document.body.classList.add('data');
       maybeSetCursorInactive();
     },

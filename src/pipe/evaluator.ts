@@ -1,11 +1,11 @@
 import assert from 'assert';
+
 import { CompositeFn } from '../fn';
 import { HSV } from '../params';
 import { Scope } from '../params/scope';
-import { Vector } from '../types';
+import { Chunk, DataChunk, Vector } from '../types';
 import { PipeNode, Scalar } from './grammar.pegjs';
 import { Resolver } from './resolver';
-import { Chunk } from './types';
 
 const { abs, min, sign } = Math;
 
@@ -69,14 +69,18 @@ export class Evaluator {
     }
   }
 
-  iterate = () => {
+  iterate = (): DataChunk => {
+    const { n, offset, size } = this;
     const position = this.computePosition();
     const color = this.computeColor(position);
 
     return {
+      n,
       d: this.d,
       position,
-      color
+      color,
+      offset,
+      size
     };
   };
 
@@ -103,7 +107,6 @@ export class Evaluator {
         const m = extent[k];
         return m ? sign(pk) * min(1, abs(pk) / m) : 0;
       });
-      this.scope.i = i;
       const h = 360 * this.resolveNumber('h', hsv.h);
       const s = this.resolveNumber('s', hsv.s);
       const v = this.resolveNumber('v', hsv.v);

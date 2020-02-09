@@ -1,7 +1,8 @@
 import { releaseProxy, Remote, wrap } from 'comlink';
+import { Subject } from 'rxjs';
 import debug from '../debug';
 import { Params } from '../params';
-import { Data } from '../types';
+import { DataChunk } from '../types';
 import { Resolver } from './resolver';
 import { PipeWorker } from './worker';
 
@@ -22,7 +23,10 @@ function adjustPoolSize(targetSize: number) {
   debug('targetPoolSize', targetSize);
 }
 
-export const runPipeline = async (params: Params) => {
+export const runPipeline = async (
+  params: Params,
+  subject: Subject<DataChunk>
+) => {
   const resolver = new Resolver(params.scope);
   const n = resolver.resolve(params.pipe.n, 'number');
   const chunkCount = Math.min(maxPoolSize, Math.max(1, Math.floor(n / 2_000)));
@@ -31,33 +35,14 @@ export const runPipeline = async (params: Params) => {
   adjustPoolSize(chunkCount);
 
   const promises = [];
-  const chunks = [];
   for (let i = 0; i < chunkCount; i++) {
     const offset = i * size;
     const chunk = { offset, size: Math.min(size, n - offset) };
-    const promise = workers[i]
-      .iterate(params, chunk)
-      .then(({ d, position, color }) => {
-        return { d, position, color, offset };
-      });
-    promises.push(promise);
-    chunks.push(chunk);
+    promises.push(
+      workers[i].iterate(params, chunk).then(chunk => {
+        subject.next(chunk);
+      })
+    );
   }
-  debug('chunks', chunks);
-
-  const results = await Promise.all(promises);
-  debug('results', results);
-  const [{ d }] = results;
-  const data: Data = {
-    d,
-    position: new Float32Array(d * n),
-    color: new Float32Array(3 * n)
-  };
-
-  results.forEach(({ d, position, color, offset }) => {
-    data.position.set(position, d * offset);
-    data.color.set(color, 3 * offset);
-  });
-
-  return data;
+  await Promise.all(promises);
 };

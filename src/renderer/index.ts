@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
-import { Data } from '../../data';
+
+import { DataChunk } from '../types';
 import { worker } from './worker';
 
 const subject = new Subject<[number, number, number]>();
@@ -25,8 +26,8 @@ export const render = async () => worker.render();
 
 export const renderPng = async () => worker.renderPng();
 
-export const updateRenderer = async (data: Data) => {
-  const extent = worker.update(data);
+export const updateRenderer = async (chunk: DataChunk) => {
+  const extent = worker.update(chunk);
   subject.next(extent);
 };
 

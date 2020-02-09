@@ -4,8 +4,3 @@ export type Defs = {
 };
 
 export type UnaryOperator = (x: number) => number;
-
-export type Chunk = {
-  offset: number;
-  size: number;
-};
