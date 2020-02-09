@@ -45,17 +45,18 @@ class Renderer {
   }
 
   setSize = (width: number, height: number) => {
-    const near = 0.01,
-      far = 1000;
+    const hypot = Math.hypot(width, height);
+    const pointSize = hypot / 200_000;
+    const near = pointSize,
+      far = 10 / pointSize;
     const aspect = width / height;
     const fov = 100;
 
-    const hypot = Math.hypot(width, height);
     this.points = new Points(
       new BufferGeometry(),
       new PointsMaterial({
         vertexColors: VertexColors,
-        size: hypot / 100_000
+        size: pointSize
       })
     );
 
