@@ -131,7 +131,6 @@ export const worker = {
 
   resize: (width: number, height: number) => {
     renderer.setSize(width, height);
-    renderer.render();
     return renderer.extent;
   },
 
