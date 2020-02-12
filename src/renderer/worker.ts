@@ -14,7 +14,7 @@ import { Data, DataChunk } from '../types';
 
 const pointSize = (() => {
   const hypot = Math.hypot(window.screen.width, window.screen.height);
-  return hypot / 200_000;
+  return Math.max(hypot / 100_000, 0.01);
 })();
 
 class Renderer {
@@ -35,6 +35,7 @@ class Renderer {
     height: number
   ) {
     this.renderer = new WebGLRenderer({ canvas });
+    this.points = new Points(new BufferGeometry());
 
     this.setSize(width, height);
 
@@ -55,13 +56,10 @@ class Renderer {
     const aspect = width / height;
     const fov = 100;
 
-    this.points = new Points(
-      new BufferGeometry(),
-      new PointsMaterial({
-        vertexColors: VertexColors,
-        size: pointSize
-      })
-    );
+    this.points.material = new PointsMaterial({
+      vertexColors: VertexColors,
+      size: pointSize
+    });
 
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
