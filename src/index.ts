@@ -32,11 +32,11 @@ document.onreadystatechange = async () => {
   if (document.readyState !== 'complete') return;
 
   const canvas = document.querySelector('canvas');
+  await initRenderer(canvas);
+
   const stream = (canvas as any).captureStream(1);
   const video = document.querySelector('video');
   video.srcObject = stream;
-
-  await initRenderer(canvas);
 
   dataStream.subscribe(
     async chunk => {
