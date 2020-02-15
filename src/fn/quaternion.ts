@@ -5,20 +5,21 @@ import { Fn } from '.';
 
 /**
  * Implements right multiplication by a fixed quaternion. Does zero padding
- * when the input is smaller than 4 and simply leaves higher dimensions
- * untouched.
+ * when the input is less than 4 and simply leaves higher dimensions untouched
+ * when the dimension is greater than 4.
  */
 export class Quaternion implements Fn {
   readonly q: Float32Array;
+  readonly table: ReturnType<typeof rule>[];
 
-  constructor(
-    readonly d: number,
-    readonly r: number,
-    readonly i: number,
-    readonly j: number,
-    readonly k: number
-  ) {
+  constructor(readonly d: number, r: number, i: number, j: number, k: number) {
     this.q = new Float32Array(Math.max(d, 4));
+    this.table = [
+      rule(r, [0, 1, 2, 3], [1, 1, 1, 1]),
+      rule(i, [1, 0, 3, 2], [1, -1, 1, -1]),
+      rule(j, [2, 3, 0, 1], [1, -1, -1, 1]),
+      rule(k, [3, 2, 1, 0], [1, 1, -1, -1])
+    ];
   }
 
   get domain() {
@@ -36,7 +37,7 @@ export class Quaternion implements Fn {
   };
 
   readonly fn = (x: Float32Array, y = new Float32Array(this.d)) => {
-    const { d, domain, q, r, i, j, k } = this;
+    const { d, domain, q } = this;
     assert.equal(
       x.length,
       domain,
@@ -46,12 +47,18 @@ export class Quaternion implements Fn {
     q.fill(0);
     q.set(x);
 
-    q[0] = q[0] * r - q[1] * i - q[2] * j - q[3] * k;
-    q[1] = q[0] * i + q[1] * r + q[2] * k - q[3] * j;
-    q[2] = q[0] * j - q[1] * k + q[2] * r + q[3] * i;
-    q[3] = q[0] * k + q[1] * j - q[2] * i + q[3] * r;
+    this.table.forEach(r => r(x, q));
 
     y.set(q.subarray(0, d));
     return y;
+  };
+}
+
+function rule(v: number, index: number[], sign: number[]) {
+  return (x: Float32Array, y: Float32Array) => {
+    const limit = Math.min(4, x.length);
+    for (let i = 0; i < limit; i++) {
+      y[index[i]] += sign[i] * x[i] * v;
+    }
   };
 }
