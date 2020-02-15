@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import Interval from './interval';
+import Sphere from './sphere';
 import { Fn } from '.';
 
 /**
@@ -28,10 +28,8 @@ export class Quaternion implements Fn {
 
   readonly sample = function*(n: number, offset: number, limit: number) {
     const { d, fn } = this;
-    const zero = new Array(d).fill(0);
-    const one = new Array(d).fill(1);
-    const interval = new Interval(d, zero, one);
-    for (const x of interval.sample(n, offset, limit)) {
+    const sphere = new Sphere(d, 1);
+    for (const x of sphere.sample(n, offset, limit)) {
       yield fn(x);
     }
   };
