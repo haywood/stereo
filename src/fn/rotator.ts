@@ -16,6 +16,9 @@ export default class Rotator implements Fn {
     readonly f0: (theta: number) => number = Math.cos,
     readonly f1: (theta: number) => number = Math.sin
   ) {
+    assert(0 <= d0 && d0 < d, `Rotator: Expected 0 <= d0 = ${d0} < d = ${d}`);
+    assert(0 <= d1 && d1 < d, `Rotator: Expected 0 <= d1 = ${d1} < d = ${d}`);
+
     this.r0 = f0(theta);
     this.r1 = f1(theta);
   }

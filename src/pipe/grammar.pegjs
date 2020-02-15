@@ -40,6 +40,7 @@ step =
   / fucked_up_torus
   / rotate
   / stereo
+  / quaternion
 
 cube 'cube' = type:$'cube'i args:fn_args {
   return step(type, args, 1);
@@ -77,9 +78,10 @@ stereo 'stereo' = type:$'stereo'i args:fn_args {
   return step(type, args, 1);
 }
 
-step_args =
-  head:scalar comma tail:step_args { return [head, ...tail]; }
-  / arg:scalar { return [arg]; }
+quaternion 'q' =
+  'q'i args:fn_args {
+    return step('q', args, 4)
+  }
 
 scalar 'scalar' = additive
 

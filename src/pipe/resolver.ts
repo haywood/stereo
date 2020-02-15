@@ -2,6 +2,7 @@ import { CompositeFn, Fn } from '../fn';
 import Cube from '../fn/cube';
 import FuckedUpTorus from '../fn/fucked_up_torus';
 import Lattice from '../fn/lattice';
+import { Quaternion } from '../fn/quaternion';
 import Rotator from '../fn/rotator';
 import Sphere from '../fn/sphere';
 import Spiral from '../fn/spiral';
@@ -25,7 +26,7 @@ type Resolution = {
   fn: CompositeFn;
 };
 
-function assert(cond: boolean, scope: Scope, msg: () => string) {
+function assert(cond: any, scope: Scope, msg: () => string) {
   if (!cond) throw { message: msg(), scope };
 }
 
@@ -92,7 +93,9 @@ export class Resolver {
   };
 
   private resolveStep = (d: number, { type, args }: StepNode): Fn => {
-    return funs[type](d, ...args.map(a => this.resolve(a)));
+    const fun = funs[type];
+    this.expect(fun, type, 'be defined', 'was not');
+    return fun(d, ...args.map(a => this.resolve(a)));
   };
 
   private resolveFn = ({ name, args }: FnNode): number => {
@@ -153,11 +156,11 @@ export class Resolver {
     }
   };
 
-  private assert(cond: boolean, msg: () => string) {
+  private assert(cond: any, msg: () => string) {
     assert(cond, this.scope, msg);
   }
 
-  private expect(cond: boolean, node: any, expected: string, actual: string) {
+  private expect(cond: any, node: any, expected: string, actual: string) {
     this.assert(
       cond,
       () => `Expected ${pp(node, 0)} to ${expected}, but ${actual}`
@@ -188,20 +191,10 @@ const funs: { [op: string]: (d: number, ...rest: any) => Fn } = {
     d1: number,
     f0: UnaryOperator = Math.cos,
     f1: UnaryOperator = Math.sin
-  ) => {
-    assert(
-      0 <= d0 && d0 < d,
-      null,
-      () => `rotate: Expected 0 <= d0 = ${d0} < d = ${d}`
-    );
-    assert(
-      0 <= d1 && d1 < d,
-      null,
-      () => `rotate: Expected 0 <= d1 = ${d1} < d = ${d}`
-    );
-    return new Rotator(d, theta, d0, d1, f0, f1);
-  },
-  stereo: (d, to) => new Stereo(d, to)
+  ) => new Rotator(d, theta, d0, d1, f0, f1),
+  stereo: (d, to) => new Stereo(d, to),
+  q: (d, r: number, i: number, j: number, k: number) =>
+    new Quaternion(d, r, i, j, k)
 };
 
 type Funs = typeof funs;
@@ -219,5 +212,6 @@ const ranges: Ranges = {
   fucked_up_torus: domain => domain + 1,
   rotate: domain => domain,
   r: domain => domain,
-  stereo: domain => domain
+  stereo: domain => domain,
+  q: domain => domain
 };
