@@ -34,7 +34,10 @@ class Renderer {
     width: number,
     height: number
   ) {
-    this.renderer = new WebGLRenderer({ canvas });
+    this.renderer = new WebGLRenderer({
+      canvas,
+      context: canvas.getContext('webgl2')
+    });
     this.points = new Points(new BufferGeometry());
 
     this.setSize(width, height);
