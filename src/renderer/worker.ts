@@ -1,21 +1,19 @@
 import assert from 'assert';
 import {
   BufferAttribute,
+  VertexColors,
   BufferGeometry,
   PerspectiveCamera,
   Points,
   PointsMaterial,
+  ShaderMaterial,
   Scene,
-  VertexColors,
   WebGLRenderer
 } from 'three';
 import debug from '../debug';
 import { Data, DataChunk } from '../types';
 
-const pointSize = (() => {
-  const hypot = Math.hypot(window.screen.width, window.screen.height);
-  return Math.max(hypot / 100_000, 0.01);
-})();
+const screenDiag = Math.hypot(window.screen.width, window.screen.height);
 
 class Renderer {
   private renderer: WebGLRenderer;
@@ -54,15 +52,32 @@ class Renderer {
   }
 
   setSize = (width: number, height: number) => {
-    const near = pointSize,
-      far = 10 / pointSize;
+    const near = Math.max(screenDiag / 100_000, 0.01);
+    const far = 10 / near;
     const aspect = width / height;
     const fov = 100;
 
-    this.points.material = new PointsMaterial({
+    this.points.material = new ShaderMaterial({
       vertexColors: VertexColors,
-      size: pointSize
+      vertexShader: `
+      varying vec3 vColor;
+
+      void main() {
+        vColor = color;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.);
+        gl_PointSize = -400. * ${near} / mvPosition.z;
+        gl_Position = projectionMatrix * mvPosition;
+      }
+      `,
+      fragmentShader: `
+      varying vec3 vColor;
+
+      void main() {
+        gl_FragColor = vec4(vColor, 1.0);
+      }
+      `
     });
+    console.log(100 * near);
 
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
