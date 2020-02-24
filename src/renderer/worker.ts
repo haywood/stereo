@@ -20,11 +20,12 @@ class Renderer {
   private scene: Scene;
   private camera: PerspectiveCamera;
   private points: Points;
+  private material: ShaderMaterial;
   private data: Data = {
     n: 0,
     d: 3,
-    position: new Float32Array(),
-    color: new Float32Array()
+    position: new Float32Array(3),
+    color: new Float32Array(3)
   };
 
   constructor(
@@ -46,9 +47,7 @@ class Renderer {
   }
 
   private get z() {
-    const s = this.points.geometry.boundingSphere;
-    if (!s || isNaN(s.radius)) return 5;
-    return Math.min(5, s.center.z + s.radius + 1);
+    return 3;
   }
 
   setSize = (width: number, height: number) => {
@@ -57,27 +56,44 @@ class Renderer {
     const aspect = width / height;
     const fov = 100;
 
-    this.points.material = new ShaderMaterial({
-      vertexColors: VertexColors,
+    this.material = this.points.material = new ShaderMaterial({
+      uniforms: {
+        n: { value: 0 }
+      },
       vertexShader: `
-      varying vec3 vColor;
+      uniform int n;
 
       void main() {
-        vColor = color;
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.);
+        int d = 3;
+        float branching_factor = round(pow(float(n), 1. / float(d)));
+        vec3 x;
+
+        for (int k = 0; k < d; k++) {
+          float exp = float(d - k - 1);
+          float dividend = round(position[0] / pow(branching_factor, exp));
+          x[k] = float(int(dividend) % int(branching_factor)) / (branching_factor - 1.);
+        }
+
+        vec3 a = vec3(-1.);
+        vec3 b = vec3(1.);
+        vec3 y;
+
+        for (int k = 0; k < d; k++) {
+          y[k] = a[k] + x[k] * (b[k] - a[k]);
+        }
+
+        vec4 mvPosition = modelViewMatrix * vec4(y, 1.);
         gl_PointSize = -400. * ${near} / mvPosition.z;
         gl_Position = projectionMatrix * mvPosition;
       }
       `,
-      fragmentShader: `
-      varying vec3 vColor;
 
+      fragmentShader: `
       void main() {
-        gl_FragColor = vec4(vColor, 1.0);
+        gl_FragColor = vec4(1.);
       }
       `
     });
-    console.log(100 * near);
 
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
@@ -107,32 +123,20 @@ class Renderer {
   }
 
   update = (chunk: DataChunk) => {
-    if (chunk.n != this.data.n || chunk.d != this.data.d) {
-      const { n, d } = chunk;
-      this.data = {
-        n,
-        d,
-        position: new Float32Array(n * d),
-        color: new Float32Array(n * 3)
-      };
-    }
     const { points } = this;
     const geometry = points.geometry as BufferGeometry;
-    const { n, d, position, color } = this.data;
+    const { n } = chunk;
 
-    assert(
-      chunk.offset + chunk.size <= n,
-      `renderer: expected chunk.offset + chunk.size = ${chunk.offset +
-        chunk.size} <= n = ${n}`
-    );
-    position.set(chunk.position, chunk.offset * d);
-    color.set(chunk.color, chunk.offset * 3);
+    this.material.uniforms.n.value = n;
     debug('data', this.data);
 
-    geometry.setAttribute('position', new BufferAttribute(position, d));
-    geometry.setAttribute('color', new BufferAttribute(color, 3));
+    const i = Float32Array.from(Array.from({ length: n }).keys());
+    geometry.setAttribute('position', new BufferAttribute(i, 1));
+    points.rotation.x += 0.005;
+    points.rotation.y += 0.005;
+    points.rotation.z += 0.005;
 
-    if (d > 2) geometry.computeBoundingSphere();
+    //if (d > 2) geometry.computeBoundingSphere();
     this.camera.position.z = this.z;
   };
 }
