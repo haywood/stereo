@@ -76,10 +76,7 @@ class Renderer {
         return x;
       }
 
-      void main() {
-        int d = 3;
-        vec3 x = lattice_01(d);
-
+      vec3 interval(int d, vec3 x) {
         vec3 a = vec3(-1.);
         vec3 b = vec3(1.);
         vec3 y;
@@ -87,6 +84,14 @@ class Renderer {
         for (int k = 0; k < d; k++) {
           y[k] = a[k] + x[k] * (b[k] - a[k]);
         }
+
+        return y;
+      }
+
+      void main() {
+        int d = 3;
+        vec3 x = lattice_01(d);
+        vec3 y = interval(d, x);
 
         vec4 mvPosition = modelViewMatrix * vec4(y, 1.);
         gl_PointSize = -400. * ${near} / mvPosition.z;
