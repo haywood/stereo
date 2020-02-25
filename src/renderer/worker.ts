@@ -1,4 +1,6 @@
 import assert from 'assert';
+import { Params } from '../params';
+import { Resolver } from '../pipe/resolver';
 import {
   BufferAttribute,
   VertexColors,
@@ -98,10 +100,16 @@ class Renderer {
     }
   }
 
-  update = (chunk: DataChunk) => {
+  update = (params: Params) => {
     const { points } = this;
+    const resolver = new Resolver(params.scope);
     const geometry = points.geometry as BufferGeometry;
-    const { n, d } = chunk;
+    const { pipe } = params;
+    const n = resolver.resolve(pipe.n, 'number');
+    const d = resolver.resolve(
+      pipe.steps[pipe.steps.length - 1].args[0],
+      'number'
+    );
 
     this.material.uniforms.n.value = n;
     this.material.uniforms.d.value = d;
@@ -140,8 +148,8 @@ export const worker = {
     return renderer.renderPng();
   },
 
-  update: (chunk: DataChunk) => {
-    renderer.update(chunk);
+  update: (params: Params) => {
+    renderer.update(params);
     return renderer.extent;
   }
 };

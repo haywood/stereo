@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
 
+import { Params } from '../params';
 import { DataChunk } from '../types';
 import { worker } from './worker';
 
@@ -26,9 +27,8 @@ export const render = async () => worker.render();
 
 export const renderPng = async () => worker.renderPng();
 
-export const updateRenderer = async (chunk: DataChunk) => {
-  const extent = worker.update(chunk);
-  subject.next(extent);
+export const updateRenderer = async (params: Params) => {
+  worker.update(params);
 };
 
 if (!fixedSize) {

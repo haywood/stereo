@@ -20,32 +20,3 @@ type Source = {
 const webWorkerSource = async (): Promise<Source> => {
   return { getData: (params: Params) => runPipeline(params, subject) };
 };
-
-(async () => {
-  const { getData } = await webWorkerSource();
-  let inFlight: ReturnType<typeof getData> | null;
-
-  params.paramsStream.subscribe(
-    async params => {
-      if (inFlight) return;
-      for (const input of Object.values(inputs)) {
-        if (input instanceof TextInput && !input.valid()) return;
-      }
-      debug('params', params);
-      // TODO i feel like there's a more rx-y way to do this
-      inFlight = getData(params);
-      try {
-        await inFlight;
-      } catch (err) {
-        if (['pipe', 'h', 'v'].includes(err.context)) {
-          inputs[err.context].markInvalid(err, 0);
-        } else {
-          error(err);
-        }
-      } finally {
-        inFlight = null;
-      }
-    },
-    err => error(err)
-  );
-})();

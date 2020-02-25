@@ -2,7 +2,7 @@ import 'multirange/multirange.css';
 
 import './index.scss';
 
-import { dataStream } from './data';
+import { paramsStream } from './params/stream';
 import { Overlay } from './overlay';
 import { initRenderer, updateRenderer } from './renderer';
 
@@ -38,9 +38,9 @@ document.onreadystatechange = async () => {
   const video = document.querySelector('video');
   video.srcObject = stream;
 
-  dataStream.subscribe(
-    async chunk => {
-      await updateRenderer(chunk);
+  paramsStream.subscribe(
+    async params => {
+      await updateRenderer(params);
       document.body.classList.add('data');
       maybeSetCursorInactive();
     },
