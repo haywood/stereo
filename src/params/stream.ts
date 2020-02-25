@@ -1,4 +1,4 @@
-import { Subject, combineLatest, interval } from 'rxjs';
+import { ReplaySubject, combineLatest, interval } from 'rxjs';
 
 import { audioStream } from '../audio';
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
@@ -12,13 +12,13 @@ import { Scope } from './scope';
 import { Params } from '.';
 
 const fps = 60;
-const subject = new Subject<Params>();
+const subject = new ReplaySubject<Params>();
 export const paramsStream = subject.asObservable();
 
 (async () => {
   let count = 0;
 
-  const emit = async (audio: Audio, extent: [number, number, number]) => {
+  const emit = (audio: Audio, extent: [number, number, number]) => {
     try {
       const simplifier = new Simplifier({
         theta: inputs.theta.value
@@ -45,15 +45,21 @@ export const paramsStream = subject.asObservable();
     }
   };
 
-  await emit(AUDIO_PLACEHOLDER, [0, 0, 0]);
-
   const maybeEmit = async (audio: Audio, extent: [number, number, number]) => {
     if (inputs.animate.value) {
-      await emit(audio, extent);
+      emit(audio, extent);
     }
   };
 
-  combineLatest(audioStream, extentStream, interval(1000 / fps)).subscribe(
+  const inputStreams = [
+    inputs.theta,
+    inputs.pipe,
+    inputs.h,
+    inputs.s,
+    inputs.v
+  ].map(input => input.stream);
+
+  combineLatest(audioStream, extentStream, ...inputStreams).subscribe(
     ([a, e]) => maybeEmit(a, e),
     error
   );

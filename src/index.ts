@@ -2,8 +2,8 @@ import 'multirange/multirange.css';
 
 import './index.scss';
 
-import { paramsStream } from './params/stream';
 import { Overlay } from './overlay';
+import { paramsStream } from './params/stream';
 import { initRenderer, updateRenderer } from './renderer';
 
 const cursorInactiveTimeout = 1000;
