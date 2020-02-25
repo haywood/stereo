@@ -80,22 +80,20 @@ export class Resolver {
     const n = this.resolve(pipe.n, 'number');
     this.expect(n > 0, 'n', 'be positive', `was ${n}`);
 
-    const fn = new CompositeFn.Builder().add(this.resolveStep(pipe.d0, head));
+    const fn = new CompositeFn.Builder().add(this.resolveStep(head));
 
     for (let i = 0; i < tail.length; i++) {
       const step = tail[i];
-      const d0 = fn.d;
-      const d = ranges[step.type](d0);
-      fn.add(this.resolveStep(d, step));
+      fn.add(this.resolveStep(step));
     }
 
     return { n, fn: fn.build() };
   };
 
-  private resolveStep = (d: number, { type, args }: StepNode): Fn => {
+  private resolveStep = ({ type, args }: StepNode): Fn => {
     const fun = funs[type];
     this.expect(fun, type, 'be defined', 'was not');
-    return fun(d, ...args.map(a => this.resolve(a)));
+    return fun(...args.map(a => this.resolve(a)));
   };
 
   private resolveFn = ({ name, args }: FnNode): number => {
@@ -198,20 +196,3 @@ const funs: { [op: string]: (d: number, ...rest: any) => Fn } = {
 };
 
 type Funs = typeof funs;
-
-type Ranges = {
-  [P in keyof Funs]: (domain: number) => number;
-};
-
-const ranges: Ranges = {
-  cube: domain => domain,
-  lattice: domain => domain,
-  sphere: domain => domain + 1,
-  spiral: domain => domain + 1,
-  torus: domain => domain + 1,
-  fucked_up_torus: domain => domain + 1,
-  rotate: domain => domain,
-  r: domain => domain,
-  stereo: domain => domain,
-  q: domain => domain
-};
