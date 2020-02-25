@@ -62,6 +62,7 @@ class Renderer {
       vertexShader,
       fragmentShader,
       defines: {
+        D_MAX: 10,
         NEAR: near
       },
       uniforms: {
