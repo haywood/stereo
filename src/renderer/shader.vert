@@ -1,7 +1,7 @@
-uniform float near;
+uniform int d;
 uniform int n;
 
-float[D_MAX] lattice_01(int d) {
+float[D_MAX] lattice_01(const int d) {
   float branching_factor = round(pow(float(n), 1. / float(d)));
   float[D_MAX] x;
 
@@ -14,7 +14,7 @@ float[D_MAX] lattice_01(int d) {
   return x;
 }
 
-float[D_MAX] interval(int d, float[D_MAX] x) {
+float[D_MAX] interval(const int d, const float[D_MAX] x) {
   float[D_MAX] a = float[](-1., -1., -1., -1., -1., -1., -1., -1., -1., -1.);
   float[D_MAX] b = float[](1., 1., 1., 1., 1., 1., 1., 1., 1., 1.);
   float[D_MAX] y;
@@ -26,12 +26,25 @@ float[D_MAX] interval(int d, float[D_MAX] x) {
   return y;
 }
 
+vec4 to_position(float[D_MAX] y) {
+  vec4 p;
+
+  for (int k = 0; k < d; k++) {
+    p[k] = y[k];
+  }
+
+  if (d < 4) {
+    p[3] = 1.;
+  }
+
+  return p;
+}
+
 void main() {
-  int d = 3;
   float[D_MAX] x = lattice_01(d);
   float[D_MAX] y = interval(d, x);
 
-  vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
+  vec4 mvPosition = modelViewMatrix * to_position(y);
   gl_PointSize = -400. * NEAR / mvPosition.z;
   gl_Position = projectionMatrix * mvPosition;
 }

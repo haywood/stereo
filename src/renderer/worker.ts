@@ -66,6 +66,7 @@ class Renderer {
         NEAR: near
       },
       uniforms: {
+        d: { value: 0 },
         n: { value: 0 }
       }
     });
@@ -100,9 +101,10 @@ class Renderer {
   update = (chunk: DataChunk) => {
     const { points } = this;
     const geometry = points.geometry as BufferGeometry;
-    const { n } = chunk;
+    const { n, d } = chunk;
 
     this.material.uniforms.n.value = n;
+    this.material.uniforms.d.value = d;
     debug('data', this.data);
 
     const i = Float32Array.from(Array.from({ length: n }).keys());
