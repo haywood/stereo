@@ -2,6 +2,7 @@ import 'multirange/multirange.css';
 
 import './index.scss';
 
+import debug from './debug';
 import { Overlay } from './overlay';
 import { paramsStream } from './params/stream';
 import { initRenderer, updateRenderer } from './renderer';
@@ -40,6 +41,7 @@ document.onreadystatechange = async () => {
 
   paramsStream.subscribe(
     async params => {
+      debug('params', params);
       await updateRenderer(params);
       document.body.classList.add('data');
       maybeSetCursorInactive();

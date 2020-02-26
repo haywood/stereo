@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { Params } from '../params';
+import { Shader } from './shader';
 import { Resolver } from '../pipe/resolver';
 import {
   BufferAttribute,
@@ -14,10 +15,11 @@ import {
 } from 'three';
 import debug from '../debug';
 import { Data, DataChunk } from '../types';
-import vertexShader from './shader.vert';
-import fragmentShader from './shader.frag';
+import defaultFragmentShader from './shader.frag';
 
 const screenDiag = Math.hypot(window.screen.width, window.screen.height);
+const near = Math.max(screenDiag / 100_000, 0.01);
+const far = 10 / near;
 
 class Renderer {
   private renderer: WebGLRenderer;
@@ -55,23 +57,8 @@ class Renderer {
   }
 
   setSize = (width: number, height: number) => {
-    const near = Math.max(screenDiag / 100_000, 0.01);
-    const far = 10 / near;
     const aspect = width / height;
     const fov = 100;
-
-    this.material = this.points.material = new ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      defines: {
-        D_MAX: 10,
-        NEAR: near
-      },
-      uniforms: {
-        d: { value: 0 },
-        n: { value: 0 }
-      }
-    });
 
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
@@ -87,6 +74,9 @@ class Renderer {
   }
 
   render = () => {
+    const { points, material } = this;
+    const scope = material.uniforms.scope.value;
+    scope.t = Date.now() / 1000 - scope.t0;
     this.renderer.render(this.scene, this.camera);
   };
 
@@ -104,22 +94,39 @@ class Renderer {
     const { points } = this;
     const resolver = new Resolver(params.scope);
     const geometry = points.geometry as BufferGeometry;
-    const { pipe } = params;
+    const { pipe, scope } = params;
     const n = resolver.resolve(pipe.n, 'number');
     const d = resolver.resolve(
       pipe.steps[pipe.steps.length - 1].args[0],
       'number'
     );
+    const vertexShader = Shader.vertex(pipe);
+    const fragmentShader = defaultFragmentShader;
 
-    this.material.uniforms.n.value = n;
-    this.material.uniforms.d.value = d;
+    this.material = this.points.material = new ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      defines: {
+        D_MAX: 10,
+        NEAR: near
+      },
+      uniforms: {
+        scope: {
+          value: {
+            t0: Date.now() / 1000
+          }
+        },
+        n: { value: n },
+        d: { value: d }
+      }
+    });
+
+    console.log(vertexShader);
+
     debug('data', this.data);
 
     const i = Float32Array.from(Array.from({ length: n }).keys());
     geometry.setAttribute('position', new BufferAttribute(i, 1));
-    points.rotation.x += 0.005;
-    points.rotation.y += 0.005;
-    points.rotation.z += 0.005;
 
     //if (d > 2) geometry.computeBoundingSphere();
     this.camera.position.z = this.z;
