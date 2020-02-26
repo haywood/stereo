@@ -40,7 +40,10 @@ function printPipe(node: PipeNode): string {
 }
 
 function printStep(node: StepNode): string {
-  return `${node.type}(${node.args.map(print).join(', ')})`;
+  return `${node.type}(${node.args
+    .slice(1)
+    .map(print)
+    .join(', ')})`;
 }
 
 function printArith(node: ArithNode): string {
