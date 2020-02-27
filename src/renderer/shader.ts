@@ -12,8 +12,9 @@ import {
   Value
 } from '../pipe/grammar.pegjs';
 import { pp } from '../pp';
-import interval from './shader/interval.glsl';
-import lattice_01 from './shader/lattice_01.glsl';
+import interval from './glsl/interval.glsl';
+import lattice_01 from './glsl/lattice_01.glsl';
+import sphere from './glsl/sphere.glsl';
 
 export class Shader {
   static vertex({ n, steps }: PipeNode): string {
@@ -30,7 +31,10 @@ export class Shader {
     const int n = ${Shader.from(n)};
 
     ${lattice_01}
+
     ${interval}
+
+    ${sphere}
 
     vec4 to_position(int d, float[D_MAX] y) {
       vec4 p;
@@ -62,16 +66,11 @@ export class Shader {
   }
 
   private static init(node: StepNode): string {
-    return endent`
-    // init
-    ${Shader.initializers[node.type](node)}
-    `;
+    return Shader.initializers[node.type](node);
   }
 
   private static step(node: StepNode): string {
-    return endent`
-    ${Shader.steps[node.type](node)}
-    `;
+    return Shader.steps[node.type](node);
   }
 
   private static initializers = {
@@ -79,23 +78,17 @@ export class Shader {
       const d = (args[0] as NumberNode).value - 1;
       return endent`
       x = lattice_01(${d});
-      y = ${Shader.interval(
-        d,
-        new Array(d).fill(0),
-        new Array(d).fill(2 * Math.PI)
-      )}
+      y = interval(${d}, 0., float(${2 * Math.PI}), x);
       x = y;
       `;
     }
   };
 
   private static steps = {
-    sphere(node: StepNode) {
-      const {
-        args: [d, r]
-      } = node;
+    sphere({ args }: StepNode) {
+      const [d, r] = args.map(Shader.from);
 
-      return Shader.sphere(d, r);
+      return `y = sphere(${d}, float(${r}), x);`;
     },
 
     rotate({ args }: StepNode) {
@@ -143,30 +136,6 @@ export class Shader {
       `;
     }
   };
-
-  private static interval(d: number, a: number[], b: number[]) {
-    const arr = (xs: number[]) => {
-      const str = xs.map(x => `float(${Shader.fromNumber(x)})`).join(', ');
-      const padding = new Array(10 - xs.length).fill('0.').join(', ');
-      return `float[](${str}, ${padding})`;
-    };
-
-    return endent`
-    interval(${d}, ${arr(a)}, ${arr(b)}, x);
-    `;
-  }
-
-  private static sphere(d: Scalar, r: Scalar) {
-    return endent`
-    // sphere
-    y[0] = float(${Shader.from(r)});
-    d = ${Shader.from(d)};
-    for (int k = 1; k < d; k++) {
-      y[k] = y[0] * sin(x[k - 1]);
-      y[0] *= cos(x[k - 1]);
-    }
-    `;
-  }
 
   private static from(node: Scalar): string {
     switch (node.kind) {
