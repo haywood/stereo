@@ -56,20 +56,6 @@ export class Shader {
 
     ${vertexFunctions.join('\n')}
 
-    vec4 to_position(int d, float[D_MAX] y) {
-      vec4 position;
-
-      for (int k = 0; k < min(d, 4); k++) {
-        position[k] = y[k];
-      }
-
-      if (d < 4) {
-        position[3] = 1.;
-      }
-
-      return position;
-    }
-
     void main() {
       float[D_MAX] x, y;
 
@@ -77,7 +63,7 @@ export class Shader {
 
       ${steps.map(Shader.step).join('\nx = y;\n\n')}
 
-      vec4 mvPosition = modelViewMatrix * to_position(${Shader.from(d)}, y);
+      vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
       gl_PointSize = -400. * near / mvPosition.z;
       gl_Position = projectionMatrix * mvPosition;
       p = gl_Position.xyz;
