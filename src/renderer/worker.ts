@@ -108,14 +108,16 @@ class Renderer {
       },
       uniforms: {
         t0: { value: Date.now() / 1000 },
-        audio: { value: scope.audio },
-        n: { value: n }
+        n: { value: n },
+        ...Object.entries(scope).reduce((memo, [name, value]) => {
+          memo[name] = { value };
+          return memo;
+        }, {})
       }
     });
 
-    console.log(vertexShader);
-
-    debug('data', this.data);
+    debug('vertexShader', vertexShader);
+    debug('fragmentShader', fragmentShader);
 
     const i = Float32Array.from(Array.from({ length: n }).keys());
     geometry.setAttribute('position', new BufferAttribute(i, 1));

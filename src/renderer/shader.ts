@@ -13,6 +13,7 @@ import {
   Value
 } from '../pipe/grammar.pegjs';
 import { pp } from '../pp';
+import hsv2rgb from './glsl/hsv2rgb.glsl';
 import interval from './glsl/interval.glsl';
 import lattice_01 from './glsl/lattice_01.glsl';
 import rotate from './glsl/rotate.glsl';
@@ -20,19 +21,25 @@ import sphere from './glsl/sphere.glsl';
 import stereo from './glsl/stereo.glsl';
 import torus from './glsl/torus.glsl';
 
-const functionDefs = [interval, lattice_01, rotate, sphere, stereo, torus];
+const vertexFunctions = [interval, lattice_01, rotate, sphere, stereo, torus];
+const fragmentFunctions = [hsv2rgb];
+
 const uniforms = `
 uniform float t;
 
 uniform int n;
 
 uniform struct Audio {
+  float hue;
+  int onset;
+  float pitch;
   float power;
+  float tempo;
 } audio;
 `;
 
 const varyings = `
-varying vec4 p;
+varying vec3 p;
 `;
 
 export const D_MAX = 10;
@@ -47,20 +54,21 @@ export class Shader {
 
     ${varyings}
 
-    ${functionDefs.join('\n')}
+    ${vertexFunctions.join('\n')}
 
     vec4 to_position(int d, float[D_MAX] y) {
-      vec4 p;
+      // TODO: account for camera position
+      vec4 position;
 
       for (int k = 0; k < min(d, 4); k++) {
-        p[k] = y[k];
+        position[k] = y[k];
       }
 
       if (d < 4) {
-        p[3] = 1.;
+        position[3] = 1.;
       }
 
-      return p;
+      return position;
     }
 
     void main() {
@@ -73,18 +81,30 @@ export class Shader {
       vec4 mvPosition = modelViewMatrix * to_position(${Shader.from(d)}, y);
       gl_PointSize = -400. * near / mvPosition.z;
       gl_Position = projectionMatrix * mvPosition;
-      p = gl_Position;
+      p = gl_Position.xyz;
     }`;
   }
 
-  static fragment({ h, s, v }: HSV): string {
+  static fragment(hsv: HSV): string {
+    const ensureFloat = (x: Scalar) =>
+      isFloat(x) ? Shader.from(x) : `float(${Shader.from(x)})`;
+    const h = ensureFloat(hsv.h);
+    const s = ensureFloat(hsv.s);
+    const v = ensureFloat(hsv.v);
+
     return endent`
     ${uniforms}
 
     ${varyings}
 
+    ${fragmentFunctions.join('\n')}
+
     void main() {
-      gl_FragColor = vec4(p);
+      float h = ${h} * 360.;
+      float s = ${s};
+      float v = ${v};
+
+      gl_FragColor = vec4(hsv2rgb(h, s, v), 1.);
     }
     `;
   }
@@ -151,6 +171,8 @@ export class Shader {
         return Shader.fromAccess(node);
       case 'arith':
         return Shader.fromArith(node);
+      case 'fn':
+        return Shader.fromFn(node);
       case 'number':
         return Shader.fromNumber(node.value);
       case 'paren':
@@ -165,8 +187,13 @@ export class Shader {
   }
 
   private static fromAccess({ id, index }: AccessNode): string {
-    // TODO this is wrong; want to split access into index and member
-    return `${Shader.fromId(id)}.${Shader.from(index)}`;
+    // TODO should separate indexing vs member access in the grammar, but too
+    // lazy right now...
+    if (isNumber(index)) {
+      return `${Shader.fromId(id)}[${Shader.from(index)}]`;
+    } else {
+      return `${Shader.fromId(id)}.${Shader.from(index)}`;
+    }
   }
 
   private static fromArith(node: ArithNode): string {
@@ -187,6 +214,12 @@ export class Shader {
       default:
         throw node;
     }
+  }
+
+  private static fromFn(node: FnNode): string {
+    return endent`
+    ${node.name}(${node.args.map(Shader.from).join('\n')})
+    `;
   }
 
   private static fromId(id: string): string {
@@ -215,6 +248,19 @@ function vector(xs: Scalar[]): string {
   return endent`
   float[](${xs.map(x => `float(${x})`).join(', ')}, ${padding})
   `;
+}
+
+function isNumber(node: Scalar): boolean {
+  switch (node.kind) {
+    case 'id':
+      return node.id == 't';
+    case 'number':
+    case 'fn': // so far no all fns return floats
+    case 'arith':
+      return true;
+    default:
+      return false;
+  }
 }
 
 function isFloat(node: Scalar): boolean {
