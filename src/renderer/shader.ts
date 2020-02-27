@@ -11,6 +11,7 @@ import {
   StepNode,
   Value
 } from '../pipe/grammar.pegjs';
+import { pp } from '../pp';
 
 export class Shader {
   static vertex({ n, steps }: PipeNode): string {
@@ -202,10 +203,14 @@ export class Shader {
         return Shader.fromArith(node);
       case 'number':
         return Shader.fromNumber(node.value);
+      case 'paren':
+        return Shader.from(node.scalar);
       case 'id':
         return Shader.fromId(node);
       default:
-        return '';
+        throw new Error(
+          `Can't handle node kind '${node.kind}' in node ${pp(node)}`
+        );
     }
   }
 
@@ -229,7 +234,11 @@ export class Shader {
   }
 
   private static fromId({ id }: IdNode): string {
-    return `scope.${id}`;
+    const builtins = {
+      pi: Math.PI
+    };
+
+    return builtins[id] ?? `scope.${id}`;
   }
 
   private static fromNumber(value: number): string {
