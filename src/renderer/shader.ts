@@ -17,8 +17,11 @@ import lattice_01 from './glsl/lattice_01.glsl';
 import rotate from './glsl/rotate.glsl';
 import sphere from './glsl/sphere.glsl';
 import stereo from './glsl/stereo.glsl';
+import torus from './glsl/torus.glsl';
 
-const functionDefs = [interval, lattice_01, rotate, sphere, stereo];
+const functionDefs = [interval, lattice_01, rotate, sphere, stereo, torus];
+
+export const D_MAX = 10;
 
 export class Shader {
   static vertex({ n, steps }: PipeNode): string {
@@ -76,7 +79,14 @@ export class Shader {
 
   private static initializers = {
     sphere({ args }: StepNode) {
-      const d = (args[0] as NumberNode).value - 1;
+      const d = Shader.from(minus(args[0], 1));
+      return endent`
+      x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
+      `;
+    },
+
+    torus({ args }: StepNode) {
+      const d = Shader.from(minus(args[0], 1));
       return endent`
       x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
       `;
@@ -89,6 +99,13 @@ export class Shader {
 
       return endent`
       y = sphere(${d}, float(${r}), x);
+      `;
+    },
+
+    torus({ args }: StepNode) {
+      const [d, ...r] = args.map(Shader.from);
+      return endent`
+      y = torus(${d}, ${vector(r)}, x);
       `;
     },
 
@@ -135,17 +152,18 @@ export class Shader {
   private static fromArith(node: ArithNode): string {
     const { op, operands } = node;
     const [a, b] = operands.map(Shader.from);
+    const float = /\./.test(a) || /\./.test(b) ? x => `float(${x})` : x => x;
 
     switch (op) {
       case '+':
       case '*':
       case '/':
-        return `float(${a}) ${op} float(${b})`;
+        return `${float(a)} ${op} ${float(b)}`;
       case '**':
       case '^':
-        return `pow(float(${a}), float(${b}))`;
+        return `pow(${float(a)}, ${float(b)})`;
       case '-':
-        return b == null ? `-float(${a})` : `float(${a}) - float(${b})`;
+        return b == null ? `-${float(a)}` : `${float(a)} - ${float(b)}`;
       default:
         throw node;
     }
@@ -162,4 +180,19 @@ export class Shader {
   private static fromNumber(value: number): string {
     return value.toString();
   }
+}
+
+function minus(x: Scalar, y: number): Scalar {
+  return { kind: 'arith', op: '-', operands: [x, numberNode(y)] };
+}
+
+function numberNode(value: number): NumberNode {
+  return { kind: 'number', value };
+}
+
+function vector(xs: Scalar[]): string {
+  const padding = new Array(D_MAX - xs.length).fill('0.').join(', ');
+  return endent`
+  float[](${xs.map(x => `float(${x})`).join(', ')}, ${padding})
+  `;
 }
