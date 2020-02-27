@@ -108,7 +108,8 @@ class Renderer {
       fragmentShader,
       defines: {
         D_MAX: 10,
-        NEAR: near
+        near: near,
+        pi: Math.PI
       },
       uniforms: {
         scope: {

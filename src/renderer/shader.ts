@@ -14,10 +14,17 @@ import {
 import { pp } from '../pp';
 import interval from './glsl/interval.glsl';
 import lattice_01 from './glsl/lattice_01.glsl';
+import rotate from './glsl/rotate.glsl';
 import sphere from './glsl/sphere.glsl';
+import stereo from './glsl/stereo.glsl';
+
+const functionDefs = [interval, lattice_01, rotate, sphere, stereo];
 
 export class Shader {
   static vertex({ n, steps }: PipeNode): string {
+    const last = steps[steps.length - 1];
+    const d = last.type == 'stereo' ? last.args[1] : last.args[0];
+
     return endent`
     uniform struct Audio {
       float power;
@@ -30,11 +37,7 @@ export class Shader {
 
     const int n = ${Shader.from(n)};
 
-    ${lattice_01}
-
-    ${interval}
-
-    ${sphere}
+    ${functionDefs.join('\n')}
 
     vec4 to_position(int d, float[D_MAX] y) {
       vec4 p;
@@ -52,15 +55,13 @@ export class Shader {
 
     void main() {
       float[D_MAX] x, y;
-      float x0, x1, r0, r1;
-      int d, d0;
 
       ${Shader.init(steps[0])}
 
       ${steps.map(Shader.step).join('\nx = y;\n\n')}
 
-      vec4 mvPosition = modelViewMatrix * to_position(d, y);
-      gl_PointSize = -400. * NEAR / mvPosition.z;
+      vec4 mvPosition = modelViewMatrix * to_position(${Shader.from(d)}, y);
+      gl_PointSize = -400. * near / mvPosition.z;
       gl_Position = projectionMatrix * mvPosition;
     }`;
   }
@@ -77,9 +78,7 @@ export class Shader {
     sphere({ args }: StepNode) {
       const d = (args[0] as NumberNode).value - 1;
       return endent`
-      x = lattice_01(${d});
-      y = interval(${d}, 0., float(${2 * Math.PI}), x);
-      x = y;
+      x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
       `;
     }
   };
@@ -88,51 +87,23 @@ export class Shader {
     sphere({ args }: StepNode) {
       const [d, r] = args.map(Shader.from);
 
-      return `y = sphere(${d}, float(${r}), x);`;
+      return endent`
+      y = sphere(${d}, float(${r}), x);
+      `;
     },
 
     rotate({ args }: StepNode) {
       const [d, phi, d0, d1, f0, f1] = args.map(Shader.from);
+      // TODO handle f0, f1
       return endent`
-      // rotate
-      r0 = ${f0 || 'cos'}(float(${phi}));
-      r1 = ${f1 || 'sin'}(float(${phi}));
-      x0 = x[${d0}];
-      x1 = x[${d1}];
-
-      y = x;
-      y[${d0}] = x0 * r0 - x1 * r1;
-      y[${d1}] = x0 * r1 + x1 * r0;
+      y = rotate(${d}, ${phi}, ${d0}, ${d1}, x);
       `;
     },
 
     stereo({ args }: StepNode) {
       const [from, to] = args.map(Shader.from);
       return endent`
-      // stereo
-      d0 = ${from};
-      d = ${to};
-      if (d0 == d) y = x;
-
-      while (d0 > d) {
-        for (int k = 0; k < d0 - 1; k++) {
-          y[k] = x[k + 1] / (1. - x[0]);
-        }
-        d0--;
-      }
-
-      while (d0 < d) {
-        float n2 = 0.;
-        for (int k = 0; k < d0; k++) {
-          n2 += x[k] * x[k];
-        }
-        float divisor = n2 + 1.;
-        x[0] = (n2 - 1.) / divisor;
-        for (int k = 0; k <= d0; k++) {
-          y[k] = 2. * x[k - 1] / divisor;
-        }
-        d0++;
-      }
+      y = stereo(${from}, ${to}, x);
       `;
     }
   };
@@ -182,7 +153,7 @@ export class Shader {
 
   private static fromId({ id }: IdNode): string {
     const builtins = {
-      pi: Math.PI
+      pi: 'pi'
     };
 
     return builtins[id] ?? `scope.${id}`;
