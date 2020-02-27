@@ -30,14 +30,10 @@ export class Shader {
     const d = last.type == 'stereo' ? last.args[1] : last.args[0];
 
     return endent`
+    uniform float t;
     uniform struct Audio {
       float power;
-    };
-
-    uniform struct Scope {
-      float t;
-      Audio audio;
-    } scope;
+    } audio;
 
     const int n = ${Shader.from(n)};
 
@@ -145,7 +141,7 @@ export class Shader {
       case 'paren':
         return Shader.from(node.scalar);
       case 'id':
-        return Shader.fromId(node);
+        return Shader.fromId(node.id);
       default:
         throw new Error(
           `Can't handle node kind '${node.kind}' in node ${pp(node)}`
@@ -155,13 +151,13 @@ export class Shader {
 
   private static fromAccess({ id, index }: AccessNode): string {
     // TODO this is wrong; want to split access into index and member
-    return `scope.${id}.${index.id}`;
+    return `${Shader.fromId(id)}.${Shader.from(index)}`;
   }
 
   private static fromArith(node: ArithNode): string {
     const { op, operands } = node;
     const [a, b] = operands.map(Shader.from);
-    const float = /\./.test(a) || /\./.test(b) ? x => `float(${x})` : x => x;
+    const float = operands.some(isFloat) ? x => `float(${x})` : x => x;
 
     switch (op) {
       case '+':
@@ -178,12 +174,12 @@ export class Shader {
     }
   }
 
-  private static fromId({ id }: IdNode): string {
+  private static fromId(id: string): string {
     const builtins = {
       pi: 'pi'
     };
 
-    return builtins[id] ?? `scope.${id}`;
+    return builtins[id] ?? id;
   }
 
   private static fromNumber(value: number): string {
@@ -204,4 +200,19 @@ function vector(xs: Scalar[]): string {
   return endent`
   float[](${xs.map(x => `float(${x})`).join(', ')}, ${padding})
   `;
+}
+
+function isFloat(node: Scalar): boolean {
+  switch (node.kind) {
+    case 'id':
+      return node.id == 't';
+    case 'number':
+      return !Number.isInteger(node.value);
+    case 'fn':
+      return true; // so far no integer-valued fns
+    case 'arith':
+      return node.operands.some(isFloat);
+    default:
+      return false;
+  }
 }

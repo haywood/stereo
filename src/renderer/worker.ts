@@ -74,8 +74,8 @@ class Renderer {
 
   render = () => {
     const { points, material } = this;
-    const scope = material.uniforms.scope.value;
-    scope.t = Date.now() / 1000 - scope.t0;
+    const u = material.uniforms;
+    u.t = { value: Date.now() / 1000 - u.t0.value };
     this.renderer.render(this.scene, this.camera);
   };
 
@@ -95,10 +95,6 @@ class Renderer {
     const geometry = points.geometry as BufferGeometry;
     const { pipe, hsv, scope } = params;
     const n = resolver.resolve(pipe.n, 'number');
-    const d = resolver.resolve(
-      pipe.steps[pipe.steps.length - 1].args[0],
-      'number'
-    );
     const vertexShader = Shader.vertex(pipe);
     const fragmentShader = Shader.fragment(hsv);
 
@@ -111,14 +107,9 @@ class Renderer {
         pi: Math.PI
       },
       uniforms: {
-        scope: {
-          value: {
-            t0: Date.now() / 1000,
-            audio: scope.audio
-          }
-        },
-        n: { value: n },
-        d: { value: d }
+        t0: { value: Date.now() / 1000 },
+        audio: { value: scope.audio },
+        n: { value: n }
       }
     });
 
