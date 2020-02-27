@@ -31,6 +31,10 @@ uniform struct Audio {
 } audio;
 `;
 
+const varyings = `
+varying vec4 p;
+`;
+
 export const D_MAX = 10;
 
 export class Shader {
@@ -40,6 +44,8 @@ export class Shader {
 
     return endent`
     ${uniforms}
+
+    ${varyings}
 
     ${functionDefs.join('\n')}
 
@@ -67,6 +73,7 @@ export class Shader {
       vec4 mvPosition = modelViewMatrix * to_position(${Shader.from(d)}, y);
       gl_PointSize = -400. * near / mvPosition.z;
       gl_Position = projectionMatrix * mvPosition;
+      p = gl_Position;
     }`;
   }
 
@@ -74,8 +81,10 @@ export class Shader {
     return endent`
     ${uniforms}
 
+    ${varyings}
+
     void main() {
-      gl_FragColor = vec4(1.);
+      gl_FragColor = vec4(p);
     }
     `;
   }
