@@ -1,5 +1,6 @@
 import endent from 'endent';
 
+import { HSV } from '../params';
 import {
   AccessNode,
   ArithNode,
@@ -67,6 +68,14 @@ export class Shader {
       gl_PointSize = -400. * near / mvPosition.z;
       gl_Position = projectionMatrix * mvPosition;
     }`;
+  }
+
+  static fragment({ h, s, v }: HSV): string {
+    return endent`
+    void main() {
+      gl_FragColor = vec4(1.);
+    }
+    `;
   }
 
   private static init(node: StepNode): string {

@@ -15,7 +15,6 @@ import {
 } from 'three';
 import debug from '../debug';
 import { Data, DataChunk } from '../types';
-import defaultFragmentShader from './shader.frag';
 
 const screenDiag = Math.hypot(window.screen.width, window.screen.height);
 const near = Math.max(screenDiag / 100_000, 0.01);
@@ -94,14 +93,14 @@ class Renderer {
     const { points } = this;
     const resolver = new Resolver(params.scope);
     const geometry = points.geometry as BufferGeometry;
-    const { pipe, scope } = params;
+    const { pipe, hsv, scope } = params;
     const n = resolver.resolve(pipe.n, 'number');
     const d = resolver.resolve(
       pipe.steps[pipe.steps.length - 1].args[0],
       'number'
     );
     const vertexShader = Shader.vertex(pipe);
-    const fragmentShader = defaultFragmentShader;
+    const fragmentShader = Shader.fragment(hsv);
 
     this.material = this.points.material = new ShaderMaterial({
       vertexShader,
