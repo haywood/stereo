@@ -59,9 +59,9 @@ export class Shader {
     void main() {
       float[D_MAX] x, y;
 
-      ${Shader.init(steps[0])}
+      ${init(steps[0])}
 
-      ${steps.map(Shader.step).join('\nx = y;\n\n')}
+      ${steps.map(step).join('\nx = y;\n\n')}
 
       vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
       gl_PointSize = -400. * near / mvPosition.z;
@@ -72,7 +72,7 @@ export class Shader {
 
   static fragment(hsv: HSV): string {
     const ensureFloat = (x: Scalar) =>
-      isFloat(x) ? Shader.from(x) : `float(${Shader.from(x)})`;
+      isFloat(x) ? from(x) : `float(${from(x)})`;
     const h = ensureFloat(hsv.h);
     const s = ensureFloat(hsv.s);
     const v = ensureFloat(hsv.v);
@@ -93,34 +93,32 @@ export class Shader {
     }
     `;
   }
+}
 
-  private static init(node: StepNode): string {
-    return Shader.initializers[node.type](node);
-  }
-
-  private static step(node: StepNode): string {
-    return Shader.steps[node.type](node);
-  }
-
-  private static initializers = {
+function init(node: StepNode): string {
+  const initializers = {
     sphere({ args }: StepNode) {
-      const d = Shader.from(minus(args[0], 1));
+      const d = from(minus(args[0], 1));
       return endent`
-      x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
-      `;
+        x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
+        `;
     },
 
     torus({ args }: StepNode) {
-      const d = Shader.from(minus(args[0], 1));
+      const d = from(minus(args[0], 1));
       return endent`
-      x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
-      `;
+        x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
+        `;
     }
   };
 
-  private static steps = {
+  return initializers[node.type](node);
+}
+
+function step(node: StepNode): string {
+  const steps = {
     sphere({ args }: StepNode) {
-      const [d, r] = args.map(Shader.from);
+      const [d, r] = args.map(from);
 
       return endent`
       y = sphere(${d}, float(${r}), x);
@@ -128,14 +126,14 @@ export class Shader {
     },
 
     torus({ args }: StepNode) {
-      const [d, ...r] = args.map(Shader.from);
+      const [d, ...r] = args.map(from);
       return endent`
       y = torus(${d}, ${vector(r)}, x);
       `;
     },
 
     rotate({ args }: StepNode) {
-      const [d, phi, d0, d1, f0, f1] = args.map(Shader.from);
+      const [d, phi, d0, d1, f0, f1] = args.map(from);
       // TODO handle f0, f1
       return endent`
       y = rotate(${d}, ${phi}, ${d0}, ${d1}, x);
@@ -143,82 +141,83 @@ export class Shader {
     },
 
     stereo({ args }: StepNode) {
-      const [from, to] = args.map(Shader.from);
       return endent`
-      y = stereo(${from}, ${to}, x);
+      y = stereo(${args.map(from).join(', ')}, x);
       `;
     }
   };
 
-  private static from(node: Scalar): string {
-    switch (node.kind) {
-      case 'access':
-        return Shader.fromAccess(node);
-      case 'arith':
-        return Shader.fromArith(node);
-      case 'fn':
-        return Shader.fromFn(node);
-      case 'number':
-        return Shader.fromNumber(node.value);
-      case 'paren':
-        return Shader.from(node.scalar);
-      case 'id':
-        return Shader.fromId(node.id);
-      default:
-        throw new Error(
-          `Can't handle node kind '${node.kind}' in node ${pp(node)}`
-        );
-    }
+  return steps[node.type](node);
+}
+
+function from(node: Scalar): string {
+  switch (node.kind) {
+    case 'access':
+      return fromAccess(node);
+    case 'arith':
+      return fromArith(node);
+    case 'fn':
+      return fromFn(node);
+    case 'number':
+      return fromNumber(node.value);
+    case 'paren':
+      return from(node.scalar);
+    case 'id':
+      return fromId(node.id);
+    default:
+      throw new Error(
+        `Can't handle node kind '${node.kind}' in node ${pp(node)}`
+      );
   }
+}
 
-  private static fromAccess({ id, index }: AccessNode): string {
-    // TODO Should separate indexing vs member access in the grammar, but too
-    // lazy right now... That said, maybe this is OK. too lazy to decide right
-    // now...
-    if (isNumber(index)) {
-      return `${Shader.fromId(id)}[${Shader.from(index)}]`;
-    } else {
-      return `${Shader.fromId(id)}.${Shader.from(index)}`;
-    }
+function fromAccess({ id, index }: AccessNode): string {
+  // TODO Should separate indexing vs member access in the grammar, but too
+  // lazy right now... That said, maybe this is OK. too lazy to decide right
+  // now...
+  if (isNumber(index)) {
+    return `${fromId(id)}[${from(index)}]`;
+  } else {
+    return `${fromId(id)}.${from(index)}`;
   }
+}
 
-  private static fromArith(node: ArithNode): string {
-    const { op, operands } = node;
-    const [a, b] = operands.map(Shader.from);
-    const float = operands.some(isFloat) ? x => `float(${x})` : x => x;
+function fromArith(node: ArithNode): string {
+  const { op, operands } = node;
+  const [a, b] = operands.map(from);
+  const float = operands.some(isFloat) ? x => `float(${x})` : x => x;
 
-    switch (op) {
-      case '+':
-      case '*':
-      case '/':
-        return `${float(a)} ${op} ${float(b)}`;
-      case '**':
-      case '^':
-        return `pow(${float(a)}, ${float(b)})`;
-      case '-':
-        return b == null ? `-${float(a)}` : `${float(a)} - ${float(b)}`;
-      default:
-        throw node;
-    }
+  switch (op) {
+    case '+':
+    case '*':
+    case '/':
+      return `${float(a)} ${op} ${float(b)}`;
+    case '**':
+    case '^':
+      return `pow(${float(a)}, ${float(b)})`;
+    case '-':
+      return b == null ? `-${float(a)}` : `${float(a)} - ${float(b)}`;
+    default:
+      throw node;
   }
+}
 
-  private static fromFn(node: FnNode): string {
-    return endent`
-    ${node.name}(${node.args.map(Shader.from).join('\n')})
+function fromFn(node: FnNode): string {
+  return endent`
+    ${node.name}(${node.args.map(from).join('\n')})
     `;
-  }
+}
 
-  private static fromId(id: string): string {
-    const builtins = {
-      pi: 'pi'
-    };
+function fromId(id: string): string {
+  const builtins = {
+    pi: 'pi'
+  };
 
-    return builtins[id] ?? id;
-  }
+  return builtins[id] ?? id;
+}
 
-  private static fromNumber(value: number): string {
-    return value.toString();
-  }
+function fromNumber(value: number): string {
+  return value.toString();
 }
 
 function minus(x: Scalar, y: number): Scalar {
