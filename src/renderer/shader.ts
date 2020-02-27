@@ -57,7 +57,6 @@ export class Shader {
     ${vertexFunctions.join('\n')}
 
     vec4 to_position(int d, float[D_MAX] y) {
-      // TODO: account for camera position
       vec4 position;
 
       for (int k = 0; k < min(d, 4); k++) {
@@ -187,8 +186,9 @@ export class Shader {
   }
 
   private static fromAccess({ id, index }: AccessNode): string {
-    // TODO should separate indexing vs member access in the grammar, but too
-    // lazy right now...
+    // TODO Should separate indexing vs member access in the grammar, but too
+    // lazy right now... That said, maybe this is OK. too lazy to decide right
+    // now...
     if (isNumber(index)) {
       return `${Shader.fromId(id)}[${Shader.from(index)}]`;
     } else {

@@ -51,17 +51,14 @@ class Renderer {
     this.renderer.setAnimationLoop(this.render);
   }
 
-  private get z() {
-    return 3;
-  }
-
   setSize = (width: number, height: number) => {
     const aspect = width / height;
     const fov = 100;
 
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
-    this.camera.position.z = this.z;
+    // TODO support zoom and pan with mouse
+    this.camera.position.z = 4;
   };
 
   get extent(): [number, number, number] {
@@ -121,9 +118,6 @@ class Renderer {
 
     const i = Float32Array.from(Array.from({ length: n }).keys());
     geometry.setAttribute('position', new BufferAttribute(i, 1));
-
-    //if (d > 2) geometry.computeBoundingSphere();
-    this.camera.position.z = this.z;
   };
 }
 
