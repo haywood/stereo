@@ -96,58 +96,32 @@ export class Shader {
 }
 
 function init(node: StepNode): string {
+  const interval0To2Pi = ({ args }: StepNode) => {
+    const d = from(minus(args[0], 1));
+    return endent`
+        x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
+        `;
+  };
   const initializers = {
-    sphere({ args }: StepNode) {
-      const d = from(minus(args[0], 1));
-      return endent`
-        x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
-        `;
-    },
-
-    torus({ args }: StepNode) {
-      const d = from(minus(args[0], 1));
-      return endent`
-        x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
-        `;
-    }
+    sphere: interval0To2Pi,
+    torus: interval0To2Pi
   };
 
   return initializers[node.type](node);
 }
 
 function step(node: StepNode): string {
-  const steps = {
-    sphere({ args }: StepNode) {
-      const [d, r] = args.map(from);
-
-      return endent`
-      y = sphere(${d}, float(${r}), x);
-      `;
-    },
-
-    torus({ args }: StepNode) {
-      const [d, ...r] = args.map(from);
-      return endent`
-      y = torus(${d}, ${vector(r)}, x);
-      `;
-    },
-
-    rotate({ args }: StepNode) {
-      const [d, phi, d0, d1, f0, f1] = args.map(from);
-      // TODO handle f0, f1
-      return endent`
-      y = rotate(${d}, ${phi}, ${d0}, ${d1}, x);
-      `;
-    },
-
-    stereo({ args }: StepNode) {
-      return endent`
-      y = stereo(${args.map(from).join(', ')}, x);
-      `;
+  const simpleArgs = ({ args }: StepNode) => args.map(from);
+  const overrides = {
+    torus({ args: [d, ...r] }: StepNode) {
+      return [from(d), vector(r)];
     }
   };
 
-  return steps[node.type](node);
+  const args = (overrides[node.type] ?? simpleArgs)(node);
+  return endent`
+  y = ${node.type}(${args.join(', ')}, x);
+  `;
 }
 
 function from(node: Scalar): string {
@@ -229,9 +203,10 @@ function numberNode(value: number): NumberNode {
 }
 
 function vector(xs: Scalar[]): string {
+  const values = xs.map(x => `float(${from(x)})`).join(', ');
   const padding = new Array(D_MAX - xs.length).fill('0.').join(', ');
   return endent`
-  float[](${xs.map(x => `float(${x})`).join(', ')}, ${padding})
+  float[](${values}, ${padding})
   `;
 }
 
