@@ -45,6 +45,13 @@ varying vec3 p;
 export const D_MAX = 10;
 
 export class Shader {
+  // TODO support for additional step types:
+  // cube
+  // lattice
+  // spiral
+  // fucked_up_torus
+  // quaternion
+
   static vertex({ n, steps }: PipeNode): string {
     const last = steps[steps.length - 1];
     const d = last.type == 'stereo' ? last.args[1] : last.args[0];
