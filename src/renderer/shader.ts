@@ -12,6 +12,8 @@ import {
   Value
 } from '../pipe/grammar.pegjs';
 import { pp } from '../pp';
+import interval from './shader/interval.glsl';
+import lattice_01 from './shader/lattice_01.glsl';
 
 export class Shader {
   static vertex({ n, steps }: PipeNode): string {
@@ -24,7 +26,11 @@ export class Shader {
       float t;
       Audio audio;
     } scope;
+
     const int n = ${Shader.from(n)};
+
+    ${lattice_01}
+    ${interval}
 
     vec4 to_position(int d, float[D_MAX] y) {
       vec4 p;
@@ -69,29 +75,16 @@ export class Shader {
   }
 
   private static initializers = {
-    torus({ args }: StepNode) {
-      const d = (args[0] as NumberNode).value - 1;
-      return endent`
-      ${Shader.lattice_01(d)}
-
-      ${Shader.interval(
-        d,
-        new Array(d).fill(0),
-        new Array(d).fill(2 * Math.PI)
-      )}
-      `;
-    },
-
     sphere({ args }: StepNode) {
       const d = (args[0] as NumberNode).value - 1;
       return endent`
-      ${Shader.lattice_01(d)}
-
-      ${Shader.interval(
+      x = lattice_01(${d});
+      y = ${Shader.interval(
         d,
         new Array(d).fill(0),
         new Array(d).fill(2 * Math.PI)
       )}
+      x = y;
       `;
     }
   };
@@ -103,10 +96,6 @@ export class Shader {
       } = node;
 
       return Shader.sphere(d, r);
-    },
-
-    torus(node: StepNode) {
-      return '';
     },
 
     rotate({ args }: StepNode) {
@@ -155,20 +144,6 @@ export class Shader {
     }
   };
 
-  private static lattice_01(d: number) {
-    return endent`
-    // lattice_01
-    d = ${d};
-    float branching_factor = round(pow(float(n), 1. / float(d)));
-
-    for (int k = 0; k < d; k++) {
-      float exp = float(d - k - 1);
-      float dividend = round(position[0] / pow(branching_factor, exp));
-      x[k] = float(int(dividend) % int(branching_factor)) / (branching_factor - 1.);
-    }
-    `;
-  }
-
   private static interval(d: number, a: number[], b: number[]) {
     const arr = (xs: number[]) => {
       const str = xs.map(x => `float(${Shader.fromNumber(x)})`).join(', ');
@@ -177,16 +152,7 @@ export class Shader {
     };
 
     return endent`
-    // interval
-    d = ${d};
-
-    float[D_MAX] a = ${arr(a)};
-    float[D_MAX] b = ${arr(b)};
-
-    for (int k = 0; k < d; k++) {
-      y[k] = a[k] + x[k] * (b[k] - a[k]);
-    }
-    x = y;
+    interval(${d}, ${arr(a)}, ${arr(b)}, x);
     `;
   }
 
