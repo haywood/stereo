@@ -16,8 +16,13 @@ import { pp } from '../pp';
 export class Shader {
   static vertex({ n, steps }: PipeNode): string {
     return endent`
+    uniform struct Audio {
+      float power;
+    };
+
     uniform struct Scope {
       float t;
+      Audio audio;
     } scope;
     const int n = ${Shader.from(n)};
 
@@ -199,6 +204,8 @@ export class Shader {
 
   private static from(node: Scalar): string {
     switch (node.kind) {
+      case 'access':
+        return Shader.fromAccess(node);
       case 'arith':
         return Shader.fromArith(node);
       case 'number':
@@ -212,6 +219,11 @@ export class Shader {
           `Can't handle node kind '${node.kind}' in node ${pp(node)}`
         );
     }
+  }
+
+  private static fromAccess({ id, index }: AccessNode): string {
+    // TODO this is wrong; want to split access into index and member
+    return `scope.${id}.${index.id}`;
   }
 
   private static fromArith(node: ArithNode): string {

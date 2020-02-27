@@ -113,7 +113,8 @@ class Renderer {
       uniforms: {
         scope: {
           value: {
-            t0: Date.now() / 1000
+            t0: Date.now() / 1000,
+            audio: scope.audio
           }
         },
         n: { value: n },
