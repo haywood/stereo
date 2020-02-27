@@ -21,6 +21,15 @@ import stereo from './glsl/stereo.glsl';
 import torus from './glsl/torus.glsl';
 
 const functionDefs = [interval, lattice_01, rotate, sphere, stereo, torus];
+const uniforms = `
+uniform float t;
+
+uniform int n;
+
+uniform struct Audio {
+  float power;
+} audio;
+`;
 
 export const D_MAX = 10;
 
@@ -30,12 +39,7 @@ export class Shader {
     const d = last.type == 'stereo' ? last.args[1] : last.args[0];
 
     return endent`
-    uniform float t;
-    uniform struct Audio {
-      float power;
-    } audio;
-
-    const int n = ${Shader.from(n)};
+    ${uniforms}
 
     ${functionDefs.join('\n')}
 
@@ -68,6 +72,8 @@ export class Shader {
 
   static fragment({ h, s, v }: HSV): string {
     return endent`
+    ${uniforms}
+
     void main() {
       gl_FragColor = vec4(1.);
     }
