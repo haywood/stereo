@@ -30,7 +30,25 @@ export const varyings = `
 varying vec3 p;
 `;
 
+export const screenDiag = Math.hypot(window.screen.width, window.screen.height);
+export const near = Math.max(screenDiag / 100_000, 0.01);
+export const far = 10 / near;
+export const fov = 100;
+
 export const D_MAX = 10;
+
+export const defines = {
+  D_MAX,
+  near: near,
+  e: Math.E,
+  ln10: Math.LN10,
+  ln2: Math.LN2,
+  log10e: Math.LOG10E,
+  log2e: Math.LOG2E,
+  pi: Math.PI,
+  sqrt1_2: Math.SQRT1_2,
+  sqrt2: Math.SQRT2
+};
 
 export function from(node: Scalar): string {
   switch (node.kind) {
@@ -53,8 +71,14 @@ export function from(node: Scalar): string {
 
 export function isFloat(node: Scalar): boolean {
   switch (node.kind) {
+    case 'access':
+      // TODO currently works, but is pretty awkward and brittle
+      return 'audio' == node.id && from(node.index) != 'onset';
     case 'id':
-      return ['t', 'pi'].includes(node.id);
+      if ('t' == node.id) return true;
+
+      const define = defines[node.id];
+      return typeof define == 'number' && !Number.isInteger(define);
     case 'number':
       return !Number.isInteger(node.value);
     case 'fn':

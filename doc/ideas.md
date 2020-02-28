@@ -24,10 +24,6 @@ do a translation along the z-axis. This could work in concert with the possible
 zoom and pan feature. The zoom level would feed into the magnitude and direction
 of the translation.
 
-## Link to the github in the overlay
-
-Duh...
-
 ## Code editor for pipe
 
 Like with autocomplete and syntax highlighting and shit...
@@ -35,3 +31,11 @@ Like with autocomplete and syntax highlighting and shit...
 ## Arbitrary user-defined scalar-valued variables
 
 Extension of and replacement for the theta input.
+
+## Misc
+
+- Move n and d0 into separate inputs; doesn't really make sense for them to be
+  part of pipe. Would be cleaner if pipe were only concerned with the shape
+  and iteration in the scene.
+
+- Link to the github repo in the overlay

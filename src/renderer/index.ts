@@ -2,12 +2,12 @@ import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import assert from 'assert';
 import { numberNode } from '../pipe/ast';
 import { inputs } from '../inputs';
-import { Params, HSV } from '../params';
+import { HSV } from '../params';
 import { Scope } from '../params/scope';
 import { PipeNode } from '../pipe/grammar.pegjs';
 import { vertex } from './shader/vertex';
 import { fragment } from './shader/fragment';
-import { D_MAX } from './shader/common';
+import { defines, near, far, fov } from './shader/common';
 import {
   BufferAttribute,
   VertexColors,
@@ -20,11 +20,6 @@ import {
   WebGLRenderer
 } from 'three';
 import debug from '../debug';
-
-const screenDiag = Math.hypot(window.screen.width, window.screen.height);
-const near = Math.max(screenDiag / 100_000, 0.01);
-const far = 10 / near;
-const fov = 100;
 
 export class Renderer {
   readonly canvas = document.querySelector('canvas');
@@ -39,18 +34,7 @@ export class Renderer {
     uniforms: {
       audio: { value: AUDIO_PLACEHOLDER }
     },
-    defines: {
-      D_MAX,
-      near: near,
-      e: Math.E,
-      ln10: Math.LN10,
-      ln2: Math.LN2,
-      log10e: Math.LOG10E,
-      log2e: Math.LOG2E,
-      pi: Math.PI,
-      sqrt1_2: Math.SQRT1_2,
-      sqrt2: Math.SQRT2
-    }
+    defines
   });
 
   constructor() {
