@@ -12,7 +12,6 @@ import {
   StepNode,
   Value
 } from '../pipe/grammar.pegjs';
-import { pp } from '../pp';
 import hsv2rgb from './glsl/hsv2rgb.glsl';
 import interval from './glsl/interval.glsl';
 import lattice_01 from './glsl/lattice_01.glsl';
@@ -105,8 +104,8 @@ function init(node: StepNode): string {
   const interval0To2Pi = ({ args }: StepNode) => {
     const d = from(minus(args[0], 1));
     return endent`
-        x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
-        `;
+    x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
+    `;
   };
   const initializers = {
     sphere: interval0To2Pi,
@@ -117,17 +116,26 @@ function init(node: StepNode): string {
 }
 
 function step(node: StepNode): string {
-  const simpleArgs = ({ args }: StepNode) => args.map(from);
-  const overrides = {
-    torus({ args: [d, ...r] }: StepNode) {
-      return [from(d), vector(r)];
-    }
-  };
-
-  const args = (overrides[node.type] ?? simpleArgs)(node);
+  const args = stepArgs(node);
   return endent`
   y = ${node.type}(${args.join(', ')}, x);
   `;
+}
+
+function stepArgs({ type, args }: StepNode): string[] {
+  const [d, ...rest] = args.map(from);
+  switch (type) {
+    case 'torus':
+      return [d, vector(rest)];
+    case 'sphere':
+      return [d, `float(${rest[0]})`];
+    case 'rotate':
+      return [d, `float(${rest[0]})`, rest[1], rest[2]];
+    case 'stereo':
+      return [d, rest[0]];
+    default:
+      throw new Error(`Can't get args for step type ${type}`);
+  }
 }
 
 function from(node: Scalar): string {
@@ -145,9 +153,7 @@ function from(node: Scalar): string {
     case 'id':
       return fromId(node.id);
     default:
-      throw new Error(
-        `Can't handle node kind '${node.kind}' in node ${pp(node)}`
-      );
+      throw new Error(`Can't generate GLSL source from node kind ${node.kind}`);
   }
 }
 
@@ -208,8 +214,8 @@ function numberNode(value: number): NumberNode {
   return { kind: 'number', value };
 }
 
-function vector(xs: Scalar[]): string {
-  const values = xs.map(x => `float(${from(x)})`).join(', ');
+function vector(xs: string[]): string {
+  const values = xs.map(x => `float(${x})`).join(', ');
   const padding = new Array(D_MAX - xs.length).fill('0.').join(', ');
   return endent`
   float[](${values}, ${padding})

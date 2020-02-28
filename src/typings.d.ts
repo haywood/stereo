@@ -14,7 +14,15 @@ declare module '*.pegjs' {
 
   export type StepNode = {
     kind: 'step';
-    type: string;
+    type:
+      | 'sphere'
+      | 'spiral'
+      | 'torus'
+      | 'lattice'
+      | 'cube'
+      | 'rotate'
+      | 'stereo'
+      | 'quaternion';
     args: Scalar[];
   };
 
@@ -28,7 +36,7 @@ declare module '*.pegjs' {
 
   export type ArithNode = {
     kind: 'arith';
-    op: string;
+    op: '*' | '/' | '+' | '-' | '**' | '^';
     operands: [Scalar, Scalar];
   };
 
