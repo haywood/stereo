@@ -6,7 +6,6 @@ import { inputs } from '../inputs';
 import { Params, HSV } from '../params';
 import { Scope } from '../params/scope';
 import { PipeNode } from '../pipe/grammar.pegjs';
-import { Resolver } from '../pipe/resolver';
 import { vertex } from './shader/vertex';
 import { fragment } from './shader/fragment';
 import { D_MAX } from './shader/common';
@@ -80,8 +79,7 @@ export class Renderer {
 
   setPipe(pipe: PipeNode) {
     const { uniforms, geometry, scope } = this;
-    const resolver = new Resolver(scope);
-    const n = resolver.resolve(pipe.n);
+    const n = pipe.n;
     const i = Float32Array.from(Array.from({ length: n }).keys());
     const vertexShader = vertex(pipe);
 
@@ -89,7 +87,6 @@ export class Renderer {
     uniforms.n = { value: n };
 
     this.t0 = Date.now() / 1000;
-    this.pipe = pipe;
     this.material.vertexShader = vertexShader;
     this.material.needsUpdate = true;
 
@@ -100,7 +97,6 @@ export class Renderer {
     const { material } = this;
     const fragmentShader = fragment(hsv);
 
-    this.hsv = hsv;
     material.fragmentShader = fragmentShader;
     material.needsUpdate = true;
 
@@ -110,7 +106,6 @@ export class Renderer {
   setScope(scope: Scope) {
     const { uniforms } = this;
 
-    this.scope = scope;
     Object.entries(scope).forEach(([name, value]) => {
       uniforms[name] = { value };
     });
