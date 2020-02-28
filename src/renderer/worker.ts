@@ -58,7 +58,7 @@ class Renderer {
     this.renderer.setSize(width, height, false);
     this.camera = new PerspectiveCamera(fov, aspect, near, far);
     // TODO support zoom and pan with mouse
-    this.camera.position.z = 4;
+    this.camera.position.z = 2;
   };
 
   get extent(): [number, number, number] {
