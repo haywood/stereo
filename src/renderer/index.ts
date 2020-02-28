@@ -23,6 +23,7 @@ import debug from '../debug';
 const screenDiag = Math.hypot(window.screen.width, window.screen.height);
 const near = Math.max(screenDiag / 100_000, 0.01);
 const far = 10 / near;
+const fov = 100;
 
 export class Renderer {
   readonly canvas = document.querySelector('canvas');
@@ -48,12 +49,15 @@ export class Renderer {
       canvas: this.canvas,
       context: this.canvas.getContext('webgl2')
     });
+    this.camera = new PerspectiveCamera(fov, 0, near, far);
+    // TODO support zoom and pan with mouse
+    this.camera.position.z = 2;
     this.points = new Points(this.geometry);
-
-    this.setSize();
 
     this.scene = new Scene();
     this.scene.add(this.points);
+
+    this.setSize();
     this.renderer.setAnimationLoop(this.render);
   }
 
@@ -61,12 +65,10 @@ export class Renderer {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const aspect = width / height;
-    const fov = 100;
 
     this.renderer.setSize(width, height, false);
-    this.camera = new PerspectiveCamera(fov, aspect, near, far);
-    // TODO support zoom and pan with mouse
-    this.camera.position.z = 2;
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
   };
 
   get extent(): [number, number, number] {
