@@ -33,16 +33,15 @@ export class Renderer {
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
-  private uniforms: any = {
-    audio: { value: AUDIO_PLACEHOLDER }
-  };
   private material: ShaderMaterial = new ShaderMaterial({
     defines: {
       D_MAX,
       near: near,
       pi: Math.PI
     },
-    uniforms: this.uniforms
+    uniforms: {
+      audio: { value: AUDIO_PLACEHOLDER }
+    }
   });
   private t0: number;
 
@@ -64,7 +63,10 @@ export class Renderer {
   }
 
   setPipe(pipe: PipeNode) {
-    const { uniforms, geometry, scope } = this;
+    const {
+      geometry,
+      material: { uniforms }
+    } = this;
     const n = pipe.n;
     const i = Float32Array.from(Array.from({ length: n }).keys());
     const vertexShader = vertex(pipe);
@@ -90,7 +92,9 @@ export class Renderer {
   }
 
   setScope(scope: Scope) {
-    const { uniforms } = this;
+    const {
+      material: { uniforms }
+    } = this;
 
     Object.entries(scope).forEach(([name, value]) => {
       uniforms[name] = { value };
@@ -114,7 +118,10 @@ export class Renderer {
 
   private render() {
     if (inputs.animate.value) {
-      const { uniforms, t0 } = this;
+      const {
+        material: { uniforms },
+        t0
+      } = this;
       uniforms.t = { value: Date.now() / 1000 - t0 };
       this.renderer.render(this.scene, this.camera);
     }
