@@ -1,3 +1,8 @@
+declare module '*.glsl' {
+  declare const source: string;
+  export default source;
+}
+
 declare module '*.pegjs' {
   declare const grammar: string;
   export default grammar;
