@@ -1,6 +1,6 @@
 import endent from 'endent';
 
-import { HSV } from '../../params';
+import { HSV } from '../../types';
 import {
   AccessNode,
   ArithNode,

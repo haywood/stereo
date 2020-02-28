@@ -11,8 +11,7 @@ import debug from './debug';
 import { inputs } from './inputs';
 import { Change } from './inputs/change';
 import { Overlay } from './overlay';
-import { HSV } from './params';
-import { Scope } from './params/scope';
+import { Scope, HSV } from './types';
 import { renderer } from './renderer';
 
 const cursorInactiveTimeout = 1000;
