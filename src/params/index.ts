@@ -1,11 +1,4 @@
-import { PipeNode, Scalar } from './grammar.pegjs';
-import { Scope } from './scope';
-
-export type Params = {
-  pipe: PipeNode;
-  scope: Scope;
-  hsv: HSV;
-};
+import { Scalar } from './grammar.pegjs';
 
 export type HSV = {
   h: Scalar;

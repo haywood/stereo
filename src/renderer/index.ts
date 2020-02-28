@@ -35,7 +35,6 @@ export class Renderer {
   private scene: Scene;
   private camera: PerspectiveCamera;
   private points: Points;
-  private material: ShaderMaterial;
   private pipe: PipeNode = {
     kind: 'pipe',
     n: { kind: 'number', value: 0 },
@@ -51,6 +50,14 @@ export class Renderer {
   private uniforms: any = {
     audio: { value: PLACEHOLDER_AUDIO }
   };
+  private material: ShaderMaterial = new ShaderMaterial({
+    defines: {
+      D_MAX,
+      near: near,
+      pi: Math.PI
+    },
+    uniforms: this.uniforms
+  });
   private t0: number;
 
   constructor() {
@@ -61,7 +68,7 @@ export class Renderer {
     this.camera = new PerspectiveCamera(fov, 0, near, far);
     // TODO support zoom and pan with mouse
     this.camera.position.z = 2;
-    this.points = new Points(this.geometry);
+    this.points = new Points(this.geometry, this.material);
 
     this.scene = new Scene();
     this.scene.add(this.points);
@@ -71,13 +78,32 @@ export class Renderer {
   }
 
   setPipe(pipe: PipeNode) {
+    const { uniforms, geometry, scope } = this;
+    const resolver = new Resolver(scope);
+    const n = resolver.resolve(pipe.n);
+    const i = Float32Array.from(Array.from({ length: n }).keys());
+    const vertexShader = vertex(pipe);
+
+    geometry.setAttribute('position', new BufferAttribute(i, 1));
+    uniforms.n = { value: n };
+
+    this.t0 = Date.now() / 1000;
     this.pipe = pipe;
-    this.setShaders();
+    this.material.vertexShader = vertexShader;
+    this.material.needsUpdate = true;
+
+    debug('vertexShader', vertexShader);
   }
 
   setHsv(hsv: HSV) {
+    const { material } = this;
+    const fragmentShader = fragment(hsv);
+
     this.hsv = hsv;
-    this.setShaders();
+    material.fragmentShader = fragmentShader;
+    material.needsUpdate = true;
+
+    debug('fragmentShader', fragmentShader);
   }
 
   setScope(scope: Scope) {
@@ -110,34 +136,6 @@ export class Renderer {
       uniforms.t = { value: Date.now() / 1000 - t0 };
       this.renderer.render(this.scene, this.camera);
     }
-  }
-
-  private setShaders() {
-    const { points, uniforms, geometry, pipe, hsv, scope } = this;
-    const resolver = new Resolver(scope);
-    const n = resolver.resolve(pipe.n);
-    const i = Float32Array.from(Array.from({ length: n }).keys());
-    const vertexShader = vertex(pipe);
-    const fragmentShader = fragment(hsv);
-
-    geometry.setAttribute('position', new BufferAttribute(i, 1));
-    uniforms.n = { value: n };
-
-    this.t0 = Date.now() / 1000;
-    this.pipe = pipe;
-    this.material = this.points.material = new ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms: this.uniforms,
-      defines: {
-        D_MAX,
-        near: near,
-        pi: Math.PI
-      }
-    });
-
-    debug('vertexShader', vertexShader);
-    debug('fragmentShader', fragmentShader);
   }
 }
 

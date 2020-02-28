@@ -13,7 +13,6 @@ import { Change } from './inputs/change';
 import { Overlay } from './overlay';
 import { HSV } from './params';
 import { Scope } from './params/scope';
-import { paramsStream } from './params/stream';
 import { renderer } from './renderer';
 
 const cursorInactiveTimeout = 1000;
