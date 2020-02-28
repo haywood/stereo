@@ -45,6 +45,7 @@
     "karma-parcel": "^0.5.2",
     "karma-source-map-support": "^1.4.0",
     "local-web-server": "^3.0.7",
+    "lodash": "^4.17.15",
     "node-sass": "^4.13.1",
     "nodemon": "^2.0.2",
     "parcel-bundler": "^1.12.4",

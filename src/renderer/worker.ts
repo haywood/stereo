@@ -1,5 +1,8 @@
+import { isEqual } from 'lodash';
 import assert from 'assert';
-import { Params } from '../params';
+import { Params, HSV } from '../params';
+import { Scope } from '../params/scope';
+import { PipeNode } from '../pipe/grammar.pegjs';
 import { Resolver } from '../pipe/resolver';
 import { vertex } from './shader/vertex';
 import { fragment } from './shader/fragment';
@@ -27,6 +30,15 @@ class Renderer {
   private camera: PerspectiveCamera;
   private points: Points;
   private material: ShaderMaterial;
+  private pipe: PipeNode = {
+    kind: 'pipe',
+    n: { kind: 'number', value: 0 },
+    d0: 0,
+    steps: []
+  };
+  private hsv: HSV;
+  private uniforms: any = {};
+  private t0: number;
 
   constructor(
     private readonly canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -65,9 +77,8 @@ class Renderer {
   }
 
   render = () => {
-    const { points, material } = this;
-    const u = material.uniforms;
-    u.t = { value: Date.now() / 1000 - u.t0.value };
+    const { points, material, uniforms, t0 } = this;
+    uniforms.t = { value: Date.now() / 1000 - t0 };
     this.renderer.render(this.scene, this.camera);
   };
 
@@ -81,38 +92,46 @@ class Renderer {
     }
   }
 
+  // TODO: should have a separate method for each of pipe, hsv, and scope
   update = (params: Params) => {
-    const { points } = this;
-    const resolver = new Resolver(params.scope);
+    const { points, uniforms } = this;
     const geometry = points.geometry as BufferGeometry;
     const { pipe, hsv, scope } = params;
-    const n = resolver.resolve(pipe.n);
     const vertexShader = vertex(pipe);
     const fragmentShader = fragment(hsv);
 
-    this.material = this.points.material = new ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      defines: {
-        D_MAX,
-        near: near,
-        pi: Math.PI
-      },
-      uniforms: {
-        t0: { value: Date.now() / 1000 },
-        n: { value: n },
-        ...Object.entries(scope).reduce((memo, [name, value]) => {
-          memo[name] = { value };
-          return memo;
-        }, {})
-      }
+    Object.entries(scope).forEach(([name, value]) => {
+      uniforms[name] = { value };
     });
 
-    debug('vertexShader', vertexShader);
-    debug('fragmentShader', fragmentShader);
+    if (!isEqual(pipe.n, this.pipe.n)) {
+      this.pipe.n = pipe.n;
 
-    const i = Float32Array.from(Array.from({ length: n }).keys());
-    geometry.setAttribute('position', new BufferAttribute(i, 1));
+      const resolver = new Resolver(params.scope);
+      const n = resolver.resolve(pipe.n);
+      uniforms.n = { value: n };
+      const i = Float32Array.from(Array.from({ length: n }).keys());
+      geometry.setAttribute('position', new BufferAttribute(i, 1));
+    }
+
+    if (!isEqual(pipe.steps, this.pipe.steps) || !isEqual(hsv, this.hsv)) {
+      this.pipe = pipe;
+      this.t0 = Date.now() / 1000;
+
+      this.material = this.points.material = new ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        defines: {
+          D_MAX,
+          near: near,
+          pi: Math.PI
+        },
+        uniforms: this.uniforms
+      });
+
+      debug('vertexShader', vertexShader);
+      debug('fragmentShader', fragmentShader);
+    }
   };
 }
 
