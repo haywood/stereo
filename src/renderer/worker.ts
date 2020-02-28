@@ -16,7 +16,6 @@ import {
   WebGLRenderer
 } from 'three';
 import debug from '../debug';
-import { Data, DataChunk } from '../types';
 
 const screenDiag = Math.hypot(window.screen.width, window.screen.height);
 const near = Math.max(screenDiag / 100_000, 0.01);
@@ -28,12 +27,6 @@ class Renderer {
   private camera: PerspectiveCamera;
   private points: Points;
   private material: ShaderMaterial;
-  private data: Data = {
-    n: 0,
-    d: 3,
-    position: new Float32Array(3),
-    color: new Float32Array(3)
-  };
 
   constructor(
     private readonly canvas: HTMLCanvasElement | OffscreenCanvas,
