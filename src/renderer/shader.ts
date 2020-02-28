@@ -15,12 +15,23 @@ import {
 import hsv2rgb from './glsl/hsv2rgb.glsl';
 import interval from './glsl/interval.glsl';
 import lattice_01 from './glsl/lattice_01.glsl';
+import polar2cart from './glsl/polar2cart.glsl';
 import rotate from './glsl/rotate.glsl';
 import sphere from './glsl/sphere.glsl';
+import spiral from './glsl/spiral.glsl';
 import stereo from './glsl/stereo.glsl';
 import torus from './glsl/torus.glsl';
 
-const vertexFunctions = [interval, lattice_01, rotate, sphere, stereo, torus];
+const vertexFunctions = [
+  interval,
+  lattice_01,
+  polar2cart,
+  rotate,
+  sphere,
+  stereo,
+  torus,
+  spiral
+];
 const fragmentFunctions = [hsv2rgb];
 
 const uniforms = `
@@ -47,7 +58,6 @@ export class Shader {
   // TODO support for additional step types:
   // cube
   // lattice
-  // spiral
   // quaternion
 
   static vertex({ n, steps }: PipeNode): string {
@@ -100,19 +110,26 @@ export class Shader {
   }
 }
 
-function init(node: StepNode): string {
-  const interval0To2Pi = ({ args }: StepNode) => {
+function init({ type, args }: StepNode): string {
+  const interval0To2Pi = () => {
     const d = from(minus(args[0], 1));
     return endent`
     x = interval(${d}, 0., float(2. * pi), lattice_01(${d}));
     `;
   };
-  const initializers = {
-    sphere: interval0To2Pi,
-    torus: interval0To2Pi
-  };
 
-  return initializers[node.type](node);
+  switch (type) {
+    case 'sphere':
+    case 'torus':
+      return interval0To2Pi();
+    case 'spiral':
+      const d = from(minus(args[0], 1));
+      return endent`
+      x = interval(${d}, 0., ${from(args[1])}, lattice_01(${d}));
+      `;
+    default:
+      throw new Error(`Can't initialize step type ${type}`);
+  }
 }
 
 function step(node: StepNode): string {
@@ -127,6 +144,7 @@ function stepArgs({ type, args }: StepNode): string[] {
   switch (type) {
     case 'torus':
       return [d, vector(rest)];
+    case 'spiral':
     case 'sphere':
       return [d, `float(${rest[0]})`];
     case 'rotate':
@@ -238,7 +256,7 @@ function isNumber(node: Scalar): boolean {
 function isFloat(node: Scalar): boolean {
   switch (node.kind) {
     case 'id':
-      return node.id == 't';
+      return ['t', 'pi'].includes(node.id);
     case 'number':
       return !Number.isInteger(node.value);
     case 'fn':
