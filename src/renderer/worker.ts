@@ -1,7 +1,9 @@
 import assert from 'assert';
 import { Params } from '../params';
-import { Shader } from './shader';
 import { Resolver } from '../pipe/resolver';
+import { vertex } from './shader/vertex';
+import { fragment } from './shader/fragment';
+import { D_MAX } from './shader/common';
 import {
   BufferAttribute,
   VertexColors,
@@ -92,14 +94,14 @@ class Renderer {
     const geometry = points.geometry as BufferGeometry;
     const { pipe, hsv, scope } = params;
     const n = resolver.resolve(pipe.n, 'number');
-    const vertexShader = Shader.vertex(pipe);
-    const fragmentShader = Shader.fragment(hsv);
+    const vertexShader = vertex(pipe);
+    const fragmentShader = fragment(hsv);
 
     this.material = this.points.material = new ShaderMaterial({
       vertexShader,
       fragmentShader,
       defines: {
-        D_MAX: 10,
+        D_MAX,
         near: near,
         pi: Math.PI
       },
