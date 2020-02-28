@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
 import assert from 'assert';
+import { inputs } from '../inputs';
 import { Params, HSV } from '../params';
 import { Scope } from '../params/scope';
 import { PipeNode } from '../pipe/grammar.pegjs';
@@ -58,37 +59,11 @@ export class Renderer {
     this.scene.add(this.points);
 
     this.setSize();
-    this.renderer.setAnimationLoop(this.render);
-  }
-
-  setSize = () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const aspect = width / height;
-
-    this.renderer.setSize(width, height, false);
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
-  };
-
-  render = () => {
-    const { points, material, uniforms, t0 } = this;
-    uniforms.t = { value: Date.now() / 1000 - t0 };
-    this.renderer.render(this.scene, this.camera);
-  };
-
-  renderPng(): Promise<Blob> {
-    this.render();
-    const canvas = this.canvas;
-    if (canvas instanceof HTMLCanvasElement) {
-      return new Promise(r => canvas.toBlob(r));
-    } else {
-      return canvas.convertToBlob();
-    }
+    this.renderer.setAnimationLoop(() => this.render());
   }
 
   // TODO: should have a separate method for each of pipe, hsv, and scope
-  update = (params: Params) => {
+  update(params: Params) {
     const { points, uniforms, geometry } = this;
     const { pipe, hsv, scope } = params;
 
@@ -122,7 +97,30 @@ export class Renderer {
       debug('vertexShader', vertexShader);
       debug('fragmentShader', fragmentShader);
     }
-  };
+  }
+
+  setSize() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const aspect = width / height;
+
+    this.renderer.setSize(width, height, false);
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+  }
+
+  renderPng(): Promise<Blob> {
+    this.render(); // need to call render first, since three.js clears the draw buffers
+    return new Promise(r => this.canvas.toBlob(r));
+  }
+
+  private render() {
+    if (inputs.animate.value) {
+      const { uniforms, t0 } = this;
+      uniforms.t = { value: Date.now() / 1000 - t0 };
+      this.renderer.render(this.scene, this.camera);
+    }
+  }
 }
 
 export const renderer = new Renderer();
