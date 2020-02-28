@@ -28,11 +28,12 @@ uniform struct Audio {
 
 export const varyings = `
 varying vec3 p;
+flat varying int i;
 `;
 
 export const screenDiag = Math.hypot(window.screen.width, window.screen.height);
 export const near = Math.max(screenDiag / 100_000, 0.01);
-export const far = 10 / near;
+export const far = screenDiag;
 export const fov = 100;
 
 export const D_MAX = 10;

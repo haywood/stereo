@@ -3,7 +3,7 @@
 #define Q_J 2
 #define Q_K 3
 
-float[D_MAX] apply_r(int d, float r, float[D_MAX] x) {
+float[D_MAX] quaternion_r(int d, float r, float[D_MAX] x) {
   float[D_MAX] y;
 
   y[Q_R] = x[Q_R] * r; // r * r = r
@@ -14,7 +14,7 @@ float[D_MAX] apply_r(int d, float r, float[D_MAX] x) {
   return y;
 }
 
-float[D_MAX] apply_i(int d, float i, float[D_MAX] x) {
+float[D_MAX] quaternion_i(int d, float i, float[D_MAX] x) {
   float[D_MAX] y;
 
   y[Q_R] = -x[Q_I] * i; // i * i = -1
@@ -25,7 +25,7 @@ float[D_MAX] apply_i(int d, float i, float[D_MAX] x) {
   return y;
 }
 
-float[D_MAX] apply_j(int d, float j, float[D_MAX] x) {
+float[D_MAX] quaternion_j(int d, float j, float[D_MAX] x) {
   float[D_MAX] y;
 
   y[Q_R] = -x[Q_J] * j; // j * j = -1
@@ -37,7 +37,7 @@ float[D_MAX] apply_j(int d, float j, float[D_MAX] x) {
   return y;
 }
 
-float[D_MAX] apply_k(int d, float k, float[D_MAX] x) {
+float[D_MAX] quaternion_k(int d, float k, float[D_MAX] x) {
   float[D_MAX] y;
 
   y[Q_R] = -x[Q_K] * k; // k * k = -1
@@ -51,10 +51,10 @@ float[D_MAX] apply_k(int d, float k, float[D_MAX] x) {
 
 float[D_MAX] quaternion(int d, float[4] q, float[D_MAX] x) {
   float[D_MAX] y,
-    r = apply_r(d, q[Q_R], x),
-    i = apply_i(d, q[Q_I], x),
-    j = apply_j(d, q[Q_J], x),
-    k = apply_k(d, q[Q_K], x);
+    r = quaternion_r(d, q[Q_R], x),
+    i = quaternion_i(d, q[Q_I], x),
+    j = quaternion_j(d, q[Q_J], x),
+    k = quaternion_k(d, q[Q_K], x);
 
   for (int n = 0; n < d; n++) {
     y[n] += r[n] + i[n] + j[n] + k[n];

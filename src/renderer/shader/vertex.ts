@@ -21,12 +21,14 @@ import stereo from './glsl/stereo.glsl';
 import torus from './glsl/torus.glsl';
 import lattice from './glsl/lattice.glsl';
 import quaternion from './glsl/quaternion.glsl';
+import cube from './glsl/cube.glsl';
 import { init } from './init';
 import { iter } from './iter';
 
 const vertexFunctions = [
   interval,
   lattice,
+  cube,
   polar2cart,
   rotate,
   sphere,
@@ -35,9 +37,6 @@ const vertexFunctions = [
   spiral,
   quaternion
 ];
-
-// TODO support for additional step types:
-// cube
 
 export function vertex({ n, steps }: PipeNode): string {
   const last = steps[steps.length - 1];
@@ -52,6 +51,7 @@ export function vertex({ n, steps }: PipeNode): string {
 
     void main() {
       float[D_MAX] x, y;
+      i = int(position[0]);
 
       ${init(steps[0])}
 

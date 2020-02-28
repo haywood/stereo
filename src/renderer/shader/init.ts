@@ -24,10 +24,17 @@ export function init({ type, args }: StepNode): string {
     case 'lattice':
       return lattice(args);
     case 'cube':
-      throw new Error(`TODO: shader/init(cube)`);
+      return cube(args);
     default:
       throw new Error(`Can't initialize step type ${type}`);
   }
+}
+
+function interval0To2Pi(args: Scalar[]) {
+  const d = from(minus(args[0], 1));
+  return endent`
+  x = interval(${d}, 0., float(2. * pi));
+  `;
 }
 
 function spiral(args: Scalar[]): string {
@@ -38,16 +45,16 @@ function spiral(args: Scalar[]): string {
 }
 
 function lattice(args: Scalar[]): string {
-  const d = from(minus(args[0], 1));
+  const d = from(args[0]);
   return endent`
   x = interval(${d}, 0., 1.);
   `;
 }
 
-function interval0To2Pi(args: Scalar[]) {
-  const d = from(minus(args[0], 1));
+function cube(args: Scalar[]): string {
+  const [d, l] = args.map(from);
   return endent`
-  x = interval(${d}, 0., float(2. * pi));
+  x = cube_face(${d}, float(${l}));
   `;
 }
 

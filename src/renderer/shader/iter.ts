@@ -37,6 +37,7 @@ function stepArgs({ type, args }: StepNode): string[] {
     case 'spiral':
     case 'sphere':
     case 'lattice':
+    case 'cube':
       return [d, `float(${rest[0]})`];
     case 'rotate':
       return [d, `float(${rest[0]})`, rest[1], rest[2]];
