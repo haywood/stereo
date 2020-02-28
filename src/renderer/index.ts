@@ -30,20 +30,22 @@ export class Renderer {
   readonly canvas = document.querySelector('canvas');
 
   private geometry = new BufferGeometry();
+  private camera: PerspectiveCamera;
   private renderer: WebGLRenderer;
   private scene: Scene;
-  private camera: PerspectiveCamera;
+  private t0: number;
+
   private material: ShaderMaterial = new ShaderMaterial({
+    uniforms: {
+      audio: { value: AUDIO_PLACEHOLDER }
+    },
     defines: {
       D_MAX,
       near: near,
+      // TODO Add more constants...
       pi: Math.PI
-    },
-    uniforms: {
-      audio: { value: AUDIO_PLACEHOLDER }
     }
   });
-  private t0: number;
 
   constructor() {
     this.renderer = new WebGLRenderer({
