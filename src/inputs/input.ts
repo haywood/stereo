@@ -17,7 +17,7 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
 
   constructor(
     readonly id: string,
-    defaultText: string,
+    private readonly defaultText: string,
     {
       persistent = false,
       disabled = false,
@@ -75,8 +75,12 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   }
 
   private updateHash = () => {
-    const str = this.stringify(this.value);
-    hash.set(this.id, str);
+    const text = this.stringify(this.value);
+    if (text == this.defaultText) {
+      hash.delete(this.id);
+    } else {
+      hash.set(this.id, text);
+    }
     document.location.hash = btoa(hash.toString());
   };
 }
