@@ -71,14 +71,6 @@ export class Renderer {
     this.camera.updateProjectionMatrix();
   };
 
-  get extent(): [number, number, number] {
-    const rad = (Math.PI / 180) * this.camera.fov;
-    const depth = this.camera.position.z / 3;
-    const height = depth * Math.tan(rad / 2);
-    const width = height * this.camera.aspect;
-    return [width, height, depth];
-  }
-
   render = () => {
     const { points, material, uniforms, t0 } = this;
     uniforms.t = { value: Date.now() / 1000 - t0 };
