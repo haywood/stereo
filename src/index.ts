@@ -5,7 +5,7 @@ import './index.scss';
 import debug from './debug';
 import { Overlay } from './overlay';
 import { paramsStream } from './params/stream';
-import { initRenderer, updateRenderer } from './renderer';
+import { renderer } from './renderer';
 
 const cursorInactiveTimeout = 1000;
 const overlay = new Overlay();
@@ -32,17 +32,13 @@ document.body.onmousemove = () => {
 document.onreadystatechange = async () => {
   if (document.readyState !== 'complete') return;
 
-  const canvas = document.querySelector('canvas');
-  await initRenderer(canvas);
-
-  const stream = (canvas as any).captureStream(1);
   const video = document.querySelector('video');
-  video.srcObject = stream;
+  video.srcObject = (renderer.canvas as any).captureStream(1);
 
   paramsStream.subscribe(
-    async params => {
+    params => {
       debug('params', params);
-      await updateRenderer(params);
+      renderer.update(params);
       document.body.classList.add('data');
       maybeSetCursorInactive();
     },

@@ -4,7 +4,7 @@ import debug from '../debug';
 import { print } from '../pipe/ast';
 import { Compiler } from '../pipe/compiler';
 import { PipeNode } from '../pipe/grammar.pegjs';
-import { renderPng } from '../renderer';
+import { renderer } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';
 import { TextInput } from './text';
@@ -75,7 +75,7 @@ export const inputs = {
   }),
 
   save: new ActionInput('save', async () => {
-    const blob = await renderPng();
+    const blob = await renderer.renderPng();
     const url = URL.createObjectURL(blob);
     try {
       const a = document.createElement('a');

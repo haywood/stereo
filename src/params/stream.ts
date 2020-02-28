@@ -7,7 +7,6 @@ import { inf } from '../constants';
 import { error } from '../error';
 import { inputs } from '../inputs';
 import { Simplifier } from '../pipe/simplifier';
-import { extentStream } from '../renderer';
 import { Scope } from './scope';
 import { Params } from '.';
 
@@ -18,7 +17,7 @@ export const paramsStream = subject.asObservable();
 (async () => {
   let count = 0;
 
-  const emit = (audio: Audio, extent: [number, number, number]) => {
+  const emit = (audio: Audio) => {
     try {
       const simplifier = new Simplifier({
         theta: inputs.theta.value
@@ -27,7 +26,6 @@ export const paramsStream = subject.asObservable();
       const scope: Scope = {
         t: count++ / fps,
         inf,
-        extent,
         audio
       };
       const params: Params = {
@@ -45,9 +43,9 @@ export const paramsStream = subject.asObservable();
     }
   };
 
-  const maybeEmit = async (audio: Audio, extent: [number, number, number]) => {
+  const maybeEmit = async (audio: Audio) => {
     if (inputs.animate.value) {
-      emit(audio, extent);
+      emit(audio);
     }
   };
 
@@ -59,7 +57,7 @@ export const paramsStream = subject.asObservable();
     inputs.v
   ].map(input => input.stream);
 
-  combineLatest(audioStream, extentStream, ...inputStreams).subscribe(
+  combineLatest(audioStream, ...inputStreams).subscribe(
     ([a, e]) => maybeEmit(a, e),
     error
   );
