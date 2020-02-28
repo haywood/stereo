@@ -2,9 +2,17 @@ import 'multirange/multirange.css';
 
 import './index.scss';
 
+import { error } from './error';
+import { ReplaySubject, combineLatest, interval } from 'rxjs';
+import { Simplifier } from './pipe/simplifier';
+import { audioStream } from './audio';
+import { PipeNode } from './pipe/grammar.pegjs';
 import debug from './debug';
 import { inputs } from './inputs';
+import { Change } from './inputs/change';
 import { Overlay } from './overlay';
+import { HSV } from './params';
+import { Scope } from './params/scope';
 import { paramsStream } from './params/stream';
 import { renderer } from './renderer';
 
@@ -33,15 +41,35 @@ document.body.onmousemove = () => {
 const video = document.querySelector('video');
 video.srcObject = (renderer.canvas as any).captureStream(1);
 
-paramsStream.subscribe(
-  params => {
-    debug('params', params);
-    renderer.update(params);
-    document.body.classList.add('data');
-    maybeSetCursorInactive();
+combineLatest(inputs.pipe.stream, inputs.theta.stream).subscribe(() => {
+  const simplifier = new Simplifier({
+    theta: inputs.theta.value
+  });
+  const pipe = simplifier.simplify(inputs.pipe.value);
+  setPipe(pipe);
+  debug('pipe', pipe);
+
+  document.body.classList.add('data');
+  maybeSetCursorInactive();
+}, error);
+
+combineLatest(inputs.h.stream, inputs.s.stream, inputs.v.stream).subscribe(
+  () => {
+    const hsv = {
+      h: inputs.h.value,
+      s: inputs.s.value,
+      v: inputs.v.value
+    };
+    setHsv(hsv);
+    debug('hsv', hsv);
   },
-  (err: Error) => alert(`${err.message}\n${err.stack}`)
+  error
 );
+
+audioStream.subscribe(audio => {
+  setScope({ audio });
+  debug('audio', audio);
+}, error);
 
 inputs.save.stream.subscribe(async () => {
   const blob = await renderer.renderPng();
@@ -57,3 +85,15 @@ inputs.save.stream.subscribe(async () => {
 });
 
 window.onresize = () => renderer.setSize();
+
+function setPipe(pipe: PipeNode) {
+  renderer.setPipe(pipe);
+}
+
+function setHsv(hsv: HSV) {
+  renderer.setHsv(hsv);
+}
+
+function setScope(scope: Scope) {
+  renderer.setScope(scope);
+}

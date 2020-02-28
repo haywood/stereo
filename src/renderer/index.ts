@@ -1,4 +1,5 @@
 import { isEqual } from 'lodash';
+import { PLACEHOLDER_AUDIO } from '../audio/constants';
 import assert from 'assert';
 import { inputs } from '../inputs';
 import { Params, HSV } from '../params';
@@ -41,8 +42,15 @@ export class Renderer {
     d0: 0,
     steps: []
   };
-  private hsv: HSV;
-  private uniforms: any = {};
+  private hsv: HSV = {
+    h: numberNode(0),
+    s: numberNode(1),
+    v: numberNode(1)
+  };
+  private scope: Scope = { audio: PLACEHOLDER_AUDIO };
+  private uniforms: any = {
+    audio: { value: PLACEHOLDER_AUDIO }
+  };
   private t0: number;
 
   constructor() {
@@ -62,41 +70,23 @@ export class Renderer {
     this.renderer.setAnimationLoop(() => this.render());
   }
 
-  // TODO: should have a separate method for each of pipe, hsv, and scope
-  update(params: Params) {
-    const { points, uniforms, geometry } = this;
-    const { pipe, hsv, scope } = params;
+  setPipe(pipe: PipeNode) {
+    this.pipe = pipe;
+    this.setShaders();
+  }
 
+  setHsv(hsv: HSV) {
+    this.hsv = hsv;
+    this.setShaders();
+  }
+
+  setScope(scope: Scope) {
+    const { uniforms } = this;
+
+    this.scope = scope;
     Object.entries(scope).forEach(([name, value]) => {
       uniforms[name] = { value };
     });
-
-    if (!isEqual(pipe, this.pipe) || !isEqual(hsv, this.hsv)) {
-      const resolver = new Resolver(params.scope);
-      const n = resolver.resolve(pipe.n);
-      const i = Float32Array.from(Array.from({ length: n }).keys());
-      const vertexShader = vertex(pipe);
-      const fragmentShader = fragment(hsv);
-
-      geometry.setAttribute('position', new BufferAttribute(i, 1));
-      uniforms.n = { value: n };
-
-      this.t0 = Date.now() / 1000;
-      this.pipe = pipe;
-      this.material = this.points.material = new ShaderMaterial({
-        vertexShader,
-        fragmentShader,
-        uniforms: this.uniforms,
-        defines: {
-          D_MAX,
-          near: near,
-          pi: Math.PI
-        }
-      });
-
-      debug('vertexShader', vertexShader);
-      debug('fragmentShader', fragmentShader);
-    }
   }
 
   setSize() {
@@ -121,6 +111,40 @@ export class Renderer {
       this.renderer.render(this.scene, this.camera);
     }
   }
+
+  private setShaders() {
+    const { points, uniforms, geometry, pipe, hsv, scope } = this;
+    const resolver = new Resolver(scope);
+    const n = resolver.resolve(pipe.n);
+    const i = Float32Array.from(Array.from({ length: n }).keys());
+    const vertexShader = vertex(pipe);
+    const fragmentShader = fragment(hsv);
+
+    geometry.setAttribute('position', new BufferAttribute(i, 1));
+    uniforms.n = { value: n };
+
+    this.t0 = Date.now() / 1000;
+    this.pipe = pipe;
+    this.material = this.points.material = new ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: this.uniforms,
+      defines: {
+        D_MAX,
+        near: near,
+        pi: Math.PI
+      }
+    });
+
+    debug('vertexShader', vertexShader);
+    debug('fragmentShader', fragmentShader);
+  }
 }
 
 export const renderer = new Renderer();
+
+// TODO duplicates function from ./shader/init.ts
+// should move it to somewhere in pipe package. too lazy right now...
+function numberNode(value: number): NumberNode {
+  return { kind: 'number', value };
+}
