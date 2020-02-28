@@ -5,17 +5,21 @@ export class TextInput<T = string> extends Input<
   T,
   HTMLInputElement | HTMLTextAreaElement
 > {
+  private text: string;
+
   constructor(
     readonly id: string,
     defaultText: string,
-    {
-      parse,
-      persistent = true,
-      disabled = false,
-      stringify = (t: T) => t.toString()
-    }: Options<T> = {}
+    { parse, persistent = true, disabled = false }: Options<T> = {}
   ) {
-    super(id, defaultText, { persistent, disabled, parse, stringify });
+    super(id, defaultText, {
+      persistent,
+      disabled,
+      parse,
+      stringify: () => this.text
+    });
+
+    this.text = defaultText;
   }
 
   valid() {
@@ -30,6 +34,7 @@ export class TextInput<T = string> extends Input<
     this.el.onchange = () => {
       try {
         this.value = this.parse(this.el.value);
+        this.text = this.el.value;
         this.el.setCustomValidity('');
       } catch (err) {
         // should already be handled by oninput

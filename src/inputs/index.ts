@@ -1,7 +1,6 @@
 import screenfull from 'screenfull';
 
 import debug from '../debug';
-import { print } from '../pipe/ast';
 import { Compiler } from '../pipe/compiler';
 import { PipeNode } from '../pipe/grammar.pegjs';
 import { renderer } from '../renderer';
@@ -33,29 +32,24 @@ export const inputs = {
       =>stereo(3)`,
     {
       persistent: true,
-      parse: text => compiler.compile(text),
-      stringify: print
+      parse: text => compiler.compile(text)
     }
   ),
 
   theta: new TextInput('theta', 't / 5 + audio.power', {
-    parse: s => compiler.compile(s, 'scalar'),
-    stringify: print
+    parse: s => compiler.compile(s, 'scalar')
   }),
 
   h: new TextInput('h', 'audio.hue * abs(p[0])', {
-    parse: s => compiler.compile(s, 'scalar'),
-    stringify: print
+    parse: s => compiler.compile(s, 'scalar')
   }),
 
   s: new TextInput('s', '1', {
-    parse: s => compiler.compile(s, 'scalar'),
-    stringify: print
+    parse: s => compiler.compile(s, 'scalar')
   }),
 
   v: new TextInput('v', '1', {
-    parse: s => compiler.compile(s, 'scalar'),
-    stringify: print
+    parse: s => compiler.compile(s, 'scalar')
   }),
 
   animate: new ToggleInput('animate', '1'),
