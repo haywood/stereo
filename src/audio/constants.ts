@@ -4,7 +4,7 @@ import { Audio } from './types';
  * This defines the placeholder used for power and chroma when audio is not enabled.
  */
 export const AUDIO_PLACEHOLDER: Audio = {
-  hue: 0.5,
+  hue: 1,
   onset: 1,
   power: 1,
   pitch: 0.5,
