@@ -13,7 +13,6 @@ import {
 } from '../../pipe/grammar.pegjs';
 import { from, uniforms, varyings } from './common';
 import interval from './glsl/interval.glsl';
-import lattice_01 from './glsl/lattice_01.glsl';
 import polar2cart from './glsl/polar2cart.glsl';
 import rotate from './glsl/rotate.glsl';
 import sphere from './glsl/sphere.glsl';
@@ -25,7 +24,6 @@ import { iter } from './iter';
 
 const vertexFunctions = [
   interval,
-  lattice_01,
   polar2cart,
   rotate,
   sphere,
