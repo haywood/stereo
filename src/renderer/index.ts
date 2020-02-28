@@ -1,4 +1,4 @@
-import { PLACEHOLDER_AUDIO } from '../audio/constants';
+import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import assert from 'assert';
 import { numberNode } from '../pipe/ast';
 import { inputs } from '../inputs';
@@ -45,9 +45,9 @@ export class Renderer {
     s: numberNode(1),
     v: numberNode(1)
   };
-  private scope: Scope = { audio: PLACEHOLDER_AUDIO };
+  private scope: Scope = { audio: AUDIO_PLACEHOLDER };
   private uniforms: any = {
-    audio: { value: PLACEHOLDER_AUDIO }
+    audio: { value: AUDIO_PLACEHOLDER }
   };
   private material: ShaderMaterial = new ShaderMaterial({
     defines: {
