@@ -1,4 +1,3 @@
-import { isEqual } from 'lodash';
 import { PLACEHOLDER_AUDIO } from '../audio/constants';
 import assert from 'assert';
 import { numberNode } from '../pipe/ast';
