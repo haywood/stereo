@@ -1,3 +1,5 @@
+import { Subject } from 'rxjs';
+import { Change } from './change';
 import { Input } from './input';
 
 export class ActionInput extends Input<void> {
@@ -6,6 +8,14 @@ export class ActionInput extends Input<void> {
   }
 
   protected _setup = () => {
-    if (!this.disabled) this.el.onclick = ev => this.action(ev);
+    if (!this.disabled) {
+      this.el.onclick = () => {
+        this.value = null;
+      };
+    }
   };
+
+  protected newSubject() {
+    return new Subject<Change<void>>();
+  }
 }

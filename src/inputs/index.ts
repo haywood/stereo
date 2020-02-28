@@ -74,18 +74,7 @@ export const inputs = {
     disabled: !audioWorkletAvailable
   }),
 
-  save: new ActionInput('save', async () => {
-    const blob = await renderer.renderPng();
-    const url = URL.createObjectURL(blob);
-    try {
-      const a = document.createElement('a');
-      a.download = `stereo${document.location.hash}`;
-      a.href = url;
-      a.click();
-    } finally {
-      URL.revokeObjectURL(url);
-    }
-  })
+  save: new ActionInput('save')
 };
 
 export type Inputs = typeof inputs;

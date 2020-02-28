@@ -47,7 +47,9 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
     this.subject = this.newSubject();
   }
 
-  newSubject = () => new BehaviorSubject<Change<T>>({ newValue: this._value });
+  protected newSubject(): Subject<Change<T>> {
+    return new BehaviorSubject<Change<T>>({ newValue: this._value });
+  }
 
   setup = (el: E) => {
     this.el = el;

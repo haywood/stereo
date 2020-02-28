@@ -26,8 +26,6 @@ const far = 10 / near;
 
 export class Renderer {
   readonly canvas = document.querySelector('canvas');
-  width = window.innerWidth;
-  height = window.innerHeight;
 
   private geometry = new BufferGeometry();
   private renderer: WebGLRenderer;
@@ -52,14 +50,16 @@ export class Renderer {
     });
     this.points = new Points(this.geometry);
 
-    this.setSize(this.width, this.height);
+    this.setSize();
 
     this.scene = new Scene();
     this.scene.add(this.points);
     this.renderer.setAnimationLoop(this.render);
   }
 
-  setSize = (width: number, height: number) => {
+  setSize = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
     const aspect = width / height;
     const fov = 100;
 

@@ -3,6 +3,7 @@ import 'multirange/multirange.css';
 import './index.scss';
 
 import debug from './debug';
+import { inputs } from './inputs';
 import { Overlay } from './overlay';
 import { paramsStream } from './params/stream';
 import { renderer } from './renderer';
@@ -29,19 +30,30 @@ document.body.onmousemove = () => {
   setTimeout(() => maybeSetCursorInactive(), cursorInactiveTimeout);
 };
 
-document.onreadystatechange = async () => {
-  if (document.readyState !== 'complete') return;
+const video = document.querySelector('video');
+video.srcObject = (renderer.canvas as any).captureStream(1);
 
-  const video = document.querySelector('video');
-  video.srcObject = (renderer.canvas as any).captureStream(1);
+paramsStream.subscribe(
+  params => {
+    debug('params', params);
+    renderer.update(params);
+    document.body.classList.add('data');
+    maybeSetCursorInactive();
+  },
+  (err: Error) => alert(`${err.message}\n${err.stack}`)
+);
 
-  paramsStream.subscribe(
-    params => {
-      debug('params', params);
-      renderer.update(params);
-      document.body.classList.add('data');
-      maybeSetCursorInactive();
-    },
-    (err: Error) => alert(`${err.message}\n${err.stack}`)
-  );
-};
+inputs.save.stream.subscribe(async () => {
+  const blob = await renderer.renderPng();
+  const url = URL.createObjectURL(blob);
+  try {
+    const a = document.createElement('a');
+    a.download = `stereo${document.location.hash}`;
+    a.href = url;
+    a.click();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+});
+
+window.onresize = () => renderer.setSize();
