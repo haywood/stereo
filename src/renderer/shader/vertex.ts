@@ -56,8 +56,6 @@ export function vertex({ n, steps }: PipeNode): string {
       ${steps.map(iter).join('\nx = y;\n\n')}
 
       vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
-      // TODO make gl_PointSize inversely proportional to n
-      // TODO make points circular (at least some amount less blocky)
       gl_PointSize = -100. * near / mvPosition.z;
       gl_Position = projectionMatrix * mvPosition;
       p = gl_Position.xyz;

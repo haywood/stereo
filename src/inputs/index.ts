@@ -10,9 +10,7 @@ import { RangeInput } from './range';
 import { TextInput } from './text';
 import { ToggleInput } from './toggle';
 
-// A good default. Reasonable level of detail without too much resource
-// consumption.
-const n = Math.round((window.screen.width * window.screen.height) / 50);
+const n = Math.round(window.screen.width * window.screen.height);
 const minDbs = parseInt(
   document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
