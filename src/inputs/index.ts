@@ -22,7 +22,7 @@ export const inputs = {
     'pipe',
     `${n}
       =>4
-      =>torus(1, 1, 1)
+      =>sphere(1)
       =>Q(theta, theta, theta, theta)
       =>stereo(3)`,
     {
