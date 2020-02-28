@@ -20,13 +20,26 @@ export function init({ type, args }: StepNode): string {
     case 'torus':
       return interval0To2Pi(args);
     case 'spiral':
-      const d = from(minus(args[0], 1));
-      return endent`
-      x = interval(${d}, 0., ${from(args[1])});
-      `;
+      return spiral(args);
+    case 'lattice':
+      return lattice(args);
     default:
       throw new Error(`Can't initialize step type ${type}`);
   }
+}
+
+function spiral(args: Scalar[]): string {
+  const d = from(minus(args[0], 1));
+  return endent`
+  x = interval(${d}, 0., ${from(args[1])});
+  `;
+}
+
+function lattice(args: Scalar[]): string {
+  const d = from(minus(args[0], 1));
+  return endent`
+  x = interval(${d}, 0., 1.);
+  `;
 }
 
 function interval0To2Pi(args: Scalar[]) {
