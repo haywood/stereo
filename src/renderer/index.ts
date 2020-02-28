@@ -42,8 +42,14 @@ export class Renderer {
     defines: {
       D_MAX,
       near: near,
-      // TODO Add more constants...
-      pi: Math.PI
+      e: Math.E,
+      ln10: Math.LN10,
+      ln2: Math.LN2,
+      log10e: Math.LOG10E,
+      log2e: Math.LOG2E,
+      pi: Math.PI,
+      sqrt1_2: Math.SQRT1_2,
+      sqrt2: Math.SQRT2
     }
   });
 
