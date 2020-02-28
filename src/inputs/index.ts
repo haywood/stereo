@@ -40,7 +40,7 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', 'pi * (t / 23 + audio.power)', {
+  theta: new TextInput('theta', 't / 5 + audio.power', {
     parse: s => compiler.compile(s, 'scalar'),
     stringify: print
   }),
