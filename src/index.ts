@@ -52,18 +52,23 @@ combineLatest(inputs.pipe.stream, inputs.theta.stream).subscribe(() => {
   maybeSetCursorInactive();
 }, error);
 
-combineLatest(inputs.h.stream, inputs.s.stream, inputs.v.stream).subscribe(
-  () => {
-    const hsv = {
-      h: inputs.h.value,
-      s: inputs.s.value,
-      v: inputs.v.value
-    };
-    setHsv(hsv);
-    debug('hsv', hsv);
-  },
-  error
-);
+combineLatest(
+  inputs.h.stream,
+  inputs.s.stream,
+  inputs.v.stream,
+  inputs.theta.stream
+).subscribe(() => {
+  const simplifier = new Simplifier({
+    theta: inputs.theta.value
+  });
+  const hsv = {
+    h: simplifier.simplify(inputs.h.value),
+    s: simplifier.simplify(inputs.s.value),
+    v: simplifier.simplify(inputs.v.value)
+  };
+  setHsv(hsv);
+  debug('hsv', hsv);
+}, error);
 
 audioStream.subscribe(audio => {
   setScope({ audio });

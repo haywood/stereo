@@ -16,18 +16,16 @@ export type Substitutions = {
 export class Simplifier {
   constructor(private readonly substitutions: Substitutions) {}
 
-  simplify = (pipe: PipeNode): PipeNode => {
-    const { n, d0, steps } = pipe;
-    return {
-      kind: pipe.kind,
-      n,
-      d0,
-      steps: steps.map(this.simplifyStepNode)
-    };
-  };
+  simplify(pipe: PipeNode): PipeNode;
+  simplify(node: Scalar): Scalar;
 
-  simplifyScalar = (node: Scalar): Scalar => {
+  simplify(node: any): any {
     switch (node.kind) {
+      case 'pipe':
+        return {
+          ...node,
+          steps: node.steps.map(s => this.simplifyStepNode(s))
+        };
       case 'number':
         return node;
       case 'arith':
@@ -39,45 +37,41 @@ export class Simplifier {
       case 'id':
         return this.simplifyIdNode(node);
       case 'paren':
-        return { kind: node.kind, scalar: this.simplifyScalar(node.scalar) };
+        return { kind: node.kind, scalar: this.simplify(node.scalar) };
     }
-  };
+  }
 
-  private simplifyStepNode = ({ kind, type: fn, args }: StepNode): StepNode => {
+  private simplifyStepNode({ kind, type: fn, args }: StepNode): StepNode {
     return {
       kind,
       type: fn,
-      args: args.map(this.simplifyScalar)
+      args: args.map(a => this.simplify(a))
     };
-  };
-  private simplifyArithNode = ({
-    kind,
-    op,
-    operands
-  }: ArithNode): ArithNode => {
-    const [a, b] = operands.map(this.simplifyScalar);
+  }
+
+  private simplifyArithNode({ kind, op, operands }: ArithNode): ArithNode {
+    const [a, b] = operands.map(o => this.simplify(o));
     return { kind, op, operands: [a, b] };
-  };
-  private simplifyFnNode = ({ kind, name, args }: FnNode): FnNode => {
+  }
+
+  private simplifyFnNode({ kind, name, args }: FnNode): FnNode {
     return {
       kind,
       name,
-      args: args.map(this.simplifyIdNode)
+      args: args.map(a => this.simplifyIdNode(a))
     };
-  };
-  private simplifyAccessNode = ({
-    kind,
-    id,
-    index
-  }: AccessNode): AccessNode => {
-    return { kind, id, index: this.simplifyScalar(index) };
-  };
-  private simplifyIdNode = (node: IdNode): Scalar => {
+  }
+
+  private simplifyAccessNode({ kind, id, index }: AccessNode): AccessNode {
+    return { kind, id, index: this.simplify(index) };
+  }
+
+  private simplifyIdNode(node: IdNode): Scalar {
     const { id } = node;
     if (id in this.substitutions) {
-      return this.simplifyScalar(this.substitutions[id]);
+      return this.simplify(this.substitutions[id]);
     } else {
       return node;
     }
-  };
+  }
 }
