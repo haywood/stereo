@@ -93,7 +93,7 @@ class Renderer {
     const resolver = new Resolver(params.scope);
     const geometry = points.geometry as BufferGeometry;
     const { pipe, hsv, scope } = params;
-    const n = resolver.resolve(pipe.n, 'number');
+    const n = resolver.resolve(pipe.n);
     const vertexShader = vertex(pipe);
     const fragmentShader = fragment(hsv);
 
