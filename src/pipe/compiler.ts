@@ -44,5 +44,5 @@ const ranges = {
   rotate: domain => domain,
   r: domain => domain,
   stereo: domain => domain,
-  q: domain => domain
+  quaternion: domain => domain
 };

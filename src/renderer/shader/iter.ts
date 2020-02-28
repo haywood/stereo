@@ -20,6 +20,7 @@ import sphere from './glsl/sphere.glsl';
 import spiral from './glsl/spiral.glsl';
 import stereo from './glsl/stereo.glsl';
 import torus from './glsl/torus.glsl';
+import quaternion from './glsl/quaternion.glsl';
 
 export function iter(node: StepNode): string {
   const args = stepArgs(node);
@@ -32,7 +33,7 @@ function stepArgs({ type, args }: StepNode): string[] {
   const [d, ...rest] = args.map(from);
   switch (type) {
     case 'torus':
-      return [d, vector(rest)];
+      return [d, floatArr(rest, D_MAX)];
     case 'spiral':
     case 'sphere':
     case 'lattice':
@@ -41,15 +42,19 @@ function stepArgs({ type, args }: StepNode): string[] {
       return [d, `float(${rest[0]})`, rest[1], rest[2]];
     case 'stereo':
       return [d, rest[0]];
+    case 'quaternion':
+      return [d, floatArr(rest, 4)];
     default:
       throw new Error(`Can't get args for step type ${type}`);
   }
 }
 
-function vector(xs: string[]): string {
-  const values = xs.map(x => `float(${x})`).join(', ');
-  const padding = new Array(D_MAX - xs.length).fill('0.').join(', ');
+function floatArr(xs: string[], length: number): string {
+  const values = xs.map(x => `float(${x})`);
+  for (let i = 0; i < length - xs.length; i++) {
+    values.push('0.');
+  }
   return endent`
-  float[](${values}, ${padding})
+  float[](${values.join(', ')})
   `;
 }

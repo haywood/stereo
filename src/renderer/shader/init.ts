@@ -23,6 +23,8 @@ export function init({ type, args }: StepNode): string {
       return spiral(args);
     case 'lattice':
       return lattice(args);
+    case 'cube':
+      throw new Error(`TODO: shader/init(cube)`);
     default:
       throw new Error(`Can't initialize step type ${type}`);
   }

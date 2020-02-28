@@ -23,12 +23,7 @@ export const inputs = {
     `${n}
       =>4
       =>torus(1, 1, 1)
-      =>R(theta, 0, 1)
-      =>R(theta, 0, 2)
-      =>R(theta, 0, 3)
-      =>R(theta, 1, 2)
-      =>R(theta, 1, 3)
-      =>R(theta, 2, 3)
+      =>Q(theta, theta, theta, theta)
       =>stereo(3)`,
     {
       persistent: true,
@@ -36,7 +31,7 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', 't / 5 + audio.power', {
+  theta: new TextInput('theta', '0.5 + cos(t / 5 + audio.power)', {
     parse: s => compiler.compile(s, 'scalar')
   }),
 

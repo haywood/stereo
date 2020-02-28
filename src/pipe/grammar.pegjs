@@ -75,7 +75,7 @@ stereo 'stereo' = type:$'stereo'i args:fn_args {
 
 quaternion 'q' =
   'q'i args:fn_args {
-    return step('q', args, 4)
+    return step('quaternion', args, 4)
   }
 
 scalar 'scalar' = additive
