@@ -27,3 +27,11 @@ of the translation.
 ## Link to the github in the overlay
 
 Duh...
+
+## Code editor for pipe
+
+Like with autocomplete and syntax highlighting and shit...
+
+## Arbitrary user-defined scalar-valued variables
+
+Extension of and replacement for the theta input.
