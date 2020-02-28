@@ -7,10 +7,9 @@ import {
   Scalar,
   StepNode
 } from './grammar.pegjs';
-import { Defs } from './types';
 
 export type Substitutions = {
-  [id in keyof Defs]: Scalar;
+  theta: Scalar;
 };
 
 export class Simplifier {
