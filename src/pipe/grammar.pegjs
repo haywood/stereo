@@ -37,7 +37,6 @@ step =
   / sphere
   / spiral
   / torus
-  / fucked_up_torus
   / rotate
   / stereo
   / quaternion
@@ -60,10 +59,6 @@ spiral 'spiral' = type:$'spiral'i args:fn_args {
 
 torus 'torus' = type:$'torus'i args:fn_args {
   return step(type, args, 0, Infinity);
-}
-
-fucked_up_torus 'fucked_up_torus' = type:$'fucked_up_torus'i args:fn_args {
-  return step(type, args, 2);
 }
 
 rotate 'rotate' =

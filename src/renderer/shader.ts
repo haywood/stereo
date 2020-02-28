@@ -49,7 +49,6 @@ export class Shader {
   // cube
   // lattice
   // spiral
-  // fucked_up_torus
   // quaternion
 
   static vertex({ n, steps }: PipeNode): string {
