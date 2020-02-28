@@ -34,18 +34,6 @@ export class Renderer {
   private scene: Scene;
   private camera: PerspectiveCamera;
   private points: Points;
-  private pipe: PipeNode = {
-    kind: 'pipe',
-    n: { kind: 'number', value: 0 },
-    d0: 0,
-    steps: []
-  };
-  private hsv: HSV = {
-    h: numberNode(0),
-    s: numberNode(1),
-    v: numberNode(1)
-  };
-  private scope: Scope = { audio: AUDIO_PLACEHOLDER };
   private uniforms: any = {
     audio: { value: AUDIO_PLACEHOLDER }
   };
