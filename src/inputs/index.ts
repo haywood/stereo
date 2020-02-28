@@ -31,7 +31,7 @@ export const inputs = {
     }
   ),
 
-  theta: new TextInput('theta', '0.5 + cos(t / 5 + audio.power)', {
+  theta: new TextInput('theta', 'audio.power * tan(t / 5)', {
     parse: s => compiler.compile(s, 'scalar')
   }),
 
