@@ -33,8 +33,11 @@ export class TextInput<T = string> extends Input<
 
     this.el.onchange = () => {
       try {
-        this.value = this.parse(this.el.value);
+        const value = this.parse(this.el.value);
+        // important to set text before value, since it's used for updating the
+        // URL fragment
         this.text = this.el.value;
+        this.value = value;
         this.el.setCustomValidity('');
       } catch (err) {
         // should already be handled by oninput
