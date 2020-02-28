@@ -145,7 +145,7 @@ function isNumber(node: Scalar): boolean {
     case 'id':
       return node.id == 't';
     case 'number':
-    case 'fn': // so far no all fns return floats
+    case 'fn': // so far all fns return floats
     case 'arith':
       return true;
     default:
