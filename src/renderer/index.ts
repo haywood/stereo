@@ -33,7 +33,6 @@ export class Renderer {
   private renderer: WebGLRenderer;
   private scene: Scene;
   private camera: PerspectiveCamera;
-  private points: Points;
   private uniforms: any = {
     audio: { value: AUDIO_PLACEHOLDER }
   };
@@ -55,10 +54,10 @@ export class Renderer {
     this.camera = new PerspectiveCamera(fov, 0, near, far);
     // TODO support zoom and pan with mouse
     this.camera.position.z = 2;
-    this.points = new Points(this.geometry, this.material);
+    const points = new Points(this.geometry, this.material);
 
     this.scene = new Scene();
-    this.scene.add(this.points);
+    this.scene.add(points);
 
     this.setSize();
     this.renderer.setAnimationLoop(() => this.render());
