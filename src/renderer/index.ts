@@ -1,6 +1,7 @@
 import { isEqual } from 'lodash';
 import { PLACEHOLDER_AUDIO } from '../audio/constants';
 import assert from 'assert';
+import { numberNode } from '../pipe/ast';
 import { inputs } from '../inputs';
 import { Params, HSV } from '../params';
 import { Scope } from '../params/scope';
@@ -140,9 +141,3 @@ export class Renderer {
 }
 
 export const renderer = new Renderer();
-
-// TODO duplicates function from ./shader/init.ts
-// should move it to somewhere in pipe package. too lazy right now...
-function numberNode(value: number): NumberNode {
-  return { kind: 'number', value };
-}

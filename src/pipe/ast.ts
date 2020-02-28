@@ -35,6 +35,10 @@ export function print(node: any) {
   }
 }
 
+export function numberNode(value: number): NumberNode {
+  return { kind: 'number', value };
+}
+
 function printPipe(node: PipeNode): string {
   return [print(node.n), node.d0, ...node.steps.map(print)].join('\n  =>');
 }

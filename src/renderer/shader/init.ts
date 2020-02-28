@@ -1,5 +1,6 @@
 import endent from 'endent';
 
+import { numberNode } from '../../pipe/ast';
 import {
   AccessNode,
   ArithNode,
@@ -37,8 +38,4 @@ function interval0To2Pi(args: Scalar[]) {
 
 function minus(x: Scalar, y: number): Scalar {
   return { kind: 'arith', op: '-', operands: [x, numberNode(y)] };
-}
-
-function numberNode(value: number): NumberNode {
-  return { kind: 'number', value };
 }
