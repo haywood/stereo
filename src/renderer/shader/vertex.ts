@@ -39,13 +39,6 @@ const vertexFunctions = [
 // TODO support for additional step types:
 // cube
 
-// TODO consider trying to implement adaptive camera distance
-// the rotation + scaling affect of the Q operator makes it
-// seem appealing again.
-// Maybe can add a new uniform that hints to the renderer that it should do a
-// translation along the z-axis. This could work in concert with my planned zoom
-// and pan feature. The zoom level would feed into the magnitude and direction
-// of the translation.
 export function vertex({ n, steps }: PipeNode): string {
   const last = steps[steps.length - 1];
   const d = last.type == 'stereo' ? last.args[1] : last.args[0];

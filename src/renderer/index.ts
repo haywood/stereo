@@ -59,7 +59,6 @@ export class Renderer {
       context: this.canvas.getContext('webgl2')
     });
     this.camera = new PerspectiveCamera(fov, 0, near, far);
-    // TODO support zoom and pan with mouse
     this.camera.position.z = 2;
     const points = new Points(this.geometry, this.material);
 
