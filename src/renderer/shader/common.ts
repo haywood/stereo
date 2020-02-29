@@ -13,10 +13,8 @@ import {
 } from '../pipe/grammar.pegjs';
 
 export const uniforms = `
+uniform float n;
 uniform float t;
-
-uniform int n;
-
 uniform struct Audio {
   float hue;
   int onset;
@@ -28,7 +26,7 @@ uniform struct Audio {
 
 export const varyings = `
 varying vec3 p;
-flat varying int i;
+varying float i;
 `;
 
 export const screenDiag = Math.hypot(window.screen.width, window.screen.height);

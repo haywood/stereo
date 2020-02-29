@@ -11,9 +11,9 @@ void cube_face(int d, float l) {
 }
 
 void cube(int d, float l) {
-  int axis = int(float(i) / float(d) / 2.) % d;
+  int axis = int(i / float(d) / 2.) % d;
 
-  if (i <= n / 2) {
+  if (i <= n / 2.) {
     y[axis] = l / 2.;
   } else {
     y[axis] = -l / 2.;

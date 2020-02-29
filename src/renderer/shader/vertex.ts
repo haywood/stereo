@@ -47,11 +47,11 @@ export function vertex({ n, steps }: PipeNode): string {
 
     ${varyings}
 
-    float[D_MAX] x, y;
+    float x[D_MAX], y[D_MAX];
 
     void reset() {
-      x = y;
       for (int k = 0; k < D_MAX; k++) {
+        x[k] = y[k];
         y[k] = 0.;
       }
     }
@@ -59,7 +59,7 @@ export function vertex({ n, steps }: PipeNode): string {
     ${vertexFunctions.join('\n')}
 
     void main() {
-      i = int(position[0]);
+      i = position[0];
 
       ${init(steps[0])}
 
