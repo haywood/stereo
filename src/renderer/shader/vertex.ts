@@ -22,10 +22,12 @@ import torus from './glsl/torus.glsl';
 import lattice from './glsl/lattice.glsl';
 import quaternion from './glsl/quaternion.glsl';
 import cube from './glsl/cube.glsl';
+import util from './glsl/util.glsl';
 import { init } from './init';
 import { iter } from './iter';
 
 const vertexFunctions = [
+  util,
   interval,
   lattice,
   cube,

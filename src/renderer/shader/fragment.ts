@@ -14,8 +14,9 @@ import {
 } from '../pipe/grammar.pegjs';
 import { from, isFloat, uniforms, varyings } from './common';
 import hsv2rgb from './glsl/hsv2rgb.glsl';
+import util from './glsl/util.glsl';
 
-const fragmentFunctions = [hsv2rgb];
+const fragmentFunctions = [util, hsv2rgb];
 
 export function fragment(hsv: HSV): string {
   const ensureFloat = (x: Scalar) =>

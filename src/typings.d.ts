@@ -56,6 +56,9 @@ declare module '*.pegjs' {
     args: Scalar[];
   };
 
+  // TODO Should separate indexing vs member access in the grammar, but too
+  // lazy right now... That said, maybe this is OK. too lazy to decide right
+  // now...
   export type AccessNode = {
     kind: 'access';
     id: string;

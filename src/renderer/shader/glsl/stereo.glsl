@@ -8,7 +8,7 @@ void stereo(int from, int to) {
       y[k] = x[k + 1] / (1. - x[0]);
     }
     d0--;
-    x = y;
+    copy(y, x);
   }
 
   while (d0 < d) {
@@ -22,6 +22,6 @@ void stereo(int from, int to) {
       y[k] = 2. * x[k - 1] / divisor;
     }
     d0++;
-    x = y;
+    copy(y, x);
   }
 }

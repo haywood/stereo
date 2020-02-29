@@ -1,5 +1,6 @@
 import endent from 'endent';
 
+import { pp } from '../../pp';
 import {
   AccessNode,
   ArithNode,
@@ -36,7 +37,7 @@ export const fov = 100;
 
 export const D_MAX = 10;
 
-export const defines = {
+export const defines: { [name: string]: number } = {
   D_MAX,
   near: near,
   e: Math.E,
@@ -90,9 +91,6 @@ export function isFloat(node: Scalar): boolean {
 }
 
 function fromAccess({ id, index }: AccessNode): string {
-  // TODO Should separate indexing vs member access in the grammar, but too
-  // lazy right now... That said, maybe this is OK. too lazy to decide right
-  // now...
   if (isNumber(index)) {
     return `${fromId(id)}[${from(index)}]`;
   } else {
@@ -127,11 +125,11 @@ function fromFn(node: FnNode): string {
 }
 
 function fromId(id: string): string {
-  const builtins = {
-    pi: 'pi'
-  };
-
-  return builtins[id] ?? id;
+  if (id in defines) {
+    return defines[id].toString();
+  } else {
+    return id;
+  }
 }
 
 function fromNumber(value: number): string {
@@ -149,4 +147,95 @@ function isNumber(node: Scalar): boolean {
     default:
       return false;
   }
+}
+
+function resolveInt(node: Scalar): number {
+  const value = resolve(node);
+  if (Number.isInteger(value)) {
+    return value;
+  } else {
+    throw new Error(
+      `expected an integer, but node resolved to ${value}:\n${pp(node)}`
+    );
+  }
+}
+
+function resolve(node: Scalar): number {
+  let value;
+  switch (node.kind) {
+    case 'arith':
+      value = resolveArith(node);
+      break;
+    case 'number':
+      value = node.value;
+      break;
+    case 'access':
+      value = resolveAccess(node);
+      break;
+    case 'id':
+      value = resolveId(node.id);
+      break;
+    case 'paren':
+      value = resolve(node.scalar);
+      break;
+    case 'fn':
+      throw new Error(
+        `can't statically resolve node kind '${node.kind}' to a number`
+      );
+      break;
+  }
+
+  if (typeof value != 'number') {
+    throw new Error(endent`expected a number, but node resolved to ${value}:
+      ${pp(node)}`);
+  }
+
+  return value;
+}
+
+function resolveArith(node: ArithNode): number {
+  const { op, operands } = node;
+  const [a, b] = operands.map(resolve);
+
+  switch (op) {
+    case '+':
+      return a + b;
+    case '*':
+      return a * b;
+    case '/':
+      return a / b;
+    case '**':
+    case '^':
+      return a ** b;
+    case '-':
+      return b == null ? -a : a - b;
+    default:
+      throw new Error(
+        `don't know how to resolve arithmetic expression with operator ${op}`
+      );
+  }
+}
+
+function resolveId(id: string): number {
+  if (id in defines) {
+    return defines[id];
+  } else {
+    throw new Error(`don't know how to resolve non-builtin ${id} to a number`);
+  }
+}
+
+function resolveAccess({ id, index }: AccessNode): number {
+  const receiver = resolveId(id);
+  let key;
+
+  switch (index.kind) {
+    case 'id':
+      key = index.id;
+      break;
+    default:
+      key = resolve(index); // assume index is a number
+      break;
+  }
+
+  return receiver[key];
 }
