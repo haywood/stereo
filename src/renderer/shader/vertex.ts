@@ -49,6 +49,13 @@ export function vertex({ n, steps }: PipeNode): string {
 
     float[D_MAX] x, y;
 
+    void reset() {
+      x = y;
+      for (int k = 0; k < D_MAX; k++) {
+        y[k] = 0.;
+      }
+    }
+
     ${vertexFunctions.join('\n')}
 
     void main() {
@@ -56,7 +63,7 @@ export function vertex({ n, steps }: PipeNode): string {
 
       ${init(steps[0])}
 
-      ${steps.map(iter).join('\nx = y;\n\n')}
+      ${steps.map(iter).join('\nreset();\n\n')}
 
       vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
       gl_PointSize = -100. * near / mvPosition.z;

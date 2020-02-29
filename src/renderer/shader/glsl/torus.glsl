@@ -1,10 +1,11 @@
-float[D_MAX] torus(int d, float[D_MAX] r, float[D_MAX] x) {
-  float[D_MAX] y = sphere(2, r[0], x);
+void torus(int d, float[D_MAX] r) {
+  sphere(2, r[0]);
 
+  float[D_MAX] tmp = x;
+  x = y;
   for (int k = 1; k < d - 1; k++) {
-    y[0] += r[k];
-    y = rotate(d, x[k], k - 1, k + 1, y);
+    x[0] += r[k];
+    rotate(d, tmp[k], k - 1, k + 1);
   }
-
-  return y;
+  y = x;
 }

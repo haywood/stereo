@@ -1,14 +1,14 @@
-float[D_MAX] stereo(int from, int to, float[D_MAX] x) {
-  if (from == to) return x;
+void stereo(int from, int to) {
+  if (from == to) return;
 
   int d0 = from, d = to;
-  float[D_MAX] y;
 
   while (d0 > d) {
     for (int k = 0; k < d0 - 1; k++) {
       y[k] = x[k + 1] / (1. - x[0]);
     }
     d0--;
+    x = y;
   }
 
   while (d0 < d) {
@@ -22,7 +22,6 @@ float[D_MAX] stereo(int from, int to, float[D_MAX] x) {
       y[k] = 2. * x[k - 1] / divisor;
     }
     d0++;
+    x = y;
   }
-
-  return y;
 }

@@ -25,7 +25,7 @@ import quaternion from './glsl/quaternion.glsl';
 export function iter(node: StepNode): string {
   const args = stepArgs(node);
   return endent`
-  y = ${node.type}(${args.join(', ')}, x);
+  ${node.type}(${args.join(', ')});
   `;
 }
 

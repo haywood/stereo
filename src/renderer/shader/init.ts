@@ -33,28 +33,28 @@ export function init({ type, args }: StepNode): string {
 function interval0To2Pi(args: Scalar[]) {
   const d = from(minus(args[0], 1));
   return endent`
-  x = interval(${d}, 0., float(2. * pi));
+  interval(${d}, 0., float(2. * pi));
   `;
 }
 
 function spiral(args: Scalar[]): string {
   const d = from(minus(args[0], 1));
   return endent`
-  x = interval(${d}, 0., ${from(args[1])});
+  interval(${d}, 0., ${from(args[1])});
   `;
 }
 
 function lattice(args: Scalar[]): string {
   const d = from(args[0]);
   return endent`
-  x = interval(${d}, 0., 1.);
+  interval(${d}, 0., 1.);
   `;
 }
 
 function cube(args: Scalar[]): string {
   const [d, l] = args.map(from);
   return endent`
-  x = cube_face(${d}, float(${l}));
+  cube_face(${d}, float(${l}));
   `;
 }
 
