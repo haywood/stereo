@@ -28,10 +28,6 @@ of the translation.
 
 Like with autocomplete and syntax highlighting and shit...
 
-## Arbitrary user-defined scalar-valued variables
-
-Extension of and replacement for the theta input.
-
 ## Misc
 
 - Move n and d0 into separate inputs; doesn't really make sense for them to be

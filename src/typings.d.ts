@@ -12,6 +12,7 @@ declare module '*.pegjs' {
   export function parse(
     spec: string,
     options: {
+      variables: ast.Variables;
       ast: typeof ast;
     }
   ): ast.PipeNode;

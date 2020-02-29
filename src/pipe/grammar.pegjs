@@ -1,5 +1,6 @@
 {
   const ast = options.ast;
+  const variables = options.variables;
 
   function step(type, args, min, max = min) {
     if (args.length < min) {
@@ -14,9 +15,16 @@
 
 /** RULES */
 
-pipe = _ n:pint connector d0:pint connector steps:steps _ {
-  return ast.pipe(n, d0, steps);
+pipe = _ (assignments _)? steps:steps _ {
+  return ast.pipe(variables, steps);
 }
+
+assignments 'assignments' = assignment __ assignments / assignment
+
+assignment 'assignment' =
+  'n' _ '=' _ n:pint { variables.n = ast.number(n); }
+  / 'd0' _ '=' _ d0:pint { variables.d0 = ast.number(d0); }
+  / id:identifier _ '=' _ s:scalar { variables[id] = s; }
 
 pint 'positive integer' = x:uint {
   x = parseInt(x);
@@ -27,7 +35,7 @@ pint 'positive integer' = x:uint {
 }
 
 steps =
-  head:step connector tail:steps { return [head, ...tail]; }
+  _ head:step _ tail:steps _ { return [head, ...tail]; }
   / step:step { return [step]; }
 
 step =
@@ -149,7 +157,5 @@ rbrack 'rbrack' = _ ']' _
 
 comma 'comma' = _ ',' _
 
-connector 'connector' = _ $('->' / __ / '=>') _
-
-_ 'whitespace' = [ \t\n\r]*
-__ 'whitespace' = $[ \t\n\r]+
+_ 'optional whitespace' = [ \t\n\r]*
+__ 'required whitespace' = $[ \t\n\r]+

@@ -8,8 +8,7 @@ import {
   NumberNode,
   PipeNode,
   Scalar,
-  StepNode,
-  Value
+  StepNode
 } from '../../pipe/ast';
 import { ensureFloat, resolveInt, from, uniforms, varyings } from './common';
 

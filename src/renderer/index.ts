@@ -56,7 +56,7 @@ export class Renderer {
       geometry,
       material: { uniforms }
     } = this;
-    const n = pipe.n;
+    const n = pipe.variables.n.value;
     const i = new Float32Array(n);
     i.forEach((_, k) => (i[k] = k));
     const vertexShader = vertex(pipe);

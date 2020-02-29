@@ -4,7 +4,6 @@ import './index.scss';
 
 import { error } from './error';
 import { ReplaySubject, combineLatest, interval } from 'rxjs';
-import { Simplifier } from './pipe/simplifier';
 import { audioStream } from './audio';
 import { PipeNode } from './pipe/ast';
 import debug from './debug';
@@ -39,11 +38,7 @@ document.body.onmousemove = () => {
 const video = document.querySelector('video');
 video.srcObject = (renderer.canvas as any).captureStream(1);
 
-combineLatest(inputs.pipe.stream, inputs.theta.stream).subscribe(() => {
-  const simplifier = new Simplifier({
-    theta: inputs.theta.value
-  });
-  const pipe = simplifier.simplify(inputs.pipe.value);
+inputs.pipe.stream.subscribe(({ newValue: pipe }) => {
   setPipe(pipe);
   debug('pipe', pipe);
 
@@ -51,23 +46,18 @@ combineLatest(inputs.pipe.stream, inputs.theta.stream).subscribe(() => {
   maybeSetCursorInactive();
 }, error);
 
-combineLatest(
-  inputs.h.stream,
-  inputs.s.stream,
-  inputs.v.stream,
-  inputs.theta.stream
-).subscribe(() => {
-  const simplifier = new Simplifier({
-    theta: inputs.theta.value
-  });
-  const hsv = {
-    h: simplifier.simplify(inputs.h.value),
-    s: simplifier.simplify(inputs.s.value),
-    v: simplifier.simplify(inputs.v.value)
-  };
-  setHsv(hsv);
-  debug('hsv', hsv);
-}, error);
+combineLatest(inputs.h.stream, inputs.s.stream, inputs.v.stream).subscribe(
+  () => {
+    const hsv = {
+      h: inputs.h.value,
+      s: inputs.s.value,
+      v: inputs.v.value
+    };
+    setHsv(hsv);
+    debug('hsv', hsv);
+  },
+  error
+);
 
 audioStream.subscribe(audio => {
   setScope({ audio });

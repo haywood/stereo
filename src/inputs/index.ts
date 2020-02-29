@@ -1,3 +1,4 @@
+import endent from 'endent';
 import screenfull from 'screenfull';
 
 import debug from '../debug';
@@ -9,7 +10,6 @@ import { RangeInput } from './range';
 import { TextInput } from './text';
 import { ToggleInput } from './toggle';
 
-const n = Math.round(window.screen.width * window.screen.height);
 const minDbs = parseInt(
   document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
 );
@@ -20,20 +20,18 @@ const compiler = new Compiler();
 export const inputs = {
   pipe: new TextInput<PipeNode>(
     'pipe',
-    `${n}
-      =>4
-      =>sphere(1)
-      =>Q(theta, theta, theta, theta)
-      =>stereo(3)`,
+    endent`
+    d0 = 4
+    theta = audio.power * tan(t / 5) 
+    sphere(1)
+    Q(theta, theta, theta, theta)
+    stereo(3)
+    `,
     {
       persistent: true,
       parse: text => compiler.compile(text)
     }
   ),
-
-  theta: new TextInput('theta', 'audio.power * tan(t / 5)', {
-    parse: s => compiler.compile(s, 'scalar')
-  }),
 
   h: new TextInput('h', 'audio.hue * abs(p[0])', {
     parse: s => compiler.compile(s, 'scalar')

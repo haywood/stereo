@@ -1,13 +1,21 @@
-export function pipe(n: number, d0: number, steps: StepNode[]) {
-  return { kind: 'pipe', n, d0, steps };
+export function pipe(variables: Variables, steps: StepNode[]): PipeNode {
+  return {
+    kind: 'pipe',
+    steps,
+    variables
+  };
 }
 
-export type PipeNode = {
+export interface PipeNode {
   kind: 'pipe';
-  n: number;
-  d0: number;
   steps: StepNode[];
-};
+  variables: Variables;
+}
+
+export interface Variables {
+  n: NumberNode;
+  d0: NumberNode;
+}
 
 export type StepType =
   | 'sphere'
@@ -23,11 +31,11 @@ export function step(type: StepType, args: Scalar[]): StepNode {
   return { kind: 'step', type, args };
 }
 
-export type StepNode = {
+export interface StepNode {
   kind: 'step';
   type: StepType;
   args: Scalar[];
-};
+}
 
 export type Scalar =
   | ArithNode
@@ -48,30 +56,30 @@ export function arith(
 
 export type ArithOp = '*' | '/' | '+' | '-' | '**' | '^';
 
-export type ArithNode = {
+export interface ArithNode {
   kind: 'arith';
   op: ArithOp;
   operands: [Scalar, Scalar] | [Scalar];
-};
+}
 
 export function number(value: number): NumberNode {
   return { kind: 'number', value };
 }
 
-export type NumberNode = {
+export interface NumberNode {
   kind: 'number';
   value: number;
-};
+}
 
 export function fn(name: string, args: Scalar[]) {
   return { kind: 'fn', name: name.toLowerCase(), args };
 }
 
-export type FnNode = {
+export interface FnNode {
   kind: 'fn';
   name: string;
   args: Scalar[];
-};
+}
 
 export function access(id: string, index: Scalar): AccessNode {
   return { kind: 'access', id, index };
@@ -80,26 +88,26 @@ export function access(id: string, index: Scalar): AccessNode {
 // TODO Should separate indexing vs member access in the grammar, but too
 // lazy right now... That said, maybe this is OK. too lazy to decide right
 // now...
-export type AccessNode = {
+export interface AccessNode {
   kind: 'access';
   id: string;
   index: Scalar;
-};
+}
 
 export function id(id: string): IdNode {
   return { kind: 'id', id };
 }
 
-export type IdNode = {
+export interface IdNode {
   kind: 'id';
   id: string;
-};
+}
 
 export function paren(scalar: Scalar): ParenNode {
   return { kind: 'paren', scalar };
 }
 
-export type ParenNode = {
+export interface ParenNode {
   kind: 'paren';
   scalar: Scalar;
-};
+}

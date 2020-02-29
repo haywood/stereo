@@ -18,7 +18,7 @@ export class Compiler {
   private compilePipe = (expr: string): PipeNode => {
     const pipe = Parser.parsePipe(expr);
     const [head, ...rest] = pipe.steps;
-    let d = pipe.d0;
+    let d = pipe.variables.d0.value;
 
     head.args.unshift({ kind: 'number', value: d });
     for (const { type, args } of rest) {

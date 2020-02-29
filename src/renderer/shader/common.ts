@@ -9,12 +9,10 @@ import {
   NumberNode,
   PipeNode,
   Scalar,
-  StepNode,
-  Value
+  StepNode
 } from '../../pipe/ast';
 
-export const uniforms = `
-uniform float n;
+export const uniforms = endent`
 uniform float t;
 uniform struct Audio {
   float hue;
@@ -25,7 +23,7 @@ uniform struct Audio {
 } audio;
 `;
 
-export const varyings = `
+export const varyings = endent`
 varying vec3 p;
 varying float i;
 `;

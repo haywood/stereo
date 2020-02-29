@@ -3,7 +3,7 @@ import { Change } from './change';
 import { Input } from './input';
 
 export class ActionInput extends Input<void> {
-  constructor(id: string, private readonly action: (ev: MouseEvent) => void) {
+  constructor(id: string) {
     super(id, '', { parse: () => {} });
   }
 
