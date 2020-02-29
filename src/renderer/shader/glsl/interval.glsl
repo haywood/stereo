@@ -5,7 +5,7 @@ float[D_MAX] interval(int d, float a, float b) {
   for (int k = 0; k < d; k++) {
     float exp = float(d - k - 1);
     float dividend = round(float(i) / pow(branching_factor, exp));
-    float x = float(int(dividend) % int(branching_factor)) / (branching_factor - 1.);
+    float x = mod(dividend, branching_factor) / (branching_factor - 1.);
     y[k] = a + x * (b - a);
   }
 

@@ -5,9 +5,8 @@ vec3 hsv2rgb(float h, float s, float v) {
   v = max(0., min(1., v));
 
   float hprime = h / 60.;
-  float hprime_mod_2 = hprime - 2. * floor(hprime / 2.);
   float c = v * s;
-  float x = c * (1. - abs(hprime_mod_2 - 1.));
+  float x = c * (1. - abs(mod(hprime, 2.) - 1.));
   float m = v - c;
   vec3 rgb;
 
