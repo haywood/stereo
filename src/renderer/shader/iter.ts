@@ -44,7 +44,7 @@ function stepArgs({ type, args }: StepNode): string[] {
     case 'stereo':
       return [d, rest[0]];
     case 'quaternion':
-      return [d, floatArr(rest, 4)];
+      return [d, ...rest];
     default:
       throw new Error(`Can't get args for step type ${type}`);
   }

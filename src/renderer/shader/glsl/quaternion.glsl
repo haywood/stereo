@@ -31,9 +31,9 @@ void quaternion_k(int d, float k) {
   y[Q_K] += x[Q_R] * k; // r * k = k
 }
 
-void quaternion(int d, float[4] q) {
-  quaternion_r(d, q[Q_R]);
-  quaternion_i(d, q[Q_I]);
-  quaternion_j(d, q[Q_J]);
-  quaternion_k(d, q[Q_K]);
+void quaternion(int d, float r, float i, float j, float k) {
+  quaternion_r(d, r);
+  quaternion_i(d, i);
+  quaternion_j(d, j);
+  quaternion_k(d, k);
 }
