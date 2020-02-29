@@ -2,9 +2,7 @@ const { newBundler, root } = require('./bundler');
 const express = require('express');
 const path = require('path');
 
-const bundler = newBundler({
-  logLevel: 4
-});
+const bundler = newBundler();
 
 bundler.bundle();
 
