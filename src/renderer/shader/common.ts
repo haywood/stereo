@@ -39,6 +39,11 @@ export const D_MAX = 10;
 
 export const defines: { [name: string]: number } = {
   D_MAX,
+  // array indices for quaternion multiplication
+  Q_R: 0,
+  Q_I: 1,
+  Q_J: 2,
+  Q_K: 3,
   near: near,
   e: Math.E,
   ln10: Math.LN10,
@@ -66,6 +71,14 @@ export function from(node: Scalar): string {
       return fromId(node.id);
     default:
       throw new Error(`Can't generate GLSL source from node kind ${node.kind}`);
+  }
+}
+
+export function ensureFloat(node: Scalar) {
+  if (isFloat(node)) {
+    return from(node);
+  } else {
+    return `float(${from(node)})`;
   }
 }
 
@@ -149,7 +162,7 @@ function isNumber(node: Scalar): boolean {
   }
 }
 
-function resolveInt(node: Scalar): number {
+export function resolveInt(node: Scalar): number {
   const value = resolve(node);
   if (Number.isInteger(value)) {
     return value;

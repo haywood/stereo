@@ -39,7 +39,7 @@ export class Renderer {
   constructor() {
     this.renderer = new WebGLRenderer({
       canvas: this.canvas,
-      context: this.canvas.getContext('webgl2')
+      context: this.canvas.getContext('webgl')
     });
     this.camera = new PerspectiveCamera(fov, 0, near, far);
     this.camera.position.z = 2;

@@ -12,7 +12,7 @@ import {
   StepNode,
   Value
 } from '../../pipe/grammar.pegjs';
-import { from, uniforms, varyings } from './common';
+import { ensureFloat, resolveInt, from, uniforms, varyings } from './common';
 
 export function init({ type, args }: StepNode): string {
   switch (type) {
@@ -31,31 +31,53 @@ export function init({ type, args }: StepNode): string {
 }
 
 function interval0To2Pi(args: Scalar[]) {
-  const d = from(minus(args[0], 1));
-  return endent`
-  interval(${d}, 0., float(2. * pi));
-  `;
+  const d = resolveInt(minus(args[0], 1));
+  return interval(d, '0.', 'float(2. * pi)');
 }
 
 function spiral(args: Scalar[]): string {
-  const d = from(minus(args[0], 1));
-  return endent`
-  interval(${d}, 0., ${from(args[1])});
-  `;
+  const d = resolveInt(minus(args[0], 1));
+  return interval(d, '0.', from(args[1]));
 }
 
 function lattice(args: Scalar[]): string {
-  const d = from(args[0]);
-  return endent`
-  interval(${d}, 0., 1.);
-  `;
+  const d = resolveInt(args[0]);
+  return interval(d, '0.', '1.');
 }
 
 function cube(args: Scalar[]): string {
-  const [d, l] = args.map(from);
-  return endent`
-  cube_face(${d}, float(${l}));
+  const [d, l] = args;
+  return endent`{ // init cube
+    const int d = ${resolveInt(d)};
+    float l = ${ensureFloat(l)};
+
+    float n_face = round(float(n) / float(d) / 2.);
+    float branching_factor = round(pow(n_face, 1. / float(d)));
+
+    for (int k = 0; k < d; k++) {
+      float exp = float(d - k - 1);
+      float dividend = round(float(i) / pow(branching_factor, exp));
+      float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
+      y[k] = l * (tmp - 0.5);
+    }
+  } // init cube
   `;
+}
+
+function interval(d: number, a: string, b: string): string {
+  return endent`{ // init interval
+    const int d = ${d};
+    const float a = ${a};
+    const float b = ${b};
+    float branching_factor = round(pow(float(n), 1. / float(d)));
+
+    for (int k = 0; k < d; k++) {
+      float exp = float(d - k - 1);
+      float dividend = round(float(i) / pow(branching_factor, exp));
+      float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
+      x[k] = a + tmp * (b - a);
+    }
+  } // init interval`;
 }
 
 function minus(x: Scalar, y: number): Scalar {
