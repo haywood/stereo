@@ -10,7 +10,7 @@ import {
   Scalar,
   StepNode,
   Value
-} from '../../pipe/grammar.pegjs';
+} from '../../pipe/ast';
 import { from, uniforms, varyings } from './common';
 import util from './glsl/util.glsl';
 import { init } from './init';

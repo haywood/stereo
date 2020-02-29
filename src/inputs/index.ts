@@ -2,7 +2,7 @@ import screenfull from 'screenfull';
 
 import debug from '../debug';
 import { Compiler } from '../pipe/compiler';
-import { PipeNode } from '../pipe/grammar.pegjs';
+import { PipeNode } from '../pipe/ast';
 import { renderer } from '../renderer';
 import { ActionInput } from './action';
 import { RangeInput } from './range';

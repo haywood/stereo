@@ -6,7 +6,7 @@ import { error } from './error';
 import { ReplaySubject, combineLatest, interval } from 'rxjs';
 import { Simplifier } from './pipe/simplifier';
 import { audioStream } from './audio';
-import { PipeNode } from './pipe/grammar.pegjs';
+import { PipeNode } from './pipe/ast';
 import debug from './debug';
 import { inputs } from './inputs';
 import { Change } from './inputs/change';

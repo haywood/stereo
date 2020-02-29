@@ -1,4 +1,4 @@
-import { PipeNode, Scalar } from './grammar.pegjs';
+import { PipeNode, Scalar } from './ast';
 import { Parser } from './parser';
 
 export class Compiler {

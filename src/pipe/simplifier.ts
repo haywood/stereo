@@ -6,7 +6,7 @@ import {
   PipeNode,
   Scalar,
   StepNode
-} from './grammar.pegjs';
+} from './ast';
 
 export type Substitutions = {
   theta: Scalar;

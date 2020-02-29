@@ -1,3 +1,5 @@
+import * as ast from './pipe/ast';
+
 declare module '*.glsl' {
   declare const source: string;
   export default source;
@@ -7,75 +9,20 @@ declare module '*.pegjs' {
   declare const grammar: string;
   export default grammar;
 
-  export function parse(spec: string): PipeNode;
-  export function parse(spec: string, options: { startRule: 'scalar' }): Scalar;
+  export function parse(
+    spec: string,
+    options: {
+      ast: typeof ast;
+    }
+  ): ast.PipeNode;
 
-  export type PipeNode = {
-    kind: 'pipe';
-    n: number;
-    d0: number;
-    steps: StepNode[];
-  };
-
-  export type StepNode = {
-    kind: 'step';
-    type:
-      | 'sphere'
-      | 'spiral'
-      | 'torus'
-      | 'lattice'
-      | 'cube'
-      | 'rotate'
-      | 'stereo'
-      | 'quaternion';
-    args: Scalar[];
-  };
-
-  export type Scalar =
-    | ArithNode
-    | NumberNode
-    | FnNode
-    | AccessNode
-    | IdNode
-    | ParenNode;
-
-  export type ArithNode = {
-    kind: 'arith';
-    op: '*' | '/' | '+' | '-' | '**' | '^';
-    operands: [Scalar, Scalar];
-  };
-
-  export type NumberNode = {
-    kind: 'number';
-    value: number;
-  };
-
-  export type FnNode = {
-    kind: 'fn';
-    name: string;
-    args: Scalar[];
-  };
-
-  // TODO Should separate indexing vs member access in the grammar, but too
-  // lazy right now... That said, maybe this is OK. too lazy to decide right
-  // now...
-  export type AccessNode = {
-    kind: 'access';
-    id: string;
-    index: Scalar;
-  };
-
-  export type IdNode = {
-    kind: 'id';
-    id: string;
-  };
-
-  export type ParenNode = {
-    kind: 'paren';
-    scalar: Scalar;
-  };
-
-  export type Value = number | Function;
+  export function parse(
+    spec: string,
+    options: {
+      startRule: 'scalar';
+      ast: typeof ast;
+    }
+  ): ast.Scalar;
 }
 
 declare module 'circular-buffer' {

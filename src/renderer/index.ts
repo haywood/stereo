@@ -1,9 +1,8 @@
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import assert from 'assert';
-import { numberNode } from '../pipe/ast';
 import { inputs } from '../inputs';
 import { Scope, HSV } from '../types';
-import { PipeNode } from '../pipe/grammar.pegjs';
+import { PipeNode } from '../pipe/ast';
 import { vertex } from './shader/vertex';
 import { fragment } from './shader/fragment';
 import { defines, near, far, fov } from './shader/common';

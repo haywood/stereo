@@ -11,7 +11,7 @@ import {
   Scalar,
   StepNode,
   Value
-} from '../pipe/grammar.pegjs';
+} from '../../pipe/ast';
 import { from, isFloat, uniforms, varyings } from './common';
 import hsv2rgb from './glsl/hsv2rgb.glsl';
 import util from './glsl/util.glsl';

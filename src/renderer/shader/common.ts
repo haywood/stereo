@@ -11,7 +11,7 @@ import {
   Scalar,
   StepNode,
   Value
-} from '../pipe/grammar.pegjs';
+} from '../../pipe/ast';
 
 export const uniforms = `
 uniform float n;

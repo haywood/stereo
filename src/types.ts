@@ -1,4 +1,4 @@
-import { Scalar } from './pipe/grammar.pegjs';
+import { Scalar } from './pipe/ast';
 import { Audio } from './audio/types';
 
 export type Scope = {

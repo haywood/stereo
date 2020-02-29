@@ -1,8 +1,12 @@
-import grammar, { PipeNode, Scalar } from './grammar.pegjs';
+import grammar from './grammar.pegjs';
+import * as ast from './ast';
 
 export class Parser {
-  static parsePipe = (pipe: string): PipeNode => grammar.parse(pipe);
+  static parsePipe(pipe: string): ast.PipeNode {
+    return grammar.parse(pipe, { ast });
+  }
 
-  static parseScalar = (expr: string): Scalar =>
-    grammar.parse(expr, { startRule: 'scalar' });
+  static parseScalar(expr: string): ast.Scalar {
+    return grammar.parse(expr, { startRule: 'scalar', ast });
+  }
 }

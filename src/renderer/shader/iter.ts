@@ -1,6 +1,6 @@
 import endent from 'endent';
 
-import { id, numberNode, access, minus, plus } from '../../pipe/ast';
+import { id, number, access } from '../../pipe/ast';
 import {
   AccessNode,
   ArithNode,
@@ -11,7 +11,7 @@ import {
   Scalar,
   StepNode,
   Value
-} from '../../pipe/grammar.pegjs';
+} from '../../pipe/ast';
 import {
   ensureFloat,
   resolveInt,
@@ -50,12 +50,7 @@ function torus(node: StepNode) {
   const stanzas = r.map((rk, k) => {
     return endent`
     x[0] += ${rk};
-    ${rotate(
-      d,
-      access('tmp', numberNode(k + 1)),
-      numberNode(k),
-      numberNode(k + 2)
-    )}
+    ${rotate(d, access('tmp', number(k + 1)), number(k), number(k + 2))}
     copy(y, x);
     `;
   });
@@ -63,7 +58,7 @@ function torus(node: StepNode) {
   return endent`{ // torus
     const int d = ${resolveInt(d)};
 
-    ${sphere(numberNode(2), r0)}
+    ${sphere(number(2), r0)}
 
     float tmp[D_MAX];
     copy(x, tmp);

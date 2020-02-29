@@ -1,22 +1,21 @@
 {
+  const ast = options.ast;
+
   function step(type, args, min, max = min) {
     if (args.length < min) {
       error(`expected ${type} to have at least ${min} argument${min == 1 ? '' : 's'}, but found ${args.length} instead`);
     } else if (args.length > max) {
       error(`expected ${type} to have at most ${max} argument${max == 1 ? '' : 's'}, but found ${args.length} instead`);
     }
-    return {kind: 'step', type, args}
-  }
 
-  function arith(op, ...operands) {
-    return {kind: 'arith', op, operands};
+    return ast.step(type, args);
   }
 }
 
 /** RULES */
 
 pipe = _ n:pint connector d0:pint connector steps:steps _ {
-  return {kind: 'pipe', n, d0, steps};
+  return ast.pipe(n, d0, steps);
 }
 
 pint 'positive integer' = x:uint {
@@ -82,16 +81,16 @@ scalar 'scalar' = additive
 
 additive =
   a:multiplicative _ op:('+' / '-') _ b:additive {
-    return arith(op, a, b);
+    return ast.arith(op, a, b);
   }
   / multiplicative
 
 multiplicative =
   a:exponential _ op:('*' / '/') _ b:multiplicative {
-    return arith(op, a, b);
+    return ast.arith(op, a, b);
   }
-  / a:number b:id { return arith('*', a, b); }
-  / a:number lparen b:scalar rparen { return arith('*', a, b); }
+  / a:number b:id { return ast.arith('*', a, b); }
+  / a:number lparen b:scalar rparen { return ast.arith('*', a, b); }
   / exponential
 
 exponential =
@@ -101,17 +100,15 @@ exponential =
   / term
 
 term 'term' =
-  op:'-' a:term { return arith(op, a); }
+  op:'-' a:term { return ast.arith(op, a); }
   / number
-  / name:identifier args:fn_args {
-    return {kind: 'fn', name: name.toLowerCase(), args};
-  }
-  / id:identifier lbrack index:scalar rbrack { return {kind: 'access', id, index}; }
-  / id:identifier _ '.' _ index:id { return {kind: 'access', id, index}; }
+  / name:identifier args:fn_args { return ast.fn(name, args); }
+  / id:identifier lbrack index:scalar rbrack { return ast.access(id, index); }
+  / id:identifier _ '.' _ index:id { return ast.access(id, index); }
   / id
-  / lparen scalar:scalar rparen { return {kind: 'paren', scalar}; }
+  / lparen scalar:scalar rparen { return ast.paren(scalar); }
 
-id = id:identifier { return {kind: 'id', id: id.toLowerCase()}; }
+id = id:identifier { return ast.id(id.toLowerCase()); }
 
 fn_args = lparen args:fn_args_list rparen { return args }
 
@@ -122,8 +119,8 @@ fn_args_list =
 /** TERMINALS */
 
 number 'number' =
-  _ f:float _ { return {kind: 'number', value: parseFloat(f)}; }
-  / _ i:int _ { return {kind: 'number', value: parseInt(i)}; }
+  _ f:float _ { return ast.number(parseFloat(f)); }
+  / _ i:int _ { return ast.number(parseInt(i)); }
 
 identifier 'identifier' = _ id:$([a-zA-Z] [a-zA-Z0-9]*) _ { return id; }
 

@@ -1,6 +1,5 @@
 import endent from 'endent';
 
-import { numberNode } from '../../pipe/ast';
 import {
   AccessNode,
   ArithNode,
@@ -11,7 +10,7 @@ import {
   Scalar,
   StepNode,
   Value
-} from '../../pipe/grammar.pegjs';
+} from '../../pipe/ast';
 import { ensureFloat, resolveInt, from, uniforms, varyings } from './common';
 
 export function init({ type, args }: StepNode): string {
@@ -31,12 +30,12 @@ export function init({ type, args }: StepNode): string {
 }
 
 function interval0To2Pi(args: Scalar[]) {
-  const d = resolveInt(minus(args[0], 1));
+  const d = resolveInt(args[0]) - 1;
   return interval(d, '0.', 'float(2. * pi)');
 }
 
 function spiral(args: Scalar[]): string {
-  const d = resolveInt(minus(args[0], 1));
+  const d = resolveInt(args[0]) - 1;
   return interval(d, '0.', from(args[1]));
 }
 
@@ -78,8 +77,4 @@ function interval(d: number, a: string, b: string): string {
       x[k] = a + tmp * (b - a);
     }
   } // init interval`;
-}
-
-function minus(x: Scalar, y: number): Scalar {
-  return { kind: 'arith', op: '-', operands: [x, numberNode(y)] };
 }
