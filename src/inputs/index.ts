@@ -22,10 +22,11 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
+    phi = audio.power * tan(t / 5)
     d0 = 4
-    theta = audio.power * tan(t / 5) 
+
     sphere(1)
-    Q(theta, theta, theta, theta)
+    Q(phi, phi, phi, phi)
     stereo(3)
     `,
     {
