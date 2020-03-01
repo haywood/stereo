@@ -35,10 +35,11 @@ export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
     });
 
     editor.on('change', () => {
-      const value = this.parse(editor.getValue());
+      const text = editor.getValue();
+      const value = this.parse(text);
       // important to set text before value, since it's used for updating the
       // URL fragment
-      this.text = this.el.value;
+      this.text = text;
       this.value = value;
     });
   };
@@ -46,7 +47,8 @@ export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
 
 const pipeMode = CodeMirror.defineSimpleMode('pipe', {
   start: [
-    { regex: /\b(audio|d0|n|q|sphere|stereo|t)\b/i, token: 'keyword' },
+    { regex: /\b(q|sphere|stereo)\b/i, token: 'keyword' },
+    { regex: /\b(audio|d0|i|n|t)\b/i, token: 'variable-2' },
     { regex: /[a-z][a-z0-9]*/i, token: 'variable-3' }
   ]
 });

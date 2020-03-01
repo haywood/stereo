@@ -22,9 +22,11 @@ pipe = _ (assignments _)? steps:steps _ {
 assignments 'assignments' = assignment __ assignments / assignment
 
 assignment 'assignment' =
-  'n' _ '=' _ n:pint { variables.n = ast.number(n); }
-  / 'd0' _ '=' _ d0:pint { variables.d0 = ast.number(d0); }
-  / id:identifier _ '=' _ s:scalar { variables[id] = s; }
+  'n'i eq n:pint { variables.n = ast.number(n); }
+  / 'd0'i eq d0:pint { variables.d0 = ast.number(d0); }
+  / id:identifier eq s:scalar { variables[id.toLowerCase()] = s; }
+
+eq = _ '=' _
 
 pint 'positive integer' = x:uint {
   x = parseInt(x);
@@ -118,7 +120,7 @@ term 'term' =
 
 id = id:identifier { return ast.id(id.toLowerCase()); }
 
-fn_args = lparen args:fn_args_list rparen { return args }
+fn_args = _ lparen args:fn_args_list rparen { return args }
 
 fn_args_list =
   head:scalar comma tail:fn_args_list { return [head, ...tail]; }
@@ -127,10 +129,10 @@ fn_args_list =
 /** TERMINALS */
 
 number 'number' =
-  _ f:float _ { return ast.number(parseFloat(f)); }
-  / _ i:int _ { return ast.number(parseInt(i)); }
+  f:float { return ast.number(parseFloat(f)); }
+  / i:int { return ast.number(parseInt(i)); }
 
-identifier 'identifier' = _ id:$([a-zA-Z] [a-zA-Z0-9]*) _ { return id; }
+identifier 'identifier' = id:$([a-zA-Z] [a-zA-Z0-9]*) { return id; }
 
 /** TOKENS */
 
@@ -147,9 +149,9 @@ mantissa = $('.' uint)
 operator 'arithmetic operator' =
   _ op:$('+' / '-' / '*' / '/' / '**' / '^') _ { return op; }
 
-lparen 'lparen' = _ '(' _
+lparen 'lparen' = '(' _
 
-rparen 'rparen' = _ ')' _
+rparen 'rparen' = _ ')'
 
 lbrack 'lbrack' = _ '[' _
 

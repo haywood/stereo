@@ -131,7 +131,7 @@ function fromArith(node: ArithNode): string {
 
 function fromFn(node: FnNode): string {
   return endent`
-    ${node.name}(${node.args.map(from).join('\n')})
+    ${node.name}(${node.args.map(ensureFloat).join('\n')})
     `;
 }
 

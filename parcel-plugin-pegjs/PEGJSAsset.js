@@ -11,6 +11,7 @@ class PEGJSAsset extends Asset {
       source: peg.generate(code, {
         format: 'commonjs',
         output: 'source',
+        trace: true,
         allowedStartRules: ['pipe', 'scalar']
       })
     };

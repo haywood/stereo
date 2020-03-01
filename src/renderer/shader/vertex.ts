@@ -35,7 +35,6 @@ export function vertex(pipe: PipeNode): string {
   return endent`
     ${uniforms}
     ${varyings}
-    ${variables.join('\n')}
 
     float x[D_MAX], y[D_MAX];
 
@@ -43,6 +42,7 @@ export function vertex(pipe: PipeNode): string {
 
     void main() {
       i = position[0];
+      ${variables.join('\n')}
 
       ${init(pipe.steps[0])}
 
