@@ -1,6 +1,5 @@
+import 'codemirror/lib/codemirror.css';
 import 'multirange/multirange.css';
-
-import './index.scss';
 
 import { error } from './error';
 import { ReplaySubject, combineLatest, interval } from 'rxjs';

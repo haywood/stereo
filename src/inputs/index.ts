@@ -3,6 +3,7 @@ import screenfull from 'screenfull';
 
 import debug from '../debug';
 import { Compiler } from '../pipe/compiler';
+import { PipeInput } from './pipe';
 import { PipeNode } from '../pipe/ast';
 import { renderer } from '../renderer';
 import { ActionInput } from './action';
@@ -18,7 +19,7 @@ const audioWorkletAvailable =
 const compiler = new Compiler();
 
 export const inputs = {
-  pipe: new TextInput<PipeNode>(
+  pipe: new PipeInput(
     'pipe',
     endent`
     d0 = 4
@@ -28,7 +29,6 @@ export const inputs = {
     stereo(3)
     `,
     {
-      persistent: true,
       parse: text => compiler.compile(text)
     }
   ),

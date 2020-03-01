@@ -1,5 +1,3 @@
-import './overlay.scss';
-
 import assert from 'assert';
 
 import screenfull from 'screenfull';
