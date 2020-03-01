@@ -31,7 +31,6 @@ value.
 
 ## Misc
 
-- Link to the github repo in the overlay
 - Update wiki with more info
   - section on thanks
     - feature ideas
