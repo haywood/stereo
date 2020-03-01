@@ -1,6 +1,16 @@
 import { PipeNode, Scalar, StepType } from './ast';
 import { Parser } from './parser';
 import assert from 'assert';
+const {
+  CUBE,
+  LATTICE,
+  QUATERNION,
+  ROTATE,
+  SPHERE,
+  SPIRAL,
+  STEREO,
+  TORUS
+} = StepType;
 
 export class Compiler {
   constructor() {}
@@ -23,7 +33,7 @@ export class Compiler {
 
     head.args.unshift({ kind: 'number', value: d });
     for (const { type, args } of rest) {
-      const rangeFn = ranges[type];
+      const rangeFn = rangeFns[type];
       assert(rangeFn, `No rangeFn found for step type ${type}`);
       d = rangeFn(d);
       args.unshift({ kind: 'number', value: d });
@@ -37,13 +47,15 @@ export class Compiler {
   };
 }
 
-const ranges = {
-  [StepType.CUBE]: domain => domain,
-  [StepType.LATTICE]: domain => domain,
-  [StepType.SPHERE]: domain => domain + 1,
-  [StepType.SPIRAL]: domain => domain + 1,
-  [StepType.TORUS]: domain => domain + 1,
-  [StepType.ROTATE]: domain => domain,
-  [StepType.STEREO]: domain => domain,
-  [StepType.QUATERNION]: domain => domain
+type RangeFn = (domain: number) => number;
+
+const rangeFns: Record<StepType, RangeFn> = {
+  [CUBE]: domain => domain,
+  [LATTICE]: domain => domain,
+  [SPHERE]: domain => domain + 1,
+  [SPIRAL]: domain => domain + 1,
+  [TORUS]: domain => domain + 1,
+  [ROTATE]: domain => domain,
+  [STEREO]: domain => domain,
+  [QUATERNION]: domain => domain
 };

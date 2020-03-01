@@ -79,7 +79,7 @@ export interface NumberNode {
   value: number;
 }
 
-export function fn(name: string, args: Scalar[]) {
+export function fn(name: string, args: Scalar[]): FnNode {
   return { kind: 'fn', name: name.toLowerCase(), args };
 }
 

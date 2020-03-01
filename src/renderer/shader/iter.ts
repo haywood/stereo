@@ -1,15 +1,21 @@
 import endent from 'endent';
 
-import { id, number, access, StepType } from '../../pipe/ast';
 import {
   AccessNode,
   ArithNode,
+  StepType,
   FnNode,
+  number,
+  access,
   IdNode,
+  ArithOp,
   NumberNode,
   PipeNode,
   Scalar,
-  StepNode
+  StepNode,
+  arith,
+  fn,
+  id
 } from '../../pipe/ast';
 import {
   ensureFloat,
@@ -29,37 +35,34 @@ const {
   STEREO,
   TORUS
 } = StepType;
+const { MUL } = ArithOp;
 
-export function iter(node: StepNode): string {
-  switch (node.type) {
-    case TORUS:
-      return torus(node);
-    case SPIRAL:
-      return spiral(node);
-    case SPHERE:
-      return sphere(node.args[0], node.args[1]);
-    case LATTICE:
-      return lattice(node);
-    case CUBE:
-      return cube(node.args[0], node.args[1]);
-    case ROTATE:
-      return rotate(node.args[0], node.args[1], node.args[2], node.args[3]);
-    case STEREO:
-      return stereo(node);
-    case QUATERNION:
-      return quaternion(node);
-  }
+export function iter({ type, args }: StepNode): string {
+  type StepFn = (args: Scalar[]) => string;
+
+  const fns: Record<StepType, StepFn> = {
+    [TORUS]: torus,
+    [SPIRAL]: spiral,
+    [SPHERE]: sphere,
+    [LATTICE]: lattice,
+    [CUBE]: cube,
+    [ROTATE]: rotate,
+    [STEREO]: stereo,
+    [QUATERNION]: quaternion
+  };
+
+  return fns[type](args);
 }
 
-function torus(node: StepNode) {
-  const d = node.args[0];
-  const r0 = node.args[1];
-  const r = node.args.slice(2).map(ensureFloat);
+function torus(args: Scalar[]) {
+  const d = args[0];
+  const r0 = args[1];
+  const r = args.slice(2).map(ensureFloat);
 
   const stanzas = r.map((rk, k) => {
     return endent`
     x[0] += ${rk};
-    ${rotate(d, access('tmp', number(k + 1)), number(k), number(k + 2))}
+    ${rotate([d, access('tmp', number(k + 1)), number(k), number(k + 2)])}
     copy(y, x);
     `;
   });
@@ -67,7 +70,7 @@ function torus(node: StepNode) {
   return endent`{ // torus
     const int d = ${resolveInt(d)};
 
-    ${sphere(number(2), r0)}
+    ${sphere([number(2), r0])}
 
     float tmp[D_MAX];
     copy(x, tmp);
@@ -79,32 +82,21 @@ function torus(node: StepNode) {
   } // torus`;
 }
 
-function spiral({ args: [d, r] }: StepNode) {
-  const body = polar2cart(resolveInt(d), {
-    kind: 'arith',
-    op: '*',
-    operands: [
-      r,
-      {
-        kind: 'fn',
-        name: 'norm',
-        args: [{ kind: 'id', id: 'x' }]
-      }
-    ]
-  });
+function spiral([d, r]: Scalar[]) {
+  const body = polar2cart(resolveInt(d), arith(MUL, r, fn('norm', [id('x')])));
 
   return endent`{ // spiral
     ${body}
   } // spiral`;
 }
 
-function sphere(d: Scalar, r: Scalar) {
+function sphere([d, r]: Scalar[]) {
   return endent`{ // sphere 
     ${polar2cart(resolveInt(d), r)}
   } // sphere`;
 }
 
-function lattice({ args }: StepNode) {
+function lattice(args: Scalar[]) {
   const d = resolveInt(args[0]);
   const l = ensureFloat(args[1]);
 
@@ -118,7 +110,7 @@ function lattice({ args }: StepNode) {
   } // lattice`;
 }
 
-function cube(d: Scalar, l: Scalar) {
+function cube([d, l]: Scalar[]) {
   return endent`{ // cube
     const int d = ${resolveInt(d)};
     float l = ${ensureFloat(l)};
@@ -135,7 +127,7 @@ function cube(d: Scalar, l: Scalar) {
   } // cube`;
 }
 
-function rotate(d: Scalar, phi: Scalar, d0: Scalar, d1: Scalar) {
+function rotate([d, phi, d0, d1]: Scalar[]) {
   return endent`{ // rotate
     const int d = ${resolveInt(d)}, d0 = ${resolveInt(d0)}, d1 = ${resolveInt(
     d1
@@ -151,7 +143,7 @@ function rotate(d: Scalar, phi: Scalar, d0: Scalar, d1: Scalar) {
   } // rotate`;
 }
 
-function stereo({ args }: StepNode) {
+function stereo(args: Scalar[]) {
   const from = resolveInt(args[0]);
   const to = resolveInt(args[1]);
   let stanzas = [];
@@ -190,7 +182,7 @@ function stereo({ args }: StepNode) {
   } // stereo`;
 }
 
-function quaternion({ args }: StepNode) {
+function quaternion(args: Scalar[]) {
   const [_, r, i, j, k] = args;
   return endent`{ // quaternion
     float r = ${ensureFloat(r)};

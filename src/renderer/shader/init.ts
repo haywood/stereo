@@ -24,19 +24,17 @@ const {
 } = StepType;
 
 export function init({ type, args }: StepNode): string {
-  switch (type) {
-    case SPHERE:
-    case TORUS:
-      return interval_0_2pi(args);
-    case SPIRAL:
-      return spiral(args);
-    case LATTICE:
-      return interval_0_1(args);
-    case CUBE:
-      return cube(args);
-    default:
-      return lattice_1(args);
-  }
+  type StepFn = (args: Scalar[]) => string;
+
+  const fns: Partial<Record<StepType, StepFn>> = {
+    [SPHERE]: interval_0_2pi,
+    [TORUS]: interval_0_2pi,
+    [SPIRAL]: spiral,
+    [LATTICE]: interval_0_1,
+    [CUBE]: cube
+  };
+
+  return (fns[type] ?? lattice_1)(args);
 }
 
 function interval_0_2pi(args: Scalar[]) {
