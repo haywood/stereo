@@ -1,10 +1,5 @@
 # Ideas
 
-## Limit allowed first step types
-
-Some steps don't really make sense in the first position, so shouldn't need to
-write initializer code for them. e.g. R, Q, stereo.
-
 ## Zoom & pan
 
 Zoom and pan with mouse.

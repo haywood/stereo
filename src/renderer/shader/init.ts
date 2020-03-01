@@ -16,19 +16,19 @@ export function init({ type, args }: StepNode): string {
   switch (type) {
     case 'sphere':
     case 'torus':
-      return interval0To2Pi(args);
+      return interval_0_2pi(args);
     case 'spiral':
       return spiral(args);
     case 'lattice':
-      return lattice(args);
+      return interval_0_1(args);
     case 'cube':
       return cube(args);
     default:
-      throw new Error(`Can't initialize step type ${type}`);
+      return lattice_1(args);
   }
 }
 
-function interval0To2Pi(args: Scalar[]) {
+function interval_0_2pi(args: Scalar[]) {
   const d = resolveInt(args[0]) - 1;
   return interval(d, '0.', '2. * pi');
 }
@@ -38,9 +38,30 @@ function spiral(args: Scalar[]): string {
   return interval(d, '0.', from(args[1]));
 }
 
-function lattice(args: Scalar[]): string {
+function interval_0_1(args: Scalar[]): string {
   const d = resolveInt(args[0]);
   return interval(d, '0.', '1.');
+}
+
+function lattice_1(args: Scalar[]): string {
+  const d = resolveInt(args[0]);
+  return interval(d, '-0.5', '0.5');
+}
+
+function interval(d: number, a: string, b: string): string {
+  return endent`{ // init interval
+    const int d = ${d};
+    const float a = ${a};
+    const float b = ${b};
+    float branching_factor = round(pow(n, 1. / float(d)));
+
+    for (int k = 0; k < d; k++) {
+      float exp = float(d - k - 1);
+      float dividend = round(i / pow(branching_factor, exp));
+      float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
+      x[k] = a + tmp * (b - a);
+    }
+  } // init interval`;
 }
 
 function cube(args: Scalar[]): string {
@@ -60,20 +81,4 @@ function cube(args: Scalar[]): string {
     }
   } // init cube
   `;
-}
-
-function interval(d: number, a: string, b: string): string {
-  return endent`{ // init interval
-    const int d = ${d};
-    const float a = ${a};
-    const float b = ${b};
-    float branching_factor = round(pow(n, 1. / float(d)));
-
-    for (int k = 0; k < d; k++) {
-      float exp = float(d - k - 1);
-      float dividend = round(i / pow(branching_factor, exp));
-      float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
-      x[k] = a + tmp * (b - a);
-    }
-  } // init interval`;
 }
