@@ -86,11 +86,11 @@ export function isFloat(node: Scalar): boolean {
       // TODO currently works, but is pretty awkward and brittle
       return 'audio' == node.id && from(node.index) != 'onset';
     case 'id':
-      // TODO incomplete
-      if ('t' == node.id) return true;
-
-      const define = defines[node.id];
-      return typeof define == 'number' && !Number.isInteger(define);
+      if (node.id in defines) {
+        const define = defines[node.id];
+        return typeof define == 'number' && !Number.isInteger(define);
+      }
+      return true; // all user-specified variables are floats
     case 'number':
       return !Number.isInteger(node.value);
     case 'fn':
