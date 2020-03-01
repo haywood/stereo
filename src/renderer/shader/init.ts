@@ -8,20 +8,31 @@ import {
   NumberNode,
   PipeNode,
   Scalar,
-  StepNode
+  StepNode,
+  StepType
 } from '../../pipe/ast';
 import { ensureFloat, resolveInt, from, uniforms, varyings } from './common';
+const {
+  CUBE,
+  LATTICE,
+  QUATERNION,
+  ROTATE,
+  SPHERE,
+  SPIRAL,
+  STEREO,
+  TORUS
+} = StepType;
 
 export function init({ type, args }: StepNode): string {
   switch (type) {
-    case 'sphere':
-    case 'torus':
+    case SPHERE:
+    case TORUS:
       return interval_0_2pi(args);
-    case 'spiral':
+    case SPIRAL:
       return spiral(args);
-    case 'lattice':
+    case LATTICE:
       return interval_0_1(args);
-    case 'cube':
+    case CUBE:
       return cube(args);
     default:
       return lattice_1(args);

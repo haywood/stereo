@@ -17,15 +17,16 @@ export interface Variables {
   d0: NumberNode;
 }
 
-export type StepType =
-  | 'sphere'
-  | 'spiral'
-  | 'torus'
-  | 'lattice'
-  | 'cube'
-  | 'rotate'
-  | 'stereo'
-  | 'quaternion';
+export enum StepType {
+  CUBE = 'cube',
+  LATTICE = 'lattice',
+  QUATERNION = 'Q',
+  ROTATE = 'R',
+  SPHERE = 'sphere',
+  SPIRAL = 'spiral',
+  STEREO = 'stereo',
+  TORUS = 'torus'
+}
 
 export function step(type: StepType, args: Scalar[]): StepNode {
   return { kind: 'step', type, args };
@@ -54,7 +55,14 @@ export function arith(
   return { kind: 'arith', op, operands };
 }
 
-export type ArithOp = '*' | '/' | '+' | '-' | '**' | '^';
+export enum ArithOp {
+  ADD = '+',
+  DIV = '/',
+  EXP = '**',
+  EXP_CARET = '^',
+  MUL = '*',
+  SUB = '-'
+}
 
 export interface ArithNode {
   kind: 'arith';

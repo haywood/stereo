@@ -1,6 +1,6 @@
 import endent from 'endent';
 
-import { id, number, access } from '../../pipe/ast';
+import { id, number, access, StepType } from '../../pipe/ast';
 import {
   AccessNode,
   ArithNode,
@@ -9,8 +9,7 @@ import {
   NumberNode,
   PipeNode,
   Scalar,
-  StepNode,
-  Value
+  StepNode
 } from '../../pipe/ast';
 import {
   ensureFloat,
@@ -20,24 +19,34 @@ import {
   uniforms,
   varyings
 } from './common';
+const {
+  CUBE,
+  LATTICE,
+  QUATERNION,
+  ROTATE,
+  SPHERE,
+  SPIRAL,
+  STEREO,
+  TORUS
+} = StepType;
 
 export function iter(node: StepNode): string {
   switch (node.type) {
-    case 'torus':
+    case TORUS:
       return torus(node);
-    case 'spiral':
+    case SPIRAL:
       return spiral(node);
-    case 'sphere':
+    case SPHERE:
       return sphere(node.args[0], node.args[1]);
-    case 'lattice':
+    case LATTICE:
       return lattice(node);
-    case 'cube':
+    case CUBE:
       return cube(node.args[0], node.args[1]);
-    case 'rotate':
+    case ROTATE:
       return rotate(node.args[0], node.args[1], node.args[2], node.args[3]);
-    case 'stereo':
+    case STEREO:
       return stereo(node);
-    case 'quaternion':
+    case QUATERNION:
       return quaternion(node);
   }
 }

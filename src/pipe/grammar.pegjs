@@ -1,6 +1,17 @@
 {
   const ast = options.ast;
   const variables = options.variables;
+  const {
+    CUBE,
+    LATTICE,
+    QUATERNION,
+    ROTATE,
+    SPHERE,
+    SPIRAL,
+    STEREO,
+    TORUS
+  } = ast.StepType;
+
 
   function step(type, args, min, max = min) {
     if (args.length < min) {
@@ -51,41 +62,36 @@ step =
   / quaternion
 
 cube 'cube' = type:$'cube'i args:fn_args {
-  return step(type, args, 1);
+  return step(CUBE, args, 1);
 }
 
 lattice 'lattice' = type:$'lattice'i args:fn_args {
-  return step(type, args, 1);
+  return step(LATTICE, args, 1);
 }
 
 sphere 'sphere' = type:$'sphere'i args:fn_args {
-  return step(type, args, 1);
+  return step(SPHERE, args, 1);
 }
 
 spiral 'spiral' = type:$'spiral'i args:fn_args {
-  return step(type, args, 1, Infinity);
+  return step(SPIRAL, args, 1, Infinity);
 }
 
 torus 'torus' = type:$'torus'i args:fn_args {
-  return step(type, args, 0, Infinity);
+  return step(TORUS, args, 0, Infinity);
 }
 
-rotate 'rotate' =
-  'r'i args:fn_args  {
-    return step('rotate', args, 3, 5);
-  }
-  / 'rotate'i args:fn_args {
-    return step('rotate', args, 3, 5);
-  }
+rotate 'rotate' = ('r'i / 'rotate'i) args:fn_args  {
+  return step(ROTATE, args, 3, 5);
+}
 
 stereo 'stereo' = type:$'stereo'i args:fn_args {
-  return step(type, args, 1);
+  return step(STEREO, args, 1);
 }
 
-quaternion 'q' =
-  'q'i args:fn_args {
-    return step('quaternion', args, 4)
-  }
+quaternion 'q' = 'q'i args:fn_args {
+  return step(QUATERNION, args, 4)
+}
 
 scalar 'scalar' = additive
 

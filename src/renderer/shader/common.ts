@@ -120,7 +120,6 @@ function fromArith(node: ArithNode): string {
     case '/':
       return `${a} ${op} ${b}`;
     case '**':
-    case '^':
       return `pow(${a}, ${b})`;
     case '-':
       return b == null ? `-${a}` : `${a} - ${b}`;
@@ -217,7 +216,6 @@ function resolveArith(node: ArithNode): number {
     case '/':
       return a / b;
     case '**':
-    case '^':
       return a ** b;
     case '-':
       return b == null ? -a : a - b;
