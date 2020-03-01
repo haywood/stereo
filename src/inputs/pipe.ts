@@ -48,7 +48,7 @@ export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
 const pipeMode = CodeMirror.defineSimpleMode('pipe', {
   start: [
     { regex: /\b(q|sphere|stereo)\b/i, token: 'keyword' },
-    { regex: /\b(audio|d0|i|n|t)\b/i, token: 'variable-2' },
+    { regex: /\b(audio|d0|i|n|t)\b/i, token: 'builtin' },
     { regex: /[a-z][a-z0-9]*/i, token: 'variable-3' }
   ]
 });
