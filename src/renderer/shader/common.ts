@@ -3,6 +3,7 @@ import endent from 'endent';
 import { pp } from '../../pp';
 import {
   AccessNode,
+  ArithOp,
   ArithNode,
   FnNode,
   IdNode,
@@ -11,6 +12,8 @@ import {
   Scalar,
   StepNode
 } from '../../pipe/ast';
+
+const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
 
 export const uniforms = endent`
 uniform float t;
@@ -114,18 +117,19 @@ function fromArith(node: ArithNode): string {
   const { op, operands } = node;
   const [a, b] = operands.map(operands.some(isFloat) ? ensureFloat : from);
 
-  switch (op) {
-    case '+':
-    case '*':
-    case '/':
-      return `${a} ${op} ${b}`;
-    case '**':
-      return `pow(${a}, ${b})`;
-    case '-':
-      return b == null ? `-${a}` : `${a} - ${b}`;
-    default:
-      throw node;
-  }
+  const binary = op => () => `${a} ${op} ${b}`;
+  const exp = () => `pow(${a}, ${b})`;
+
+  const ops: Record<ArithOp, () => string> = {
+    [ADD]: binary(ADD),
+    [DIV]: binary(DIV),
+    [EXP]: exp,
+    [EXP_CARET]: exp,
+    [MUL]: binary(MUL),
+    [SUB]: b ? binary(SUB) : () => `-${a}`
+  };
+
+  return ops[op]();
 }
 
 function fromFn(node: FnNode): string {
@@ -208,22 +212,16 @@ function resolveArith(node: ArithNode): number {
   const { op, operands } = node;
   const [a, b] = operands.map(resolve);
 
-  switch (op) {
-    case '+':
-      return a + b;
-    case '*':
-      return a * b;
-    case '/':
-      return a / b;
-    case '**':
-      return a ** b;
-    case '-':
-      return b == null ? -a : a - b;
-    default:
-      throw new Error(
-        `don't know how to resolve arithmetic expression with operator ${op}`
-      );
-  }
+  const ops: Record<ArithOp, () => number> = {
+    [ADD]: () => a + b,
+    [DIV]: () => a / b,
+    [EXP]: () => a ** b,
+    [EXP_CARET]: () => a ** b,
+    [MUL]: () => a * b,
+    [SUB]: () => b ?? a - b ?? -a
+  };
+
+  return ops[op]();
 }
 
 function resolveId(id: string): number {
