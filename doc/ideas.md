@@ -26,6 +26,7 @@ value.
 
 ## Misc
 
+- add a reset button
 - Update wiki with more info
   - section on thanks
     - feature ideas
