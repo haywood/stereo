@@ -26,12 +26,16 @@ of the translation.
 
 ## Code editor for pipe
 
+_Now a work in progress_
+
 Like with autocomplete and syntax highlighting and shit...
 
-## Misc
+## Redo color
 
-- Move n and d0 into separate inputs; doesn't really make sense for them to be
-  part of pipe. Would be cleaner if pipe were only concerned with the shape
-  and iteration in the scene.
+Make it a single input similar to pipe with its own grammar. Have the user
+provide code that sets the values of builtin variables hue, saturation, and
+value.
+
+## Misc
 
 - Link to the github repo in the overlay
