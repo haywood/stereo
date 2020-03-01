@@ -32,3 +32,20 @@ value.
 ## Misc
 
 - Link to the github repo in the overlay
+- Update wiki with more info
+  - section on thanks
+    - feature ideas
+      - chat with Alex
+      - chats with Elliot
+    - for graphics
+      - https://threejs.org/
+      - https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API
+      - chats with Elliot
+      - chats with Thomas
+    - for audio
+      - https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
+      - https://www.w3.org/TR/webaudio/
+      - http://archive.gamedev.net/archive/reference/programming/features/beatdetection/
+      - https://mziccard.me/2015/05/28/beats-detection-algorithms-1/
+    - coffee & wifi
+      - Revival
