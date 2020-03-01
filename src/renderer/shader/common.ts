@@ -86,6 +86,7 @@ export function isFloat(node: Scalar): boolean {
       // TODO currently works, but is pretty awkward and brittle
       return 'audio' == node.id && from(node.index) != 'onset';
     case 'id':
+      // TODO incomplete
       if ('t' == node.id) return true;
 
       const define = defines[node.id];
@@ -111,28 +112,28 @@ function fromAccess({ id, index }: AccessNode): string {
 
 function fromArith(node: ArithNode): string {
   const { op, operands } = node;
-  const [a, b] = operands.map(from);
-  const float = operands.some(isFloat) ? x => `float(${x})` : x => x;
+  const [a, b] = operands.map(operands.some(isFloat) ? ensureFloat : from);
 
   switch (op) {
     case '+':
     case '*':
     case '/':
-      return `${float(a)} ${op} ${float(b)}`;
+      return `${a} ${op} ${b}`;
     case '**':
     case '^':
-      return `pow(${float(a)}, ${float(b)})`;
+      return `pow(${a}, ${b})`;
     case '-':
-      return b == null ? `-${float(a)}` : `${float(a)} - ${float(b)}`;
+      return b == null ? `-${a}` : `${a} - ${b}`;
     default:
       throw node;
   }
 }
 
 function fromFn(node: FnNode): string {
+  const args = node.args.map(ensureFloat);
   return endent`
-    ${node.name}(${node.args.map(ensureFloat).join('\n')})
-    `;
+  ${node.name}(${args.join('\n')})
+  `;
 }
 
 function fromId(id: string): string {
