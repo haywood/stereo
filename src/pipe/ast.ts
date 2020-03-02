@@ -79,13 +79,40 @@ export interface NumberNode {
   value: number;
 }
 
-export function fn(name: string, args: Scalar[]): FnNode {
-  return { kind: 'fn', name: name.toLowerCase(), args };
+export function fn(name: FnName, args: Scalar[]): FnNode {
+  return { kind: 'fn', name, args };
+}
+
+export enum FnName {
+  COS = 'cos',
+  SIN = 'sin',
+  TAN = 'tan',
+  RADIANS = 'radians',
+  DEGREES = 'degrees',
+  ARC_SIN = 'asin',
+  ARC_COS = 'acos',
+  ARC_TAN = 'atan',
+  EXP = 'exp',
+  LOG = 'log',
+  LOG2 = 'log2',
+  SQRT = 'sqrt',
+  ABS = 'abs',
+  SIGN = 'sign',
+  FLOOR = 'floor',
+  CEIL = 'ceil',
+  FRACT = 'fract',
+  MOD = 'mod',
+  MIN = 'min',
+  MAX = 'max',
+  CLAMP = 'clamp',
+  MIX = 'mix',
+  STEP = 'step',
+  SMOOTH_STEP = 'smoothstep'
 }
 
 export interface FnNode {
   kind: 'fn';
-  name: string;
+  name: FnName;
   args: Scalar[];
 }
 
@@ -100,6 +127,26 @@ export interface AccessNode {
   kind: 'access';
   id: string;
   index: Scalar;
+}
+
+export enum BuiltinConstant {
+  AUDIO = 'audio',
+  E = 'e',
+  I = 'i',
+  LN10 = 'ln10',
+  LN2 = 'ln2',
+  LOG10E = 'log10e',
+  LOG2e = 'log2e',
+  P = 'p',
+  PI = 'pi',
+  SQRT1_2 = 'sqrt1_2',
+  SQRT2 = 'sqrt2',
+  TIME = 't'
+}
+
+export enum BuiltinVariable {
+  D0 = 'd0',
+  N = 'n'
 }
 
 export function id(id: string): IdNode {
