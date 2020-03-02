@@ -10,9 +10,11 @@
     "endent": "^1.4.1",
     "loglevel": "^1.6.7",
     "multirange": "^2.0.0",
+    "re-template-tag": "^2.0.1",
     "rxjs": "^6.5.4",
     "screenfull": "^5.0.1",
-    "three": "^0.111.0"
+    "three": "^0.111.0",
+    "xregexp": "^4.3.0"
   },
   "browserslist": [
     "last 2 Chrome versions",

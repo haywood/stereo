@@ -10,6 +10,8 @@ import {
 } from '../pipe/ast';
 import CodeMirror from 'codemirror';
 import 'codemirror/addon/mode/simple';
+import { re } from 're-template-tag';
+import { escape } from 'xregexp';
 
 export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
   private text: string;
@@ -53,27 +55,32 @@ export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
 }
 
 const r = String.raw;
-const pipeMode = CodeMirror.defineSimpleMode('pipe', {
+
+const ID = /[a-z][a-z0-9]*/i;
+const PROPERTY = re`/\.${ID}/i`;
+const INTEGER = /[+-]?[1-9]\d*/;
+const NUMBER = re`/${INTEGER}(\.\d*)?([eE]${INTEGER})?/i`;
+
+CodeMirror.defineSimpleMode('pipe', {
   start: [
     { regex: or(Object.values(StepType)), token: 'builtin' },
     { regex: or(Object.values(FnName)), token: 'builtin' },
-    { regex: or(Object.values(BuiltinConstant)), token: 'variable-3' },
-    { regex: or(Object.values(BuiltinVariable)), token: 'variable-3' },
-    {
-      regex: or(Object.values(ArithOp).map(o => o.replace(/(.)/g, '\\$1'))),
-      token: 'operator'
-    },
+
+    { regex: or(Object.values(BuiltinConstant)), token: 'builtin variable' },
+    { regex: or(Object.values(BuiltinVariable)), token: 'builtin variable' },
+
+    { regex: or(Object.values(ArithOp)), token: 'operator' },
     { regex: /[(),=\[\]]/, token: 'operator' },
-    { regex: /\.[a-z][a-z0-9]*/i, token: 'variable-2' },
-    { regex: /[a-z][a-z0-9]*/i, token: 'variable' },
-    {
-      regex: /[+-]?[1-9][0-9]*(\.[0-9]*)?([eE][+-]?[1-9][0-9]*)?/i,
-      token: 'number'
-    }
+
+    { regex: PROPERTY, token: 'property' },
+
+    { regex: ID, token: 'variable' },
+
+    { regex: NUMBER, token: 'number' }
   ]
 });
 
 function or(values: string[]): RegExp {
-  const disjunction = values.join('|');
+  const disjunction = values.map(escape).join('|');
   return new RegExp(r`\b(${disjunction})\b`, 'i');
 }
