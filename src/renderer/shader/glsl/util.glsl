@@ -10,10 +10,14 @@ float round(float x) {
   }
 }
 
-float norm(float x[D_MAX]) {
+float norm2(float x[D_MAX]) {
   float sum;
   for (int k = 0; k < D_MAX; k++) {
     sum += x[k] * x[k];
   }
-  return sqrt(sum);
+  return sum;
+}
+
+float norm(float x[D_MAX]) {
+  return sqrt(norm2(x));
 }

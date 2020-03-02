@@ -163,17 +163,17 @@ function stereo(args: Scalar[]) {
   }
 
   while (d0 < to) {
-    stanzas.push(endent`
-    float n2 = 0.;
-    for (int k = 0; k < ${d0}; k++) {
-      n2 += x[k] * x[k];
+    stanzas.push(endent`{
+      float n2 = norm2(x);
+      float divisor = n2 + 1.;
+      x[0] = (n2 - 1.) / divisor;
+
+      for (int k = 0; k < ${++d0}; k++) {
+        y[k] = 2. * x[k - 1] / divisor;
+      }
+
+      copy(y, x);
     }
-    float divisor = n2 + 1.;
-    x[0] = (n2 - 1.) / divisor;
-    for (int k = 0; k < ${++d0}; k++) {
-      y[k] = 2. * x[k - 1] / divisor;
-    }
-    copy(y, x);
     `);
   }
 
