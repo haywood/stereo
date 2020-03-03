@@ -57,12 +57,15 @@ export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
 const r = String.raw;
 
 const ID = /[a-z][a-z0-9]*/i;
+const DEF = re`/(${ID})(\s*)(=)/i`;
 const PROPERTY = re`/\.${ID}/i`;
 const INTEGER = /[+-]?[1-9]\d*/;
 const NUMBER = re`/${INTEGER}(\.\d*)?([eE]${INTEGER})?/i`;
 
 CodeMirror.defineSimpleMode('pipe', {
   start: [
+    { regex: DEF, token: ['def', null, 'operator'] },
+
     { regex: or(Object.values(StepType)), token: 'builtin' },
     { regex: or(Object.values(FnName)), token: 'builtin' },
 
@@ -70,7 +73,7 @@ CodeMirror.defineSimpleMode('pipe', {
     { regex: or(Object.values(BuiltinVariable)), token: 'builtin variable' },
 
     { regex: or(Object.values(ArithOp)), token: 'operator' },
-    { regex: /[(),=\[\]]/, token: 'operator' },
+    { regex: /[(),\[\]]/, token: 'operator' },
 
     { regex: PROPERTY, token: 'property' },
 
