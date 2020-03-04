@@ -1,6 +1,3 @@
-import 'codemirror/lib/codemirror.css';
-import 'multirange/multirange.css';
-
 import { ReplaySubject, combineLatest, interval } from 'rxjs';
 
 import { audioStream } from './audio';

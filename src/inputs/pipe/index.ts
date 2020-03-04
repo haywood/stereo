@@ -1,4 +1,7 @@
 import 'codemirror/addon/mode/simple';
+import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/hint/show-hint.css';
+import 'codemirror/lib/codemirror.css';
 
 import CodeMirror from 'codemirror';
 import { isEqual } from 'lodash';
@@ -9,7 +12,7 @@ import { escape } from 'xregexp';
 import { Change } from '../change';
 import { Input } from '../input';
 import { Options } from '../options';
-import { PipeNode, hasError } from './ast';
+import { PipeNode, BuiltinVariable, StepType, hasError } from './ast';
 import { Context } from './context';
 
 export { Context } from './context';
@@ -62,6 +65,10 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       readOnly: this.disabled ? 'nocursor' : false,
       value: this.initialText
     });
+
+    this.editor.on('change', () => {
+      this.editor.showHint({ hint, completeSingle: false });
+    });
   };
 }
 
@@ -79,4 +86,42 @@ function defineMode(name: string, startState: () => Context) {
       }
     };
   });
+}
+
+function hint(editor) {
+  // TODO hint function should be state-based (i.e. don't suggest assignment
+  // when completing a function argument)
+  const cursor = editor.getCursor();
+  const token = editor.getTokenAt(cursor);
+  const start: number = token.start;
+  const end: number = cursor.ch;
+  const line: number = cursor.line;
+  const currentWord: string = token.string;
+  const from = CodeMirror.Pos(line, start);
+  const to = CodeMirror.Pos(line, end);
+  const list = [];
+
+  // TODO awareness of whether these have been set
+  for (const name of Object.values(BuiltinVariable)) {
+    if (name.startsWith(token.string)) {
+      list.push(`${name} =`);
+    }
+  }
+
+  for (const type of Object.values(StepType)) {
+    if (type.startsWith(token.string)) {
+      const text = `${type}()`;
+      const after = { line, ch: start + text.length };
+      list.push({
+        text,
+        displayText: `${type}()`,
+        hint() {
+          editor.replaceRange(text, from, to);
+          editor.setCursor(line, from.ch + text.length - 1);
+        }
+      });
+    }
+  }
+
+  return { list, from, to };
 }

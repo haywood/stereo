@@ -9,3 +9,4 @@ dist/
 stereo/
 .cache/
 .karma-parcel/
+*.orig

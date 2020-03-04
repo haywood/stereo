@@ -1,4 +1,5 @@
 import multirange from 'multirange';
+import 'multirange/multirange.css';
 
 import { Input } from './input';
 
