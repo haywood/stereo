@@ -1,5 +1,5 @@
-import { Scalar } from './pipe/ast';
 import { Audio } from './audio/types';
+import { Scalar } from './inputs/pipe/ast';
 
 export type Scope = {
   audio: Audio;

@@ -1,17 +1,7 @@
 import endent from 'endent';
 
 import { HSV } from '../../types';
-import {
-  AccessNode,
-  ArithNode,
-  FnNode,
-  IdNode,
-  NumberNode,
-  PipeNode,
-  Scalar,
-  StepNode
-} from '../../pipe/ast';
-import { from, ensureFloat, uniforms, varyings } from './common';
+import { ensureFloat, from, uniforms, varyings } from './common';
 import hsv2rgb from './glsl/hsv2rgb.glsl';
 import util from './glsl/util.glsl';
 

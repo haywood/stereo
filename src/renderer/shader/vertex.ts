@@ -1,16 +1,14 @@
 import endent from 'endent';
 
 import {
-  AccessNode,
   ArithNode,
   FnNode,
   IdNode,
   NumberNode,
   PipeNode,
   Scalar,
-  StepNode,
-  Value
-} from '../../pipe/ast';
+  StepNode
+} from '../../inputs/pipe/ast';
 import { ensureFloat, from, uniforms, varyings } from './common';
 import util from './glsl/util.glsl';
 import { init } from './init';

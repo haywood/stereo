@@ -2,13 +2,11 @@ import endent from 'endent';
 import screenfull from 'screenfull';
 
 import debug from '../debug';
-import { Compiler } from '../pipe/compiler';
-import { PipeInput } from './pipe';
-import { PipeNode } from '../pipe/ast';
 import { renderer } from '../renderer';
 import { ActionInput } from './action';
+import { Context, PipeInput } from './pipe';
+import { NumberNode, PipeNode } from './pipe/ast';
 import { RangeInput } from './range';
-import { TextInput } from './text';
 import { ToggleInput } from './toggle';
 
 const minDbs = parseInt(
@@ -16,7 +14,11 @@ const minDbs = parseInt(
 );
 const audioWorkletAvailable =
   window.AudioContext && !!new AudioContext().audioWorklet;
-const compiler = new Compiler();
+const compiler = {
+  compile(a, b) {
+    return new NumberNode(1);
+  }
+}; // TODO integrate with CM parser
 
 export const inputs = {
   pipe: new PipeInput(
@@ -29,28 +31,18 @@ export const inputs = {
     Q(phi, phi, phi, phi)
     stereo(3)
     `,
-    {
-      parse: text => compiler.compile(text)
-    }
+    { startState: then => Context.pipe(then) }
   ),
 
-  h: new TextInput('h', 'audio.hue * abs(p[0])', {
-    parse: s => compiler.compile(s, 'scalar')
-  }),
+  h: new PipeInput('h', 'audio.hue * p[0]', { startState: then => Context.scalar(then) }),
 
-  s: new TextInput('s', '1', {
-    parse: s => compiler.compile(s, 'scalar')
-  }),
+  s: new PipeInput('s', '1', { startState: then => Context.scalar(then) }),
 
-  v: new TextInput('v', 'audio.power', {
-    parse: s => compiler.compile(s, 'scalar')
-  }),
+  v: new PipeInput('v', 'audio.power', { startState: then => Context.scalar(then) }),
 
   animate: new ToggleInput('animate', '1'),
 
-  mic: new ToggleInput('mic', '0', {
-    disabled: !audioWorkletAvailable
-  }),
+  mic: new ToggleInput('mic', '0', { disabled: !audioWorkletAvailable }),
 
   fullscreen: new ToggleInput('fullscreen', '0', {
     disabled: !screenfull.isEnabled

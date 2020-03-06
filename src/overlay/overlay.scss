@@ -67,8 +67,26 @@
     justify-content: flex-start;
   }
 
-  #pipe {
+  textarea {
     resize: none;
+  }
+
+  #h,
+  #s,
+  #v {
+    align-content: flex-end;
+    align-items: center;
+    display: flex;
+    flex-flow: row nowrap;
+    margin-bottom: 16px;
+
+    label {
+      margin-right: 8px;
+    }
+  }
+
+  .CodeMirror {
+    height: auto;
   }
 }
 

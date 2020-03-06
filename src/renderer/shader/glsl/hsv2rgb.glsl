@@ -20,7 +20,7 @@ vec3 hsv2rgb(float h, float s, float v) {
     rgb = vec3(0., x, c);
   } else if (hprime <= 5.) {
     rgb = vec3(x, 0., c);
-  } else if (hprime <= 6.) {
+  } else {
     rgb = vec3(c, 0., x);
   }
 

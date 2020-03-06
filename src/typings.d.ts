@@ -1,29 +1,6 @@
-import * as ast from './pipe/ast';
-
 declare module '*.glsl' {
   declare const source: string;
   export default source;
-}
-
-declare module '*.pegjs' {
-  declare const grammar: string;
-  export default grammar;
-
-  export function parse(
-    spec: string,
-    options: {
-      variables: ast.Variables;
-      ast: typeof ast;
-    }
-  ): ast.PipeNode;
-
-  export function parse(
-    spec: string,
-    options: {
-      startRule: 'scalar';
-      ast: typeof ast;
-    }
-  ): ast.Scalar;
 }
 
 declare module 'circular-buffer' {

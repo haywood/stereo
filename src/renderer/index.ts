@@ -1,23 +1,25 @@
-import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import assert from 'assert';
-import { inputs } from '../inputs';
-import { Scope, HSV } from '../types';
-import { PipeNode } from '../pipe/ast';
-import { vertex } from './shader/vertex';
-import { fragment } from './shader/fragment';
-import { defines, near, far, fov } from './shader/common';
+
 import {
   BufferAttribute,
-  VertexColors,
   BufferGeometry,
   PerspectiveCamera,
   Points,
   PointsMaterial,
-  ShaderMaterial,
   Scene,
+  ShaderMaterial,
+  VertexColors,
   WebGLRenderer
 } from 'three';
+
+import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import debug from '../debug';
+import { inputs } from '../inputs';
+import { PipeNode } from '../inputs/pipe/ast';
+import { HSV, Scope } from '../types';
+import { defines, far, fov, near } from './shader/common';
+import { fragment } from './shader/fragment';
+import { vertex } from './shader/vertex';
 
 export class Renderer {
   readonly canvas = document.querySelector('canvas');

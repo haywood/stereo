@@ -1,17 +1,18 @@
 import endent from 'endent';
 
-import { pp } from '../../pp';
 import {
-  AccessNode,
-  ArithOp,
+  ElementNode,
   ArithNode,
+  ArithOp,
   FnNode,
   IdNode,
   NumberNode,
   PipeNode,
+  PropertyNode,
   Scalar,
   StepNode
-} from '../../pipe/ast';
+} from '../../inputs/pipe/ast';
+import { pp } from '../../pp';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
 
@@ -32,7 +33,7 @@ varying float i;
 `;
 
 export const screenDiag = Math.hypot(window.screen.width, window.screen.height);
-export const near = Math.max(screenDiag / 100_000, 0.01);
+export const near = Math.max(screenDiag / 100000, 0.01);
 export const far = screenDiag;
 export const fov = 100;
 
@@ -58,8 +59,6 @@ export const defines: { [name: string]: number } = {
 
 export function from(node: Scalar): string {
   switch (node.kind) {
-    case 'access':
-      return fromAccess(node);
     case 'arith':
       return fromArith(node);
     case 'fn':
@@ -70,8 +69,10 @@ export function from(node: Scalar): string {
       return from(node.scalar);
     case 'id':
       return fromId(node.id);
-    default:
-      throw new Error(`Can't generate GLSL source from node kind ${node.kind}`);
+    case 'property':
+      return fromProperty(node);
+    case 'element':
+      return fromElement(node);
   }
 }
 
@@ -85,9 +86,11 @@ export function ensureFloat(node: Scalar) {
 
 export function isFloat(node: Scalar): boolean {
   switch (node.kind) {
-    case 'access':
+    case 'element':
+      return true; // I don't think there are any int arrays
+    case 'property':
       // TODO currently works, but is pretty awkward and brittle
-      return 'audio' == node.id && from(node.index) != 'onset';
+      return fromProperty(node) != 'audio.onset';
     case 'id':
       if (node.id in defines) {
         const defined = defines[node.id];
@@ -104,14 +107,6 @@ export function isFloat(node: Scalar): boolean {
       return isFloat(node.scalar);
     default:
       return false;
-  }
-}
-
-function fromAccess({ id, index }: AccessNode): string {
-  if (isNumber(index)) {
-    return `${fromId(id)}[${from(index)}]`;
-  } else {
-    return `${fromId(id)}.${from(index)}`;
   }
 }
 
@@ -146,6 +141,22 @@ function fromId(id: string): string {
     return defines[id].toString();
   } else {
     return id;
+  }
+}
+
+function fromProperty({ receiver, name }: PropertyNode) {
+  if (receiver instanceof PropertyNode) {
+    return `${fromProperty(receiver)}.${name.id}`;
+  } else {
+    return `${receiver.id}.${name.id}`;
+  }
+}
+
+function fromElement({receiver, index}: ElementNode) {
+  if (receiver instanceof ElementNode) {
+    return `${fromElement(receiver)}.${resolve(index)}`;
+  } else {
+    return `${receiver.id}[${resolve(index)}]`;
   }
 }
 
@@ -186,15 +197,13 @@ function resolve(node: Scalar): number {
     case 'number':
       value = node.value;
       break;
-    case 'access':
-      value = resolveAccess(node);
-      break;
     case 'id':
       value = resolveId(node.id);
       break;
     case 'paren':
       value = resolve(node.scalar);
       break;
+    case 'property':
     case 'fn':
       throw new Error(
         `can't statically resolve node kind '${node.kind}' to a number`
@@ -232,20 +241,4 @@ function resolveId(id: string): number {
   } else {
     throw new Error(`don't know how to resolve non-builtin ${id} to a number`);
   }
-}
-
-function resolveAccess({ id, index }: AccessNode): number {
-  const receiver = resolveId(id);
-  let key;
-
-  switch (index.kind) {
-    case 'id':
-      key = index.id;
-      break;
-    default:
-      key = resolve(index); // assume index is a number
-      break;
-  }
-
-  return receiver[key];
 }

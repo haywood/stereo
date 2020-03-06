@@ -1,16 +1,16 @@
 import 'codemirror/lib/codemirror.css';
 import 'multirange/multirange.css';
 
-import { error } from './error';
 import { ReplaySubject, combineLatest, interval } from 'rxjs';
+
 import { audioStream } from './audio';
-import { PipeNode } from './pipe/ast';
 import debug from './debug';
+import { error } from './error';
 import { inputs } from './inputs';
 import { Change } from './inputs/change';
 import { Overlay } from './overlay';
-import { Scope, HSV } from './types';
 import { renderer } from './renderer';
+import { HSV, Scope } from './types';
 
 const cursorInactiveTimeout = 1000;
 const overlay = new Overlay();
@@ -38,7 +38,7 @@ const video = document.querySelector('video');
 video.srcObject = (renderer.canvas as any).captureStream(1);
 
 inputs.pipe.stream.subscribe(({ newValue: pipe }) => {
-  setPipe(pipe);
+  renderer.setPipe(pipe);
   debug('pipe', pipe);
 
   document.body.classList.add('data');
@@ -52,14 +52,14 @@ combineLatest(inputs.h.stream, inputs.s.stream, inputs.v.stream).subscribe(
       s: inputs.s.value,
       v: inputs.v.value
     };
-    setHsv(hsv);
+    renderer.setHsv(hsv);
     debug('hsv', hsv);
   },
   error
 );
 
 audioStream.subscribe(audio => {
-  setScope({ audio });
+  renderer.setScope({ audio });
   debug('audio', audio);
 }, error);
 
@@ -77,15 +77,3 @@ inputs.save.stream.subscribe(async () => {
 });
 
 window.onresize = () => renderer.setSize();
-
-function setPipe(pipe: PipeNode) {
-  renderer.setPipe(pipe);
-}
-
-function setHsv(hsv: HSV) {
-  renderer.setHsv(hsv);
-}
-
-function setScope(scope: Scope) {
-  renderer.setScope(scope);
-}

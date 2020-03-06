@@ -1,7 +1,6 @@
 import endent from 'endent';
 
 import {
-  AccessNode,
   ArithNode,
   FnNode,
   IdNode,
@@ -10,8 +9,9 @@ import {
   Scalar,
   StepNode,
   StepType
-} from '../../pipe/ast';
-import { ensureFloat, resolveInt, from, uniforms, varyings } from './common';
+} from '../../inputs/pipe/ast';
+import { ensureFloat, from, resolveInt, uniforms, varyings } from './common';
+
 const {
   CUBE,
   LATTICE,

@@ -1,30 +1,30 @@
 import endent from 'endent';
 
 import {
-  AccessNode,
   ArithNode,
-  StepType,
-  FnNode,
-  number,
-  access,
-  IdNode,
   ArithOp,
+  FnNode,
+  IdNode,
   NumberNode,
   PipeNode,
   Scalar,
   StepNode,
+  StepType,
   arith,
+  element,
   fn,
-  id
-} from '../../pipe/ast';
+  id,
+  number
+} from '../../inputs/pipe/ast';
 import {
-  ensureFloat,
-  resolveInt,
   D_MAX,
+  ensureFloat,
   from,
+  resolveInt,
   uniforms,
   varyings
 } from './common';
+
 const {
   CUBE,
   LATTICE,
@@ -62,7 +62,7 @@ function torus(args: Scalar[]) {
   const stanzas = r.map((rk, k) => {
     return endent`
     x[0] += ${rk};
-    ${rotate([d, access('tmp', number(k + 1)), number(k), number(k + 2)])}
+    ${rotate([d, element('tmp', number(k + 1)), number(k), number(k + 2)])}
     copy(y, x);
     `;
   });
