@@ -4,13 +4,33 @@
 
 _Now a work in progress_
 
-Like with autocomplete and syntax highlighting and shit...
+- syntax highlighting mostly working
+- autocomplete started in a branch
 
 ## Redo color
 
 Make it a single input similar to pipe with its own grammar. Have the user
 provide code that sets the values of builtin variables hue, saturation, and
 value.
+
+## Sync input values with fragment
+
+Currently, changes to the inputs affect the fragment. Changes to the fragment
+should also affect the inputs.
+
+In particular, when the fragment is updated via the forward and back buttons,
+the inputs should also update.
+
+May as well do it on any fragment change though.
+
+Wait, maybe _when the fragment changes, just reload the whole page_, unless an
+input has focus (which, again, is probably not possible)?
+
+Tricky stuff:
+
+- Shouldn't update the inputs if one of them is focused
+  - this probably can't happen though, so wtf...
+- What if the fragment is invalid?
 
 ## Misc
 
