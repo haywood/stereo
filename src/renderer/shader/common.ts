@@ -90,8 +90,8 @@ export function isFloat(node: Scalar): boolean {
       return 'audio' == node.id && from(node.index) != 'onset';
     case 'id':
       if (node.id in defines) {
-        const define = defines[node.id];
-        return typeof define == 'number' && !Number.isInteger(define);
+        const defined = defines[node.id];
+        return typeof defined == 'number' && !Number.isInteger(defined);
       }
       return true; // all user-specified variables are floats
     case 'number':
@@ -100,6 +100,8 @@ export function isFloat(node: Scalar): boolean {
       return true; // so far no integer-valued fns
     case 'arith':
       return node.operands.some(isFloat);
+    case 'paren':
+      return isFloat(node.scalar);
     default:
       return false;
   }
