@@ -87,8 +87,7 @@ export class Context {
     };
 
     if (style) {
-      const value = state.evaluate(this, stream);
-      if (value) this.top().values.push(value);
+      this.evaluate(state, stream);
     } else if (state instanceof NonTerminal) {
       // a non-terminal that doesn't match should enqueue something
       queueErrorIfNoSuccessors();
@@ -107,8 +106,7 @@ export class Context {
   private applyFromStack(stream): void {
     const pending = this.pop();
     if (this.stack.length) {
-      const result = pending.evaluate(this, stream);
-      this.top().values.push(result);
+      this.evaluate(pending, stream);
     } else {
       this.enqueue(pending);
     }
@@ -116,22 +114,26 @@ export class Context {
 
   private drain(stream) {
     const { queue, stack } = this;
-    assert.equal(
-      queue.length,
-      0,
-      `expected empty queue while draining: [${queue.join(', ')}]`
-    );
 
-    while (this.stack.length > 1) {
+    while (queue.length > 1) {
+      const pending = this.dequeue();
+      this.evaluate(pending, stream);
+    }
+
+    while (stack.length > 1) {
       const pending = this.pop();
-      const result = pending.evaluate(this, stream);
-      this.top().values.push(result);
+      this.evaluate(pending, stream);
     }
 
     const value = this.top().evaluate(this, stream);
     console.debug('Context.drain()\n', this, '\n\tproduced', value);
 
     this.then(value);
+  }
+
+  private evaluate(state: State, stream) {
+    const result = state.evaluate(this, stream);
+    if (result) this.top().values.push(result);
   }
 
   private peek(): State {
