@@ -62,7 +62,7 @@ function torus(args: Scalar[]) {
   const stanzas = r.map((rk, k) => {
     return endent`
     x[0] += ${rk};
-    ${rotate([d, element('tmp', number(k + 1)), number(k), number(k + 2)])}
+    ${rotate([d, element(id('tmp'), number(k + 1)), number(k), number(k + 2)])}
     copy(y, x);
     `;
   });
