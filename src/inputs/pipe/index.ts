@@ -13,7 +13,7 @@ import { Context } from './context';
 
 export { Context } from './context';
 
-export class PipeInput<T = PipeNode> extends Input<T, HTMLTextAreaElement> {
+export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   private text: string;
 
   constructor(
@@ -32,31 +32,22 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLTextAreaElement> {
     this.text = defaultText;
   }
 
-  private get textArea() {
-    return this.el.querySelector('textarea');
-  }
-
-  valid() {
-    return this.textArea.checkValidity();
-  }
-
   protected newSubject() {
     return new ReplaySubject<Change<T>>();
   }
 
   protected _setup = () => {
-    this.textArea.disabled = this.disabled;
-    this.textArea.value = this.initialText;
-
     defineMode(this.id, () =>
       this.options.startState(ast => {
         this.value = ast;
       })
     );
 
-    const editor = CodeMirror.fromTextArea(this.textArea, {
+    const editor = CodeMirror(this.el.querySelector('div[contenteditable]'), {
       lineNumbers: this.id == 'pipe',
-      mode: this.id
+      mode: this.id,
+      readOnly: this.disabled ? 'nocursor' : false,
+      value: this.initialText
     });
 
     editor.on('change', () => {
