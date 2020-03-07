@@ -1,11 +1,41 @@
-export function pipe(variables: Variables, steps: StepNode[]): PipeNode {
-  return { kind: 'pipe', steps, variables };
+const screenSize = Math.round(window.screen.width * window.screen.height);
+
+export function pipe(statements: Statement[]): PipeNode {
+  const variables = { n: number(screenSize), d0: number(4) };
+  const steps = [];
+
+  for (const node of statements) {
+    if (node instanceof AssignmentNode) {
+      variables[node.name] = node.value;
+    } else if (node instanceof StepNode) {
+      steps.push(node);
+    }
+  }
+
+  steps[0]?.args.unshift(variables.d0);
+
+  for (let i = 1; i < steps.length; i++) {
+    const rangeFn = rangeFns[steps[i].type];
+    const d0 = steps[i - 1].args[0] as NumberNode;
+    steps[i].args.unshift(number(d0.value));
+  }
+
+  return new PipeNode(steps, variables, statements);
 }
 
-export interface PipeNode {
-  kind: 'pipe';
-  steps: StepNode[];
-  variables: Variables;
+export type Statement = AssignmentNode | StepNode;
+
+export class PipeNode {
+  readonly kind = 'pipe';
+  constructor(
+    readonly steps: StepNode[],
+    readonly variables: Variables,
+    readonly statements: Statement[]
+  ) {}
+
+  toString() {
+    return this.statements.join('\n');
+  }
 }
 
 export interface Variables {
@@ -13,6 +43,20 @@ export interface Variables {
   d0: NumberNode;
 
   [name: string]: Scalar;
+}
+
+export function assignment(name: string, value: Scalar): AssignmentNode {
+  return new AssignmentNode(name, value);
+}
+
+export class AssignmentNode {
+  readonly kind = 'assignment';
+
+  constructor(readonly name: string, readonly value: Scalar) {}
+
+  toString() {
+    return `${this.name} = ${this.value}`;
+  }
 }
 
 export enum StepType {
@@ -34,6 +78,10 @@ export class StepNode {
   readonly kind = 'step';
 
   constructor(readonly type: StepType, readonly args: Scalar[]) {}
+
+  toString() {
+    return `${this.type}(${this.args.slice(1).join(', ')})`;
+  }
 }
 
 export type Scalar =
@@ -125,7 +173,7 @@ export enum FnName {
   SMOOTH_STEP = 'smoothstep',
   SQRT = 'sqrt',
   STEP = 'step',
-  TAN = 'tan',
+  TAN = 'tan'
 }
 
 export class FnNode {
@@ -186,20 +234,6 @@ export class ParenNode {
   }
 }
 
-export function assignment(name: string, value: Scalar): AssignmentNode {
-  return new AssignmentNode(name, value);
-}
-
-export class AssignmentNode {
-  readonly kind = 'assignment';
-
-  constructor(readonly name: string, readonly value: Scalar) {}
-
-  toString() {
-    return `${this.name} = ${this.value}`;
-  }
-}
-
 export function property(receiver: IdNode | PropertyNode, name: IdNode) {
   return new PropertyNode(receiver, name);
 }
@@ -245,3 +279,16 @@ export class ErrorNode {
     return `<error>(${this.src})`;
   }
 }
+
+type RangeFn = (domain: number) => number;
+
+const rangeFns: Record<StepType, RangeFn> = {
+  [StepType.CUBE]: domain => domain,
+  [StepType.LATTICE]: domain => domain,
+  [StepType.SPHERE]: domain => domain + 1,
+  [StepType.SPIRAL]: domain => domain + 1,
+  [StepType.TORUS]: domain => domain + 1,
+  [StepType.ROTATE]: domain => domain,
+  [StepType.STEREO]: domain => domain,
+  [StepType.QUATERNION]: domain => domain
+};

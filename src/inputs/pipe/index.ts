@@ -15,6 +15,7 @@ export { Context } from './context';
 
 export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   private text: string;
+  private editor: CodeMirror;
 
   constructor(
     readonly id: string,
@@ -39,19 +40,16 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   protected _setup = () => {
     defineMode(this.id, () =>
       this.options.startState(ast => {
+        if (this.editor) this.text = this.editor.getValue();
         this.value = ast;
       })
     );
 
-    const editor = CodeMirror(this.el.querySelector('div[contenteditable]'), {
+    this.editor = CodeMirror(this.el.querySelector('div[contenteditable]'), {
       lineNumbers: this.id == 'pipe',
       mode: this.id,
       readOnly: this.disabled ? 'nocursor' : false,
       value: this.initialText
-    });
-
-    editor.on('change', () => {
-      this.text = editor.getValue();
     });
   };
 }
