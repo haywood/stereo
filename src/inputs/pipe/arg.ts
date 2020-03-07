@@ -18,4 +18,8 @@ export class Arg extends NonTerminal {
     ctx?.enqueue(new ArgSep());
     return this.values[0];
   }
+
+  newCopy() {
+    return new Arg();
+  }
 }

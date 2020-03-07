@@ -20,4 +20,8 @@ export class Fn extends NonTerminal {
     const [name, ...args] = this.values;
     return ast.fn(name.id as ast.FnName, args);
   }
+
+  protected newCopy() {
+    return new Fn();
+  }
 }

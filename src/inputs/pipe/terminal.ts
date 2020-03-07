@@ -19,4 +19,12 @@ export abstract class Terminal extends State {
       return this.style;
     }
   }
+
+  protected abstract newCopy(): Terminal
+
+  clone(): Terminal {
+    const copy = this.newCopy();
+    copy.token = this.token;
+    return copy;
+  };
 }

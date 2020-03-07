@@ -6,6 +6,7 @@ export abstract class State {
 
   abstract apply(stream, ctx: Context);
   abstract evaluate(ctx?: Context, stream?): any;
+  abstract clone(): State;
 
   toString() {
     return `${this.constructor.name}`;

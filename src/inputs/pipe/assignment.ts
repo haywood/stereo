@@ -23,4 +23,8 @@ export class Assignment extends NonTerminal {
     const [id, value] = this.values;
     return ast.assignment(id.id, value);
   }
+
+  protected newCopy() {
+    return new Assignment();
+  }
 }

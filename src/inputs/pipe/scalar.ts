@@ -21,6 +21,10 @@ export class Scalar extends NonTerminal {
   protected _evaluate() {
     return evaluate(this.values);
   }
+
+  protected newCopy() {
+    return new Scalar();
+  }
 }
 
 function evaluate(values: any[]) {

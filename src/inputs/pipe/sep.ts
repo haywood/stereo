@@ -42,4 +42,8 @@ export class Sep extends Terminal {
   evaluate(ctx: Context) {
     return '';
   }
+
+  protected newCopy() {
+    return new Sep(this.style, this.pattern);
+  }
 }

@@ -44,6 +44,10 @@ export class Pipe extends NonTerminal {
 
     return pipe;
   }
+
+  protected newCopy() {
+    return new Pipe();
+  }
 }
 
 type RangeFn = (domain: number) => number;

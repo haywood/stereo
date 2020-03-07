@@ -17,4 +17,8 @@ export class Number extends Terminal {
   evaluate(ctx: Context) {
     return ast.number(parseFloat(this.token));
   }
+
+  newCopy() {
+    return new Number();
+  }
 }

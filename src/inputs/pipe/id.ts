@@ -39,4 +39,8 @@ export class Id extends Terminal {
   evaluate(ctx: Context) {
     return ast.id(this.token);
   }
+
+  newCopy() {
+    return new Id(this.style, this.pattern);
+  }
 }

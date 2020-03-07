@@ -3,10 +3,7 @@ import * as ast from './ast';
 import { Context } from './context';
 import { Id } from './id';
 import { NonTerminal } from './non_terminal';
-import { or } from './patterns';
 import { Sep } from './sep';
-
-const STEP_TYPE = or(ast.StepType);
 
 export class Step extends NonTerminal {
   static peek(stream) {
@@ -22,5 +19,9 @@ export class Step extends NonTerminal {
   protected _evaluate() {
     const [stepType, ...args] = this.values;
     return ast.step(stepType.id as ast.StepType, args);
+  }
+
+  protected newCopy() {
+    return new Step();
   }
 }

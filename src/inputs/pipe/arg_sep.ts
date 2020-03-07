@@ -16,4 +16,8 @@ export class ArgSep extends Terminal {
   evaluate(ctx: Context) {
     return '';
   }
+
+  newCopy() {
+    return new ArgSep();
+  }
 }

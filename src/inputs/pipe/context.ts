@@ -1,38 +1,39 @@
 import assert from 'assert';
 
 import endent from 'endent';
-
 import debug from '../../debug';
 import { pp } from '../../pp';
+import { Error } from './error';
 import { NonTerminal } from './non_terminal';
 import { Pipe } from './pipe';
 import { Scalar } from './scalar';
 import { State } from './state';
-import { Error } from './error';
 
 const ctxs = [];
 debug('pipe_ctxs', ctxs);
 
 export class Context {
   constructor(
-    readonly root: NonTerminal,       
+    readonly root: NonTerminal,
     private readonly stack: NonTerminal[],
     private readonly queue: State[],
     private readonly elements: string[],
     private readonly then: (ast) => void
-    ) {
-    this.enqueue(root);
+  ) {
+    ctxs.push(this);
   }
 
   static pipe(then: (ast) => void): Context {
-    const ctx = new Context(new Pipe(), [], [], [], then);
-    ctxs.push(ctx);
+    const root = new Pipe();
+    const ctx = new Context(root, [], [], [], then);
+    ctx.enqueue(root);
     return ctx;
   }
 
   static scalar(then: (ast) => void): Context {
-    const ctx = new Context(new Scalar(), [], [], [], then);
-    ctxs.push(ctx);
+    const root = new Scalar();
+    const ctx = new Context(root, [], [], [], then);
+    ctx.enqueue(root);
     return ctx;
   }
 
@@ -55,7 +56,15 @@ export class Context {
   }
 
   clone(): Context {
-    return this;
+    console.debug(this, 'cloning');
+    const root = this.root.clone();
+    return new Context(
+      root,
+      this.stack.map(s => s == this.root ? root : s.clone()),
+      this.queue.map(s => s == this.root ? root : s.clone()),
+      this.elements.slice(),
+      this.then
+    );
   }
 
   enqueue(state: State) {
@@ -75,7 +84,7 @@ export class Context {
       if (this.queue.length == queued) {
         this.enqueue(new Error());
       }
-    }
+    };
 
     if (style) {
       const value = state.evaluate(this, stream);

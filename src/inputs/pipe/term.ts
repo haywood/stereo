@@ -32,10 +32,14 @@ export class Term extends NonTerminal {
     }
   }
 
-  _evaluate(ctx?: Context, stream?) {
+  protected _evaluate(ctx?: Context, stream?) {
     if (!stream.sol() && (TermSep.peek(stream) || Term.peek(stream))) {
       ctx?.enqueue(new TermSep());
     }
     return this.values[0];
+  }
+
+  protected newCopy() {
+    return new Term();
   }
 }

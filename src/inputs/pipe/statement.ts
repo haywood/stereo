@@ -21,4 +21,8 @@ export class Statement extends NonTerminal {
   protected _evaluate() {
     return this.values[0];
   }
+
+  protected newCopy() {
+    return new Statement();
+  }
 }
