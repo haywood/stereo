@@ -20,4 +20,8 @@ export class Paren extends NonTerminal {
     const [scalar] = this.values;
     return ast.paren(scalar);
   }
+
+  protected newCopy() {
+    return new Paren();
+  }
 }

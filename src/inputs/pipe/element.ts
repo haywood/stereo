@@ -25,10 +25,14 @@ export class Element extends NonTerminal {
     }
   }
 
-  _evaluate(ctx?: Context) {
+  protected _evaluate(ctx?: Context) {
     ctx?.enqueue(Sep.rbrack());
     const [root, ...indexes] = this.values;
     console.debug('Element._evaluate', this.values);
     return indexes.reduce(ast.element, root);
+  }
+
+  protected newCopy() {
+    return new Element();
   }
 }

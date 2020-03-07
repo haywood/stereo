@@ -1,8 +1,11 @@
 import assert from 'assert';
 
-import screenfull from 'screenfull';
+import * as sf from 'screenfull';
 
 import { inputs } from '../inputs';
+
+// The types for this library are kinda fucked up
+const screenfull = sf as sf.Screenfull;
 
 export class Overlay {
   readonly domElement = document.getElementById('overlay');
@@ -56,7 +59,7 @@ export class Overlay {
 
   private setupInputs = () => {
     for (const input of Object.values(inputs)) {
-      const el = this.querySelector<HTMLInputElement>(`#${input.id}`);
+      const el = this.querySelector<HTMLTextAreaElement>(`#${input.id}`);
       assert(el, `Did not find element for input #${input.id}`);
       input.setup(el);
     }

@@ -13,7 +13,7 @@ import { Context } from './context';
 
 export { Context } from './context';
 
-export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
+export class PipeInput<T = PipeNode> extends Input<T, HTMLTextAreaElement> {
   private text: string;
 
   constructor(
@@ -25,7 +25,7 @@ export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
   ) {
     super(id, defaultText, {
       persistent: true,
-      parse: () => ({} as PipeNode),
+      parse: () => ({} as T),
       stringify: () => this.text
     });
 
@@ -41,7 +41,7 @@ export class PipeInput extends Input<PipeNode, HTMLTextAreaElement> {
   }
 
   protected newSubject() {
-    return new ReplaySubject<Change<PipeNode>>();
+    return new ReplaySubject<Change<T>>();
   }
 
   protected _setup = () => {

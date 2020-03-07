@@ -13,4 +13,8 @@ export class Error extends Terminal {
     console.debug('matching error', stream.string, stream.column(), ctx);
     stream.skipToEnd();
   }
+
+  protected newCopy() {
+    return new Error();
+  }
 }

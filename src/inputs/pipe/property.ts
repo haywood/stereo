@@ -25,8 +25,12 @@ export class Property extends NonTerminal {
     }
   }
 
-  _evaluate(ctx?: Context) {
+  protected _evaluate(ctx?: Context) {
     const [root, ...ids] = this.values;
     return ids.reduce(ast.property, root);
+  }
+
+  protected newCopy() {
+    return new Property();
   }
 }

@@ -23,4 +23,8 @@ export class TermSep extends Terminal {
   evaluate(ctx: Context) {
     return this.token;
   }
+
+  protected newCopy() {
+    return new TermSep();
+  }
 }

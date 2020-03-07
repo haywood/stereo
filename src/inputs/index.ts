@@ -5,7 +5,7 @@ import debug from '../debug';
 import { renderer } from '../renderer';
 import { ActionInput } from './action';
 import { Context, PipeInput } from './pipe';
-import { NumberNode, PipeNode } from './pipe/ast';
+import { PipeNode, Scalar } from './pipe/ast';
 import { RangeInput } from './range';
 import { ToggleInput } from './toggle';
 
@@ -14,11 +14,6 @@ const minDbs = parseInt(
 );
 const audioWorkletAvailable =
   window.AudioContext && !!new AudioContext().audioWorklet;
-const compiler = {
-  compile(a, b) {
-    return new NumberNode(1);
-  }
-}; // TODO integrate with CM parser
 
 export const inputs = {
   pipe: new PipeInput(
@@ -34,11 +29,11 @@ export const inputs = {
     { startState: then => Context.pipe(then) }
   ),
 
-  h: new PipeInput('h', 'audio.hue * p[0]', { startState: then => Context.scalar(then) }),
+  h: new PipeInput<Scalar>('h', 'audio.hue * p[0]', { startState: then => Context.scalar(then) }),
 
-  s: new PipeInput('s', '1', { startState: then => Context.scalar(then) }),
+  s: new PipeInput<Scalar>('s', '1', { startState: then => Context.scalar(then) }),
 
-  v: new PipeInput('v', 'audio.power', { startState: then => Context.scalar(then) }),
+  v: new PipeInput<Scalar>('v', 'audio.power', { startState: then => Context.scalar(then) }),
 
   animate: new ToggleInput('animate', '1'),
 
