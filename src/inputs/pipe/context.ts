@@ -80,25 +80,16 @@ export class Context {
     const queued = this.queue.length;
     const style = state.apply(stream, this);
 
-    const queueErrorIfNoSuccessors = () => {
-      if (this.queue.length == queued) {
-        this.enqueue(new Error());
-      }
-    };
-
     if (style) {
       this.evaluate(state, stream);
     } else if (state instanceof NonTerminal) {
-      // a non-terminal that doesn't match should enqueue something
-      queueErrorIfNoSuccessors();
-
       this.push(state);
     } else if (!this.peek()) {
-      // any node that doesn't match should enqueue something
-      queueErrorIfNoSuccessors();
-
       this.applyFromStack(stream);
     }
+
+    // any node that doesn't match should enqueue something
+    if (!style && this.queue.length == queued) this.enqueue(new Error());
 
     return style;
   }
