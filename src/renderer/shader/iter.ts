@@ -2,6 +2,7 @@ import endent from 'endent';
 
 import {
   ArithNode,
+  FnName,
   ArithOp,
   FnNode,
   IdNode,
@@ -67,7 +68,7 @@ function torus(args: Scalar[]) {
     `;
   });
 
-  return endent`{ // torus
+  return endent`{ // torus(${args.join(', ')})
     const int d = ${resolveInt(d)};
 
     ${sphere([number(2), r0])}
@@ -83,7 +84,7 @@ function torus(args: Scalar[]) {
 }
 
 function spiral([d, r]: Scalar[]) {
-  const body = polar2cart(resolveInt(d), arith(MUL, r, fn('norm', [id('x')])));
+  const body = polar2cart(resolveInt(d), arith(MUL, r, fn(FnName.NORM2, [id('x')])));
 
   return endent`{ // spiral
     ${body}
