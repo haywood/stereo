@@ -42,7 +42,7 @@ export const inputs = {
     parse: s => compiler.compile(s, 'scalar')
   }),
 
-  v: new TextInput('v', '1', {
+  v: new TextInput('v', 'audio.power', {
     parse: s => compiler.compile(s, 'scalar')
   }),
 
