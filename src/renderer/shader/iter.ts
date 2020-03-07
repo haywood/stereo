@@ -86,13 +86,13 @@ function torus(args: Scalar[]) {
 function spiral([d, r]: Scalar[]) {
   const body = polar2cart(resolveInt(d), arith(MUL, r, fn(FnName.NORM2, [id('x')])));
 
-  return endent`{ // spiral
+  return endent`{ // spiral(${d}, ${r})
     ${body}
   } // spiral`;
 }
 
 function sphere([d, r]: Scalar[]) {
-  return endent`{ // sphere 
+  return endent`{ // sphere(${d}, ${r})
     ${polar2cart(resolveInt(d), r)}
   } // sphere`;
 }
@@ -101,7 +101,7 @@ function lattice(args: Scalar[]) {
   const d = resolveInt(args[0]);
   const l = ensureFloat(args[1]);
 
-  return endent`{ // lattice
+  return endent`{ // lattice(${args.join(', ')})
     const int d = ${d};
     float l = ${l};
 
@@ -112,7 +112,7 @@ function lattice(args: Scalar[]) {
 }
 
 function cube([d, l]: Scalar[]) {
-  return endent`{ // cube
+  return endent`{ // cube(${d}, ${l})
     const int d = ${resolveInt(d)};
     float l = ${ensureFloat(l)};
     float sign = i <= n / 2. ? 1. : -1.;
@@ -129,7 +129,7 @@ function cube([d, l]: Scalar[]) {
 }
 
 function rotate([d, phi, d0, d1]: Scalar[]) {
-  return endent`{ // rotate
+  return endent`{ // rotate(${d}, ${phi}, ${d0}, ${d1})
     const int d = ${resolveInt(d)}, d0 = ${resolveInt(d0)}, d1 = ${resolveInt(
     d1
   )};
@@ -156,6 +156,7 @@ function stereo(args: Scalar[]) {
 
   while (d0 > to) {
     stanzas.push(endent`
+    // ${d0} => ${d0 - 1}
     for (int k = 0; k < ${--d0}; k++) {
       y[k] = x[k + 1] / (1. - x[0]);
     }
@@ -164,7 +165,7 @@ function stereo(args: Scalar[]) {
   }
 
   while (d0 < to) {
-    stanzas.push(endent`{
+    stanzas.push(endent`{ // ${d0} => ${d0 + 1}
       float n2 = norm2(x);
       float divisor = n2 + 1.;
       x[0] = (n2 - 1.) / divisor;
@@ -178,14 +179,14 @@ function stereo(args: Scalar[]) {
     `);
   }
 
-  return endent`{ // stereo ${from} => ${to}
+  return endent`{ // stereo(${args.join(', ')})
     ${stanzas.join('\n')}
   } // stereo`;
 }
 
 function quaternion(args: Scalar[]) {
   const [_, r, i, j, k] = args;
-  return endent`{ // quaternion
+  return endent`{ // quaternion(${args.join(', ')})
     float r = ${ensureFloat(r)};
     float i = ${ensureFloat(i)};
     float j = ${ensureFloat(j)};
@@ -220,7 +221,7 @@ function quaternion(args: Scalar[]) {
 }
 
 function polar2cart(d: number, r: Scalar) {
-  return endent`{ // polar2cart
+  return endent`{ // polar2cart(${d}, ${r})
     const int d = ${d};
 
     y[0] = ${ensureFloat(r)};

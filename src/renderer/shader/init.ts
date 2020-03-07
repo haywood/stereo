@@ -58,7 +58,7 @@ function lattice_1(args: Scalar[]): string {
 }
 
 function interval(d: number, a: string, b: string): string {
-  return endent`{ // init interval
+  return endent`{ // interval(${d}, ${a}, ${b})
     const int d = ${d};
     const float a = ${a};
     const float b = ${b};
@@ -75,7 +75,7 @@ function interval(d: number, a: string, b: string): string {
 
 function cube(args: Scalar[]): string {
   const [d, l] = args;
-  return endent`{ // init cube
+  return endent`{ // init cube(${args.join(', ')})
     const int d = ${resolveInt(d)};
     float l = ${ensureFloat(l)};
 
