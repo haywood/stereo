@@ -1,5 +1,20 @@
 const screenSize = Math.round(window.screen.width * window.screen.height);
 
+export function hasError(node: Node): boolean {
+  switch (node.kind) {
+    case 'pipe': return node.statements.some(hasError);
+    case 'assignment': return hasError(node.value);
+    case 'step': return node.args.some(hasError);
+    case 'arith': return node.operands.some(hasError);
+    case 'fn': return node.args.some(hasError);
+    case 'property': return hasError(node.receiver) || hasError(node.name);
+    case 'element': return hasError(node.receiver) || hasError(node.index);
+    case 'error': return true;
+  }
+}
+
+export type Node = PipeNode|Statement|Scalar|ErrorNode;
+
 export function pipe(statements: Statement[]): PipeNode {
   const variables = { n: number(screenSize), d0: number(4) };
   const steps = [];
@@ -273,6 +288,8 @@ export function error(src: string): ErrorNode {
 }
 
 export class ErrorNode {
+  readonly kind = 'error';
+
   constructor(readonly src: string) {}
 
   toString() {
