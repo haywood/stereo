@@ -28,6 +28,7 @@ export { Context } from './context';
 export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   private text: string;
   private editor: CodeMirror;
+  private ctx: Context;
 
   constructor(
     readonly id: string,
@@ -50,22 +51,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   }
 
   protected _setup = () => {
-    defineMode(this.id, () =>
-      this.options.startState(ast => {
-        // TODO also check for semantic errors
-        // e.g. wrong number of function args, redefining a constant, invalid
-        // property access
-        if (hasError(ast)) {
-          console.error('found error(s) in ast', ast);
-        } else if (isEqual(this.value, ast)) {
-          console.debug('skipping ast update, because contents did not change');
-        } else {
-          if (this.editor) this.text = this.editor.getValue();
-
-          this.value = ast;
-        }
-      })
-    );
+    this.defineMode();
 
     this.editor = CodeMirror(this.el.querySelector('div[contenteditable]'), {
       lineNumbers: this.id == 'pipe',
@@ -78,22 +64,31 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       this.editor.showHint({ hint, completeSingle: false });
     });
   };
-}
 
-function defineMode(name: string, startState: () => Context) {
-  CodeMirror.defineMode(name, () => {
-    return {
-      startState,
+  defineMode() {
+    this.ctx = this.options.startState(ast => {
+      // TODO also check for semantic errors
+      // e.g. wrong number of function args, redefining a constant, invalid
+      // property access
+      if (hasError(ast)) {
+        console.error('found error(s) in ast', ast);
+      } else if (isEqual(this.value, ast)) {
+        console.debug('skipping ast update, because contents did not change');
+      } else {
+        if (this.editor) this.text = this.editor.getValue();
 
-      copyState(ctx: Context) {
-        return ctx.clone();
-      },
-
-      token(stream, ctx: Context) {
-        return ctx.apply(stream);
+        this.value = ast;
       }
-    };
-  });
+    });
+
+    CodeMirror.defineMode(this.id, () => {
+      return {
+        startState: () => this.ctx,
+        copyState: (ctx: Context) => this.ctx = ctx.clone(),
+        token: (stream, ctx: Context) => this.ctx.apply(stream),
+      };
+    });
+  }
 }
 
 function hint(editor) {
