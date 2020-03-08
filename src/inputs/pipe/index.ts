@@ -21,8 +21,11 @@ import {
   StepType,
   hasError
 } from './ast';
-import {Statement} from './statement';
 import { Context } from './context';
+import { Id } from './id';
+import { Sep } from './sep';
+import { Statement } from './statement';
+import { Step } from './step';
 
 export { Context } from './context';
 
@@ -88,16 +91,15 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     CodeMirror.defineMode(this.id, () => {
       return {
         startState: () => this.ctx,
-        copyState: (ctx: Context) => this.ctx = ctx.clone(),
-        token: (stream, ctx: Context) => this.ctx.apply(stream),
+        copyState: (ctx: Context) => (this.ctx = ctx.clone()),
+        token: (stream, ctx: Context) => this.ctx.apply(stream)
       };
     });
   }
 
   hint() {
     // TODO be smarter
-    //
-    // - different suggestions in statement vs scalar context
+    // - implement all of the suggestion contexts
     // - don't suggest 'p' in the pipe input. it's only valid in color
     //   expressions.
     const editor = this.editor;
@@ -111,12 +113,26 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     const to = CodeMirror.Pos(line, end);
     const list = [];
     const completions = {};
-    const state = this.ctx.top();
+    const curr = (line in this.ctx.states) && this.ctx.states[line][start];
 
-    console.debug('hint', cursor, token, this.ctx);
+    console.debug('hint', cursor, token, this.ctx, curr);
 
-    if (state instanceof Statement) {
+    if (curr instanceof Statement) {
       addCompletions(availableCompletions.stepType);
+    } else if (curr instanceof Step) {
+      addCompletions(availableCompletions.stepType);
+    } else if (curr instanceof Sep) {
+      if (curr.token == '.') {
+        addCompletions(availableCompletions.property);
+      }
+    } else if (curr instanceof Id) {
+      const prev = this.ctx.states[line][start - 1];
+      if (prev && prev instanceof Sep && prev.token == '.') {
+        addCompletions(availableCompletions.property);
+      } else {
+        addCompletions(availableCompletions.builtinConstant);
+        addCompletions(availableCompletions.builtinVariable);
+      }
     }
 
     for (const prefix in completions) {
@@ -143,30 +159,43 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
 }
 
 const availableCompletions = {
-    arithOp: Object.values(ArithOp).reduce((memo, op) => {
-      memo[op] = op;
-      return memo
-    }, {}),
+  arithOp: Object.values(ArithOp).reduce((memo, op) => {
+    memo[op] = op;
+    return memo;
+  }, {}),
 
-    builtinConstant: Object.values(BuiltinConstant).reduce((memo, name) => {
-      memo[name] = name;
-      return memo;
-    }, {}),
+  builtinConstant: Object.values(BuiltinConstant).reduce((memo, name) => {
+    memo[name] = name;
+    return memo;
+  }, {}),
 
-    builtinVariable: Object.values(BuiltinVariable).reduce((memo, name) => {
-      memo[name] = name;
-      return memo;
-    }, {}),
+  builtinVariable: Object.values(BuiltinVariable).reduce((memo, name) => {
+    memo[name] = name;
+    return memo;
+  }, {}),
 
-    fnName: Object.values(FnName).reduce((memo, name) => {
-      const prefix = `${name}(`;
-      memo[prefix] = `${prefix})`;
-      return memo;
-    }, {}),
+  fnName: Object.values(FnName).reduce((memo, name) => {
+    const prefix = `${name}(`;
+    memo[prefix] = `${prefix})`;
+    return memo;
+  }, {}),
 
-    stepType: Object.values(StepType).reduce((memo, type) => {
-      const prefix = `${type}(`;
-      memo[prefix] = `${prefix})`;
-      return memo;
-    }, {}),
-}
+  stepType: Object.values(StepType).reduce((memo, type) => {
+    const prefix = `${type}(`;
+    memo[prefix] = `${prefix})`;
+    return memo;
+  }, {}),
+
+  property: [
+    'hue',
+    'onset',
+    'pitch',
+    'power',
+    'tempo'
+  ].reduce((memo, name) => {
+    const qualified = `.${name}`;
+    memo[qualified] = qualified;
+    memo[name] = name;
+    return memo;
+  }, {}),
+};

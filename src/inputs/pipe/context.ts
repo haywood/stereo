@@ -1,6 +1,7 @@
 import assert from 'assert';
 
 import endent from 'endent';
+
 import debug from '../../debug';
 import { pp } from '../../pp';
 import { Error } from './error';
@@ -17,7 +18,7 @@ export class Context {
     readonly root: NonTerminal,
     private readonly stack: NonTerminal[],
     private readonly queue: State[],
-    private readonly elements: string[],
+    readonly states: { [index: number]: State }[],
     private readonly then: (ast) => void
   ) {
     ctxs.push(this);
@@ -60,9 +61,14 @@ export class Context {
     const root = this.root.clone();
     return new Context(
       root,
-      this.stack.map(s => s == this.root ? root : s.clone()),
-      this.queue.map(s => s == this.root ? root : s.clone()),
-      this.elements.slice(),
+      this.stack.map(s => (s == this.root ? root : s.clone())),
+      this.queue.map(s => (s == this.root ? root : s.clone())),
+      this.states.map(line => {
+        return Object.entries(line).reduce((memo, [ch, state]) => {
+          memo[ch] = state;
+          return memo;
+        }, {});
+      }),
       this.then
     );
   }
@@ -76,7 +82,7 @@ export class Context {
   }
 
   private applyFromQueue(stream): string {
-    const state = this.dequeue()!;
+    const state = this.dequeue(stream);
     const queued = this.queue.length;
     const style = state.apply(stream, this);
 
@@ -107,7 +113,7 @@ export class Context {
     const { queue, stack } = this;
 
     while (queue.length > 1) {
-      const pending = this.dequeue();
+      const pending = this.dequeue(stream);
       this.evaluate(pending, stream);
     }
 
@@ -139,8 +145,18 @@ export class Context {
     return this.stack.push(state);
   }
 
-  private dequeue(): State {
-    return this.queue.shift();
+  private dequeue(stream): State {
+    const state = this.queue.shift();
+    if (state) {
+      const line = stream.lineOracle.line;
+      const ch = stream.column();
+      if (!this.states[line]) this.states[line] = {};
+      this.states[line][ch] = state;
+      for (const ch0 in this.states[line]) {
+        if (ch0 > ch) delete this.states[line][ch0];
+      }
+    }
+    return state;
   }
 }
 

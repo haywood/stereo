@@ -4,39 +4,39 @@ import { Terminal } from './terminal';
 
 export class Sep extends Terminal {
   static assignment() {
-    return new Sep('separator assignment', /=/);
+    return new Sep('separator assignment', '=');
   }
 
   static comma() {
-    return new Sep('separator comma', /,/);
+    return new Sep('separator comma', ',');
   }
 
   static dot() {
-    return new Sep('separator dot', /\./);
+    return new Sep('separator dot', '.');
   }
 
   static lbrack() {
-    return new Sep('separator lbrack', /\[/);
+    return new Sep('separator lbrack', '[');
   }
 
   static rbrack() {
-    return new Sep('separator rbrack', /\]/);
+    return new Sep('separator rbrack', ']');
   }
 
   static lparen() {
-    return new Sep('separator lparen', /\(/);
+    return new Sep('separator lparen', '(');
   }
 
   static rparen() {
-    return new Sep('separator rparen', /\)/);
+    return new Sep('separator rparen', ')');
   }
 
-  constructor(readonly style: string, readonly pattern: RegExp) {
+  constructor(readonly style: string, private readonly value: string) {
     super();
   }
 
   match(stream) {
-    stream.match(this.pattern);
+    stream.match(this.value);
   }
 
   evaluate(ctx: Context) {
@@ -44,6 +44,6 @@ export class Sep extends Terminal {
   }
 
   protected newCopy() {
-    return new Sep(this.style, this.pattern);
+    return new Sep(this.style, this.value);
   }
 }

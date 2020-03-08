@@ -4,16 +4,20 @@ import { Context } from './context';
 import { State } from './state';
 
 export abstract class Terminal extends State {
-  protected token: string;
+  private _token: string;
 
   abstract get style(): string;
 
   abstract match(stream, ctx: Context);
 
+  get token() {
+    return this._token;
+  }
+
   apply(stream, ctx: Context) {
     assert(!this.token, `token is already set to '${this.token}'`);
     this.match(stream, ctx);
-    this.token = stream.current();
+    this._token = stream.current();
 
     if (this.token) {
       return this.style;
@@ -24,7 +28,7 @@ export abstract class Terminal extends State {
 
   clone(): Terminal {
     const copy = this.newCopy();
-    copy.token = this.token;
+    copy._token = this.token;
     return copy;
   };
 }
