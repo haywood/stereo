@@ -61,7 +61,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     });
 
     this.editor.on('change', () => {
-      this.editor.showHint({ hint, completeSingle: false });
+      this.editor.showHint({ hint: () => this.hint(), completeSingle: false });
     });
   };
 
@@ -89,59 +89,60 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       };
     });
   }
-}
 
-function hint(editor) {
-  // TODO be smarter
-  //
-  // - different suggestions in statement vs scalar context
-  // - don't suggest 'p' in the pipe input. it's only valid in color
-  //   expressions.
-  const cursor = editor.getCursor();
-  const token = editor.getTokenAt(cursor);
-  const start: number = token.start;
-  const end: number = cursor.ch;
-  const line: number = cursor.line;
-  const currentWord: string = token.string;
-  const from = CodeMirror.Pos(line, start);
-  const to = CodeMirror.Pos(line, end);
-  const list = [];
-  const completions = {};
+  hint() {
+    // TODO be smarter
+    //
+    // - different suggestions in statement vs scalar context
+    // - don't suggest 'p' in the pipe input. it's only valid in color
+    //   expressions.
+    const editor = this.editor;
+    const cursor = editor.getCursor();
+    const token = editor.getTokenAt(cursor);
+    const start: number = token.start;
+    const end: number = cursor.ch;
+    const line: number = cursor.line;
+    const currentWord: string = token.string;
+    const from = CodeMirror.Pos(line, start);
+    const to = CodeMirror.Pos(line, end);
+    const list = [];
+    const completions = {};
 
-  Object.values(ArithOp).forEach(op => {
-    completions[op] = op;
-  });
+    Object.values(ArithOp).forEach(op => {
+      completions[op] = op;
+    });
 
-  Object.values(BuiltinConstant).forEach(name => {
-    completions[name] = name;
-  });
+    Object.values(BuiltinConstant).forEach(name => {
+      completions[name] = name;
+    });
 
-  Object.values(BuiltinVariable).forEach(name => {
-    completions[name] = name;
-  });
+    Object.values(BuiltinVariable).forEach(name => {
+      completions[name] = name;
+    });
 
-  Object.values(FnName).forEach(name => {
-    const prefix = `${name}(`;
-    completions[prefix] = `${prefix})`;
-  });
+    Object.values(FnName).forEach(name => {
+      const prefix = `${name}(`;
+      completions[prefix] = `${prefix})`;
+    });
 
-  Object.values(StepType).forEach(type => {
-    const prefix = `${type}(`;
-    completions[prefix] = `${prefix})`;
-  });
+    Object.values(StepType).forEach(type => {
+      const prefix = `${type}(`;
+      completions[prefix] = `${prefix})`;
+    });
 
-  for (const prefix in completions) {
-    if (prefix.startsWith(token.string)) {
-      const text = completions[prefix];
-      list.push({
-        text,
-        hint() {
-          editor.replaceRange(text, from, to);
-          editor.setCursor(line, from.ch + prefix.length);
-        }
-      });
+    for (const prefix in completions) {
+      if (prefix.startsWith(token.string)) {
+        const text = completions[prefix];
+        list.push({
+          text,
+          hint() {
+            editor.replaceRange(text, from, to);
+            editor.setCursor(line, from.ch + prefix.length);
+          }
+        });
+      }
     }
-  }
 
-  return { list, from, to };
+    return { list, from, to };
+  }
 }
