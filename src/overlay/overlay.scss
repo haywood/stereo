@@ -24,6 +24,12 @@
   width: 100%;
   z-index: 1;
 
+  @media only screen and (max-width: 512px) {
+    #pipe {
+      width: 100%;
+    }
+  }
+
   h1 {
     margin: 0;
   }
@@ -71,6 +77,12 @@
       display: flex;
       flex-flow: column;
       justify-content: flex-start;
+      width: 100%;
+    }
+
+    #pipe .CodeMirror {
+      max-height: 20em;
+      min-height: 10em;
     }
 
     #h,
