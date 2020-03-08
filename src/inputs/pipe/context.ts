@@ -46,8 +46,10 @@ export class Context {
       style = 'space';
     } else if (this.peek()) {
       style = this.applyFromQueue(stream);
+    } else if (this.stack.length > 1) {
+      this.evaluate(this.pop(), stream);
     } else {
-      this.applyFromStack(stream);
+      this.enqueue(this.pop());
     }
 
     if (eoi(stream)) {
@@ -98,15 +100,6 @@ export class Context {
     }
 
     return style;
-  }
-
-  private applyFromStack(stream): void {
-    const pending = this.pop();
-    if (this.stack.length) {
-      this.evaluate(pending, stream);
-    } else {
-      this.enqueue(pending);
-    }
   }
 
   private drain(stream) {
