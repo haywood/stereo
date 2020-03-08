@@ -8,6 +8,7 @@ import { Error } from './error';
 import { NonTerminal } from './non_terminal';
 import { Pipe } from './pipe';
 import { Scalar } from './scalar';
+import { Terminal } from './terminal';
 import { State } from './state';
 
 const ctxs = [];
@@ -84,18 +85,17 @@ export class Context {
   private applyFromQueue(stream): string {
     const state = this.dequeue(stream);
     const queued = this.queue.length;
-    const style = state.apply(stream, this);
+    let style = state.apply(stream, this);
 
     if (style) {
       this.evaluate(state, stream);
+    } else if (state instanceof Terminal) {
+      const error = new Error();
+      style = error.apply(stream, this);
+      this.evaluate(error, stream);
     } else if (state instanceof NonTerminal) {
       this.push(state);
-    } else if (!this.peek()) {
-      this.applyFromStack(stream);
     }
-
-    // any node that doesn't match should enqueue something
-    if (!style && this.queue.length == queued) this.enqueue(new Error());
 
     return style;
   }
