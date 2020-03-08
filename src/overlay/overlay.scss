@@ -52,6 +52,7 @@
   #header {
     display: flex;
     flex-flow: row;
+    justify-content: center;
 
     h1 {
       flex: auto;
@@ -115,11 +116,11 @@
   }
 
   #media {
-    align-items: center;
     bottom: 0;
     box-sizing: border-box;
     display: flex;
     flex-flow: row;
+    justify-content: center;
     width: 100%;
 
     i.material-icons,
