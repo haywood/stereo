@@ -12,7 +12,15 @@ import { escape } from 'xregexp';
 import { Change } from '../change';
 import { Input } from '../input';
 import { Options } from '../options';
-import { PipeNode, BuiltinVariable, StepType, hasError } from './ast';
+import {
+  ArithOp,
+  BuiltinConstant,
+  BuiltinVariable,
+  FnName,
+  PipeNode,
+  StepType,
+  hasError
+} from './ast';
 import { Context } from './context';
 
 export { Context } from './context';
@@ -101,23 +109,29 @@ function hint(editor) {
   const to = CodeMirror.Pos(line, end);
   const list = [];
 
-  // TODO awareness of whether these have been set
-  for (const name of Object.values(BuiltinVariable)) {
-    if (name.startsWith(token.string)) {
-      list.push(`${name} =`);
-    }
-  }
+  const completions = {};
+  Object.values(ArithOp).forEach(token => {});
+  Object.values(BuiltinConstant).forEach(token => {});
+  Object.values(BuiltinVariable).forEach(token => {});
 
-  for (const type of Object.values(StepType)) {
-    if (type.startsWith(token.string)) {
-      const text = `${type}()`;
-      const after = { line, ch: start + text.length };
+  Object.values(FnName).forEach(name => {
+    const prefix = `${name}(`;
+    completions[prefix] = `${prefix})`;
+  });
+
+  Object.values(StepType).forEach(type => {
+    const prefix = `${type}(`;
+    completions[prefix] = `${prefix})`;
+  });
+
+  for (const prefix in completions) {
+    if (prefix.startsWith(token.string)) {
+      const text = completions[prefix];
       list.push({
         text,
-        displayText: `${type}()`,
         hint() {
           editor.replaceRange(text, from, to);
-          editor.setCursor(line, from.ch + text.length - 1);
+          editor.setCursor(line, from.ch + prefix.length);
         }
       });
     }
