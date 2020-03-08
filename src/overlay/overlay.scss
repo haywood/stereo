@@ -24,6 +24,14 @@
   width: 100%;
   z-index: 1;
 
+  @media only screen and (max-device-width: 512px) {
+    font-size: 3.5em;
+
+    #pipe {
+      width: 100%;
+    }
+  }
+
   @media only screen and (max-width: 512px) {
     #pipe {
       width: 100%;
@@ -82,7 +90,6 @@
 
     #pipe .CodeMirror {
       max-height: 20em;
-      min-height: 10em;
     }
 
     #h,
@@ -96,6 +103,10 @@
 
       label {
         margin-right: 8px;
+      }
+
+      .CodeMirror {
+        min-height: 1em;
       }
     }
 
@@ -142,7 +153,7 @@
   }
 
   a.help {
-    font-size: small;
+    font-size: 0.40em;
     vertical-align: super;
 
     &::before {
