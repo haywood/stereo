@@ -4,7 +4,6 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/lib/codemirror.css';
 
 import CodeMirror from 'codemirror';
-import { isEqual } from 'lodash';
 import { re } from 're-template-tag';
 import { ReplaySubject } from 'rxjs';
 import { escape } from 'xregexp';
@@ -79,8 +78,6 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       // property access
       if (hasError(ast)) {
         console.error('found error(s) in ast', ast);
-      } else if (isEqual(this.value, ast)) {
-        console.debug('skipping ast update, because contents did not change');
       } else {
         if (this.editor) this.text = this.editor.getValue();
 
