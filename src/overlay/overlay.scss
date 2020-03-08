@@ -30,6 +30,14 @@
     #pipe {
       width: 100%;
     }
+
+    .CodeMirror-lines {
+      padding-top: 8px;
+    }
+
+    .CodeMirror-line {
+      padding-left: 16px;
+    }
   }
 
   [title] {
