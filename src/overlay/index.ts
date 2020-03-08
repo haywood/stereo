@@ -15,10 +15,9 @@ export class Overlay {
     this.setupInputs();
     this.setupKeyboardShortcuts();
 
+    const ids = Object.values(inputs).map(i => `#${i.id}`);
     this.domElement
-      .querySelectorAll<HTMLElement>(
-        'input, textarea, label, i, h2, h1, #allowed_db_range'
-      )
+      .querySelectorAll<HTMLElement>(`i, h2, h1, a, ${ids.join(', ')}`)
       .forEach(el => {
         el.onmouseover = () => (this.hasHover = true);
         el.onmouseout = () => (this.hasHover = false);
