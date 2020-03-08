@@ -115,10 +115,7 @@ export class Context {
       this.evaluate(pending, stream);
     }
 
-    const value = this.top().evaluate(this, stream);
-    console.debug('Context.drain()\n', this, '\n\tproduced', value);
-
-    this.then(value);
+    this.then(this);
   }
 
   private evaluate(state: State, stream) {
