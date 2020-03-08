@@ -18,7 +18,7 @@ import {
   FnName,
   PipeNode,
   StepType,
-  hasError
+  isValid
 } from './ast';
 import { Context } from './context';
 import { Id } from './id';
@@ -76,12 +76,12 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       // TODO also check for semantic errors
       // e.g. wrong number of function args, redefining a constant, invalid
       // property access
-      if (hasError(ast)) {
-        console.error('found error(s) in ast', ast);
-      } else {
+      if (isValid(ast)) {
         if (this.editor) this.text = this.editor.getValue();
 
         this.value = ast;
+      } else {
+        console.error('found error(s) in ast', ast);
       }
     });
 

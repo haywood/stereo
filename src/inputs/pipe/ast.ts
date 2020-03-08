@@ -1,15 +1,18 @@
 const screenSize = Math.round(window.screen.width * window.screen.height);
 
-export function hasError(node: Node): boolean {
+export function isValid(node: Node): boolean {
   switch (node.kind) {
-    case 'pipe': return node.statements.some(hasError);
-    case 'assignment': return hasError(node.value);
-    case 'step': return node.args.some(hasError);
-    case 'arith': return node.operands.some(hasError);
-    case 'fn': return node.args.some(hasError);
-    case 'property': return hasError(node.receiver) || hasError(node.name);
-    case 'element': return hasError(node.receiver) || hasError(node.index);
-    case 'error': return true;
+    case 'error': return false;
+    case 'pipe': return node.statements.every(isValid);
+    case 'assignment': return isValid(node.value);
+    case 'step': return node.args.every(isValid);
+    case 'arith': return node.operands.every(isValid);
+    case 'fn': return node.args.every(isValid);
+    case 'property': return isValid(node.receiver) && isValid(node.name);
+    case 'element': return isValid(node.receiver) && isValid(node.index);
+    case 'paren': return isValid(node.scalar);
+    case 'id': return true;
+    case 'number': return true;
   }
 }
 
