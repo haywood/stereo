@@ -97,8 +97,11 @@ function defineMode(name: string, startState: () => Context) {
 }
 
 function hint(editor) {
-  // TODO hint function should be state-based (i.e. don't suggest assignment
-  // when completing a function argument)
+  // TODO be smarter
+  //
+  // - different suggestions in statement vs scalar context
+  // - don't suggest 'p' in the pipe input. it's only valid in color
+  //   expressions.
   const cursor = editor.getCursor();
   const token = editor.getTokenAt(cursor);
   const start: number = token.start;
@@ -108,11 +111,19 @@ function hint(editor) {
   const from = CodeMirror.Pos(line, start);
   const to = CodeMirror.Pos(line, end);
   const list = [];
-
   const completions = {};
-  Object.values(ArithOp).forEach(token => {});
-  Object.values(BuiltinConstant).forEach(token => {});
-  Object.values(BuiltinVariable).forEach(token => {});
+
+  Object.values(ArithOp).forEach(op => {
+    completions[op] = op;
+  });
+
+  Object.values(BuiltinConstant).forEach(name => {
+    completions[name] = name;
+  });
+
+  Object.values(BuiltinVariable).forEach(name => {
+    completions[name] = name;
+  });
 
   Object.values(FnName).forEach(name => {
     const prefix = `${name}(`;
