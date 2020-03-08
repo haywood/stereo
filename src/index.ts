@@ -23,8 +23,9 @@ const maybeSetCursorInactive = () => {
   overlay.maybeHide();
 };
 
-document.body.onmousemove = () => {
-  overlay.onmousemove();
+document.body.onclick =
+document.body.onmousemove = function evaluateCursorState() {
+  overlay.show();
 
   if (document.body.classList.contains('cursor-inactive')) {
     document.body.classList.remove('cursor-inactive');

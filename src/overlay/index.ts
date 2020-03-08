@@ -22,23 +22,13 @@ export class Overlay {
         el.onmouseover = () => (this.hasHover = true);
         el.onmouseout = () => (this.hasHover = false);
       });
-
-    this.inputs()
-      .querySelectorAll('input')
-      .forEach(el => {
-        el.oninvalid = this.show;
-      });
   }
 
   private inputs() {
     return this.querySelector<HTMLElement>('#inputs');
   }
 
-  onmousemove = () => {
-    this.show();
-  };
-
-  private show = () => {
+  show = () => {
     this.domElement.style.opacity = '1';
   };
 
