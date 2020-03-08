@@ -57,6 +57,7 @@
     flex-flow: column;
     flex-grow: 1;
     justify-content: flex-start;
+    overflow: auto;
     right: 0;
     top: 0;
 
@@ -70,10 +71,6 @@
       display: flex;
       flex-flow: column;
       justify-content: flex-start;
-    }
-
-    textarea {
-      resize: none;
     }
 
     #h,
