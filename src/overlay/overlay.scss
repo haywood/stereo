@@ -12,14 +12,20 @@
 }
 
 #overlay {
-  h1 {
-    left: 0;
-    margin: 8px;
-    position: absolute;
-    top: 0;
-  }
-
+  box-sizing: border-box;
+  display: flex;
+  flex-flow: column nowrap;
+  left: 0;
   opacity: 0;
+  padding: 16px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+
+  h1 {
+    margin: 0;
+  }
 
   [title] {
     cursor: help;
@@ -42,101 +48,102 @@
   textarea:disabled {
     cursor: not-allowed;
   }
-}
 
-#inputs {
-  align-items: flex-end;
-  box-sizing: border-box;
-  display: flex;
-  flex-flow: column wrap;
-  justify-content: flex-start;
-  padding: 0px 16px;
-  position: absolute;
-  right: 0;
-  top: 0;
-
-  span,
-  i {
-    padding-bottom: 8px;
-  }
-
-  section {
+  #inputs {
     align-items: flex-end;
+    box-sizing: border-box;
     display: flex;
-    flex-flow: column wrap;
+    flex-flow: column nowrap;
+    flex-grow: 1;
     justify-content: flex-start;
-  }
+    right: 0;
+    top: 0;
 
-  textarea {
-    resize: none;
-  }
+    span,
+    i {
+      padding-bottom: 8px;
+    }
 
-  #h,
-  #s,
-  #v {
-    align-content: flex-end;
-    align-items: center;
-    display: flex;
-    flex-flow: row nowrap;
-    margin-bottom: 16px;
+    section {
+      align-items: flex-end;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+    }
 
-    label {
-      margin-right: 8px;
+    textarea {
+      resize: none;
+    }
+
+    #h,
+    #s,
+    #v {
+      align-content: flex-end;
+      align-items: center;
+      display: flex;
+      flex-flow: row nowrap;
+      margin-bottom: 16px;
+
+      label {
+        margin-right: 8px;
+      }
+    }
+
+    .CodeMirror {
+      height: auto;
     }
   }
 
-  .CodeMirror {
-    height: auto;
+  #media {
+    align-items: center;
+    bottom: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: row nowrap;
+    width: 100%;
+
+    i.material-icons,
+    .icon {
+      cursor: pointer;
+      font-size: 36px;
+      margin: 0 8px;
+    }
   }
-}
 
-#media {
-  align-items: center;
-  bottom: 0;
-  box-sizing: border-box;
-  display: flex;
-  flex-flow: row wrap;
-  padding: 32px;
-  position: absolute;
-  width: 100%;
+  #allowed_db_range {
+    align-items: center;
+    display: flex;
+    flex-flow: row;
+  }
 
-  i.material-icons,
-  .icon {
-    cursor: pointer;
-    font-size: 36px;
+  #allowed_db_range_input {
+    align-items: center;
+    display: flex;
+    flex-flow: row;
     margin: 0 8px;
-  }
-}
 
-#allowed_db_range {
-  align-items: center;
-  display: flex;
-  flex-flow: row;
-}
-
-#allowed_db_range_input {
-  align-items: center;
-  display: flex;
-  flex-flow: row;
-  margin: 0 8px;
-}
-
-.spacer {
-  flex: 1;
-}
-
-a.help {
-  font-size: small;
-  vertical-align: super;
-
-  &::before {
-    content: '?';
+    input {
+      max-width: 100px;
+    }
   }
 
-  &:link,
-  &:visited,
-  &:hover,
-  &:active {
-    color: white;
+  .spacer {
+    flex: 1;
+  }
+
+  a.help {
+    font-size: small;
+    vertical-align: super;
+
+    &::before {
+      content: '?';
+    }
+
+    &:link,
+    &:visited,
+    &:hover,
+    &:active {
+      color: white;
+    }
   }
 }

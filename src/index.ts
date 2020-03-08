@@ -34,9 +34,6 @@ document.body.onmousemove = () => {
   setTimeout(() => maybeSetCursorInactive(), cursorInactiveTimeout);
 };
 
-const video = document.querySelector('video');
-video.srcObject = (renderer.canvas as any).captureStream(1);
-
 inputs.pipe.stream.subscribe(({ newValue: pipe }) => {
   renderer.setPipe(pipe);
   debug('pipe', pipe);
