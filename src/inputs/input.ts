@@ -71,10 +71,12 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
     const oldValue = this.value;
     this._value = newValue;
     this.subject.next({ newValue, oldValue, event: window.event });
-    if (this.persistent) this.updateHash();
+    this.updateHash();
   }
 
-  private updateHash = () => {
+  protected updateHash = () => {
+    if (!this.persistent) return;
+
     const text = this.stringify(this.value);
     if (text == this.defaultText) {
       hash.delete(this.id);

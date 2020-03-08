@@ -21,6 +21,7 @@ import {
   StepType,
   hasError
 } from './ast';
+import {Statement} from './statement';
 import { Context } from './context';
 
 export { Context } from './context';
@@ -59,6 +60,9 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       readOnly: this.disabled ? 'nocursor' : false,
       value: this.initialText
     });
+
+    this.text = this.editor.getValue();
+    this.updateHash();
 
     this.editor.on('change', () => {
       this.editor.showHint({ hint: () => this.hint(), completeSingle: false });
@@ -107,28 +111,13 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     const to = CodeMirror.Pos(line, end);
     const list = [];
     const completions = {};
+    const state = this.ctx.top();
 
-    Object.values(ArithOp).forEach(op => {
-      completions[op] = op;
-    });
+    console.debug('hint', cursor, token, this.ctx);
 
-    Object.values(BuiltinConstant).forEach(name => {
-      completions[name] = name;
-    });
-
-    Object.values(BuiltinVariable).forEach(name => {
-      completions[name] = name;
-    });
-
-    Object.values(FnName).forEach(name => {
-      const prefix = `${name}(`;
-      completions[prefix] = `${prefix})`;
-    });
-
-    Object.values(StepType).forEach(type => {
-      const prefix = `${type}(`;
-      completions[prefix] = `${prefix})`;
-    });
+    if (state instanceof Statement) {
+      addCompletions(availableCompletions.stepType);
+    }
 
     for (const prefix in completions) {
       if (prefix.startsWith(token.string)) {
@@ -144,5 +133,40 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     }
 
     return { list, from, to };
+
+    function addCompletions(c) {
+      for (const prefix in c) {
+        completions[prefix] = c[prefix];
+      }
+    }
   }
+}
+
+const availableCompletions = {
+    arithOp: Object.values(ArithOp).reduce((memo, op) => {
+      memo[op] = op;
+      return memo
+    }, {}),
+
+    builtinConstant: Object.values(BuiltinConstant).reduce((memo, name) => {
+      memo[name] = name;
+      return memo;
+    }, {}),
+
+    builtinVariable: Object.values(BuiltinVariable).reduce((memo, name) => {
+      memo[name] = name;
+      return memo;
+    }, {}),
+
+    fnName: Object.values(FnName).reduce((memo, name) => {
+      const prefix = `${name}(`;
+      memo[prefix] = `${prefix})`;
+      return memo;
+    }, {}),
+
+    stepType: Object.values(StepType).reduce((memo, type) => {
+      const prefix = `${type}(`;
+      memo[prefix] = `${prefix})`;
+      return memo;
+    }, {}),
 }

@@ -71,7 +71,7 @@ export class Context {
     this.queue.push(state);
   }
 
-  private top(): State {
+  top(): State {
     return this.stack[this.stack.length - 1];
   }
 
