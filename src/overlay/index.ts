@@ -28,17 +28,15 @@ export class Overlay {
       .querySelectorAll('input')
       .forEach(el => {
         el.oninvalid = this.show;
-        el.onblur = () => el.reportValidity();
       });
   }
 
   private inputs() {
-    return this.querySelector<HTMLFormElement>('#inputs');
+    return this.querySelector<HTMLElement>('#inputs');
   }
 
   onmousemove = () => {
     this.show();
-    this.inputs().reportValidity();
   };
 
   private show = () => {
@@ -46,14 +44,12 @@ export class Overlay {
   };
 
   maybeHide = () => {
-    if (this.hasAttention() || this.needsAttention()) return;
+    if (this.hasAttention()) return;
     this.domElement.style.opacity = '0';
   };
 
   private hasAttention = () =>
     this.hasHover || this.contains(document.activeElement);
-
-  private needsAttention = () => !this.inputs().reportValidity();
 
   private contains = (node: Node) => this.domElement.contains(node);
 
