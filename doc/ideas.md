@@ -1,12 +1,5 @@
 # Ideas
 
-## Code editor for pipe
-
-_Now a work in progress_
-
-- syntax highlighting mostly working
-- autocomplete started in a branch
-
 ## Redo color
 
 Make it a single input similar to pipe with its own grammar. Have the user
@@ -34,6 +27,7 @@ Tricky stuff:
 
 ## Misc
 
+- publish on push
 - add a reset button
 - Update wiki with more info
   - section on thanks
