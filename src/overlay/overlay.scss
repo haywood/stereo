@@ -32,10 +32,6 @@
     }
   }
 
-  h1 {
-    margin: 0;
-  }
-
   [title] {
     cursor: help;
 
@@ -53,9 +49,18 @@
     }
   }
 
-  input:disabled,
-  textarea:disabled {
-    cursor: not-allowed;
+  #header {
+    display: flex;
+    flex-flow: row;
+
+    h1 {
+      flex: auto;
+      margin: 0;
+    }
+
+    #view_code i.material-icons {
+      font-size: 1em;
+    }
   }
 
   #inputs {
@@ -125,6 +130,10 @@
       margin: 0 8px;
       width: 1em;
     }
+
+    .disabled {
+      display: none;
+    }
   }
 
   #allowed_db_range {
@@ -148,19 +157,22 @@
     flex: auto;
   }
 
-  a.help {
-    font-size: 0.40em;
-    vertical-align: super;
-
-    &::before {
-      content: '?';
-    }
-
+  a {
     &:link,
     &:visited,
     &:hover,
     &:active {
       color: white;
+      text-decoration: none;
     }
+  }
+
+  a.help {
+    font-size: 0.4em;
+    vertical-align: super;
+  }
+
+  a.help::before {
+    content: '?';
   }
 }
