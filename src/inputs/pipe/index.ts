@@ -65,18 +65,16 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
 
     this.text = this.editor.getValue();
     this.updateHash();
-
-    this.editor.on('change', () => {
-      this.editor.showHint({ hint: () => this.hint(), completeSingle: false });
-    });
   };
 
   defineMode() {
-    this.ctx = this.options.startState(ctx => {
+    const startState = () => this.options.startState(ctx => {
+      const ast = ctx.root.evaluate();
+      this.ctx = ctx;
+
       // TODO also check for semantic errors
       // e.g. wrong number of function args, redefining a constant, invalid
       // property access
-      const ast = ctx.root.evaluate();
       if (isValid(ast)) {
         if (this.editor) this.text = this.editor.getValue();
 
@@ -84,13 +82,18 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       } else {
         console.error('found error(s) in ast', ast);
       }
+
+
+      if (this.editor) {
+      this.editor.showHint({ hint: () => this.hint(), completeSingle: false });
+      }
     });
 
     CodeMirror.defineMode(this.id, () => {
       return {
-        startState: () => this.ctx,
-        copyState: (ctx: Context) => (this.ctx = ctx.clone()),
-        token: (stream, ctx: Context) => this.ctx.apply(stream)
+        startState,
+        copyState: (ctx: Context) => ctx.clone(),
+        token: (stream, ctx: Context) => ctx.apply(stream)
       };
     });
   }
