@@ -6,7 +6,7 @@ import { State } from './state';
 
 export abstract class NonTerminal extends State {
   evaluate(ctx?: Context, stream?): string {
-    console.debug(this, `evaluating`, stream);
+    console.debug(this, `evaluating`, stream, ctx);
     assert(!this.tokens.length, 'non-termals should never have tokens');
     const value = this._evaluate(ctx, stream);
     return value;

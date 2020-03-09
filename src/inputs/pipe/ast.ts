@@ -2,7 +2,6 @@ const screenSize = Math.round(window.screen.width * window.screen.height);
 
 export function isValid(node: Node): boolean {
   switch (node.kind) {
-    case 'error': return false;
     case 'pipe': return node.statements.every(isValid);
     case 'assignment': return isValid(node.value);
     case 'step': return node.args.every(isValid);
@@ -13,6 +12,7 @@ export function isValid(node: Node): boolean {
     case 'paren': return isValid(node.scalar);
     case 'id': return true;
     case 'number': return true;
+    case 'error': return false;
   }
 }
 

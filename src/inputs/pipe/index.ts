@@ -68,26 +68,29 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   };
 
   defineMode() {
-    const startState = () => this.options.startState(ctx => {
-      const ast = ctx.root.evaluate();
-      this.ctx = ctx;
+    const startState = () =>
+      this.options.startState(ctx => {
+        const ast = ctx.root.evaluate();
+        this.ctx = ctx;
 
-      // TODO also check for semantic errors
-      // e.g. wrong number of function args, redefining a constant, invalid
-      // property access
-      if (isValid(ast)) {
-        if (this.editor) this.text = this.editor.getValue();
+        // TODO also check for semantic errors
+        // e.g. wrong number of function args, redefining a constant, invalid
+        // property access
+        if (isValid(ast)) {
+          if (this.editor) this.text = this.editor.getValue();
 
-        this.value = ast;
-      } else {
-        console.error('found error(s) in ast', ast);
-      }
+          this.value = ast;
+        } else {
+          console.error('found error(s) in ast', ast);
+        }
 
-
-      if (this.editor) {
-      this.editor.showHint({ hint: () => this.hint(), completeSingle: false });
-      }
-    });
+        if (this.editor) {
+          this.editor.showHint({
+            hint: () => this.hint(),
+            completeSingle: false
+          });
+        }
+      });
 
     CodeMirror.defineMode(this.id, () => {
       return {
@@ -114,7 +117,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     const to = CodeMirror.Pos(line, end);
     const list = [];
     const completions = {};
-    const curr = (line in this.ctx.states) && this.ctx.states[line][start];
+    const curr = line in this.ctx.states && this.ctx.states[line][start];
 
     console.debug('hint', cursor, token, this.ctx, curr);
 
@@ -187,16 +190,10 @@ const availableCompletions = {
     return memo;
   }, {}),
 
-  property: [
-    'hue',
-    'onset',
-    'pitch',
-    'power',
-    'tempo'
-  ].reduce((memo, name) => {
+  property: ['hue', 'onset', 'pitch', 'power', 'tempo'].reduce((memo, name) => {
     const qualified = `.${name}`;
     memo[qualified] = qualified;
     memo[name] = name;
     return memo;
-  }, {}),
+  }, {})
 };

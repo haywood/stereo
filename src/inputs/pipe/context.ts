@@ -76,16 +76,21 @@ export class Context {
 
   private _apply(stream) {
     const curr = this.dequeue(stream);
+    const pendingCount = this.queue.length;
     let style = curr?.apply(stream, this);
 
-    if (style) {
+    if (stream.current()) {
       this.evaluate(curr, stream);
     } else if (curr instanceof Terminal) {
       const error = new Error();
       style = error.apply(stream, this);
       this.evaluate(error, stream);
     } else if (curr instanceof NonTerminal) {
-      this.push(curr);
+      if (this.queue.length > pendingCount) {
+        this.push(curr);
+      } else {
+        this.enqueue(new Error());
+      }
     } else if (this.stack.length > 1) {
       this.evaluate(this.pop(), stream);
     } else {
