@@ -18,6 +18,7 @@ export abstract class Terminal extends State {
     assert(!this.token, `token is already set to '${this.token}'`);
     this.match(stream, ctx);
     this._token = stream.current();
+    console.debug(this.clone(), ctx.clone(), stream);
 
     if (this.token) {
       return this.style;
