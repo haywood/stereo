@@ -26,14 +26,14 @@ export class Context {
   }
 
   static pipe(then: (ast) => void): Context {
-    const root = new Pipe();
-    const ctx = new Context(root, [], [], [], then);
-    ctx.enqueue(root);
-    return ctx;
+    return Context.start(new Pipe(), then);
   }
 
   static scalar(then: (ast) => void): Context {
-    const root = new Scalar();
+    return Context.start(new Scalar(), then);
+  }
+
+  private static start(root: NonTerminal, then: (ast) => void): Context {
     const ctx = new Context(root, [], [], [], then);
     ctx.enqueue(root);
     return ctx;
@@ -67,6 +67,7 @@ export class Context {
   }
 
   enqueue(state: State) {
+    console.debug('enqueue', this.clone(), state.clone())
     this.queue.push(state);
   }
 
@@ -126,16 +127,19 @@ export class Context {
   }
 
   private pop(): State {
+    console.debug('pop', this.clone(), this.top()?.clone())
     return this.stack.pop();
   }
 
   private push(state: NonTerminal) {
+    console.debug('push', this.clone(), state.clone())
     return this.stack.push(state);
   }
 
   private dequeue(stream): State {
     const state = this.queue.shift();
     if (state) {
+      console.debug('dequeue', this.clone(), state.clone())
       const line = stream.lineOracle.line;
       const ch = stream.column();
       if (!this.states[line]) this.states[line] = {};
