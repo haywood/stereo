@@ -1,18 +1,21 @@
 const screenSize = Math.round(window.screen.width * window.screen.height);
 
-export function isValid(node: Node): boolean {
+export function findErrors(node: Node): ErrorNode[] {
   switch (node.kind) {
-    case 'pipe': return node.statements.every(isValid);
-    case 'assignment': return isValid(node.value);
-    case 'step': return node.args.every(isValid);
-    case 'arith': return node.operands.every(isValid);
-    case 'fn': return node.args.every(isValid);
-    case 'property': return isValid(node.receiver) && isValid(node.name);
-    case 'element': return isValid(node.receiver) && isValid(node.index);
-    case 'paren': return isValid(node.scalar);
-    case 'id': return true;
-    case 'number': return true;
-    case 'error': return false;
+    case 'pipe': return node.statements.reduce((errors, n) => errors.concat(findErrors(n)), []);
+    case 'assignment': return findErrors(node.value);
+    case 'step': return node.args.reduce((errors, n) => errors.concat(findErrors(n)), []);
+    case 'arith': return node.operands.reduce((errors, n) => errors.concat(findErrors(n)), []);
+    case 'fn': return node.args.reduce((errors, n) => errors.concat(findErrors(n)), []);
+    case 'property': return findErrors(node.receiver).concat(findErrors(node.name));
+    case 'element': return findErrors(node.receiver).concat(findErrors(node.index));
+    case 'paren': return findErrors(node.scalar);
+    case 'id':
+    case 'number':
+      return [];
+    case 'error':
+    default:
+      return [node];
   }
 }
 

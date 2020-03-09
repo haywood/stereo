@@ -1,159 +1,149 @@
-import assert from 'assert';
-
+import { StringStream } from 'codemirror';
+import { cloneDeep, isEmpty } from 'lodash';
+import { eoi, complete } from './util';
+import CodeMirror from 'codemirror';
 import endent from 'endent';
 
 import debug from '../../debug';
 import { pp } from '../../pp';
-import { Error } from './error';
-import { NonTerminal } from './non_terminal';
-import { Pipe } from './pipe';
-import { Scalar } from './scalar';
-import { State } from './state';
-import { Terminal } from './terminal';
+import * as ast from './ast';
+import * as st from './state';
 
-const ctxs = [];
-debug('pipe_ctxs', ctxs);
+export class Context<T> {
+  static pipe(then: (ctx: Context<ast.PipeNode>) => void) {
+    return new Context(new st.PipeState(), then);
+  }
 
-export class Context {
+  static scalar(then: (ctx: Context<ast.Scalar>) => void) {
+    return new Context(new st.ScalarState(), then);
+  }
+
   constructor(
-    readonly root: NonTerminal,
-    private readonly stack: NonTerminal[],
-    private readonly queue: State[],
-    readonly states: { [index: number]: State }[],
-    private readonly then: (ast) => void
-  ) {
-    ctxs.push(this);
+    private readonly root: st.NonTerminal<T>,
+    private readonly then: (ctx: Context<T>) => void,
+    private readonly stack: st.State[] = [],
+    private readonly parents: number[] = [],
+    private readonly expanded: Set<st.NonTerminal> = new Set(),
+  ) {}
+
+  resolve() {
+    const value = this.root.resolve();
+    console.info('resolve()', cloneDeep(this), cloneDeep(value));
+    this.root.reset();
+    this.stack.length = 0;
+    this.parents.length = 0;
+    this.expanded.clear();
+    return value;
   }
 
-  static pipe(then: (ast) => void): Context {
-    return Context.start(new Pipe(), then);
-  }
-
-  static scalar(then: (ast) => void): Context {
-    return Context.start(new Scalar(), then);
-  }
-
-  private static start(root: NonTerminal, then: (ast) => void): Context {
-    const ctx = new Context(root, [], [], [], then);
-    ctx.enqueue(root);
-    return ctx;
-  }
-
-  apply(stream): string {
-    const style = stream.eatSpace() ? 'space' : this._apply(stream);
-
-    if (eoi(stream)) {
-      this.drain(stream);
+  token(stream: StringStream) {
+    if (stream.eatSpace()) {
+      return 'space';
     }
 
+    const style = this.apply(this.stack.pop(), stream);
     return style;
   }
 
-  clone(): Context {
-    console.debug(this, 'cloning');
-    const root = this.root.clone();
+  clone() {
+    const stack = [];
+    const expanded = new Set<st.NonTerminal>();
+
+    for (const state of this.stack) {
+      const clone = state.clone();
+      stack.push(clone);
+      if (state instanceof st.NonTerminal && this.expanded.has(state)) {
+        expanded.add(clone);
+      }
+    }
+
     return new Context(
-      root,
-      this.stack.map(s => (s == this.root ? root : s.clone())),
-      this.queue.map(s => (s == this.root ? root : s.clone())),
-      this.states.map(line => {
-        return Object.entries(line).reduce((memo, [ch, state]) => {
-          memo[ch] = state;
-          return memo;
-        }, {});
-      }),
-      this.then
+      this.root.clone(),
+      this.then,
+      stack,
+      this.parents.slice(),
+      expanded,
     );
   }
 
-  enqueue(state: State) {
-    console.debug('enqueue', this.clone(), state.clone())
-    this.queue.push(state);
+  private apply(curr: st.State, stream: StringStream) {
+    if (curr instanceof st.Terminal) {
+      return this.applyTerminal(curr, stream);
+    } else if (curr instanceof st.NonTerminal) {
+      this.applyNonTerminal(curr, stream);
+    } else if (!this.expand(this.root, stream)) {
+      this.stack.push(new st.RejectState(curr));
+    }
   }
 
-  top(): State {
-    return this.stack[this.stack.length - 1];
-  }
-
-  private _apply(stream) {
-    const curr = this.dequeue(stream);
-    const pendingCount = this.queue.length;
-    let style = curr?.apply(stream, this);
-
-    if (stream.current()) {
-      this.evaluate(curr, stream);
-    } else if (curr instanceof Terminal) {
-      const error = new Error();
-      style = error.apply(stream, this);
-      this.evaluate(error, stream);
-    } else if (curr instanceof NonTerminal) {
-      if (this.queue.length > pendingCount) {
-        this.push(curr);
-      } else {
-        this.enqueue(new Error());
-      }
-    } else if (this.stack.length > 1) {
-      this.evaluate(this.pop(), stream);
+  private applyTerminal(curr: st.Terminal, stream: StringStream) {
+    const style = curr.apply(stream);
+    if (style) {
+      const value = curr.resolve();
+      this.parent.addValue(value, stream);
     } else {
-      this.enqueue(this.pop());
+      this.stack.push(new st.RejectState(curr));
+    }
+
+    if (curr instanceof st.RejectState) {
+      console.warn(`encountered error on stack`, stream, curr.clone(), this.clone());
+    }
+
+    if (eoi(stream)) {
+      while (this.stack.length) {
+        const state = this.stack.pop();
+        this.parent.addValue(state.resolve(), stream);
+      }
+
+      if (complete(this.root, stream)) {
+        this.then(this);
+      } else {
+        console.warn(`reached EOI, but root is incomplete`, stream, curr.clone(), this.clone());
+      }
     }
 
     return style;
   }
 
-  private drain(stream) {
-    const { queue, stack } = this;
+  private applyNonTerminal(curr: st.NonTerminal, stream: StringStream) {
+    if (!this.expand(curr, stream)) {
+      this.parent.addValue(curr.resolve(), stream);
+    }
+  }
 
-    while (queue.length > 1) {
-      const pending = this.dequeue(stream);
-      this.evaluate(pending, stream);
+  private expand(curr: st.NonTerminal, stream: StringStream) {
+    if (this.expanded.has(curr) && !curr.repeatable) return false;
+
+    const successors = curr.successors(stream);
+    this.expanded.add(curr);
+
+    if (stream.current()) {
+      console.error(
+        'non-terminal advanced the stream',
+        this.clone(),
+        curr.clone()
+      );
     }
 
-    while (stack.length > 1) {
-      const pending = this.pop();
-      this.evaluate(pending, stream);
+    if (successors.length) {
+      const parent = this.stack.length;
+      const isRoot = curr == this.root;
+      if (!isRoot) this.stack.push(curr);
+      successors.reverse().forEach((s, i) => {
+        if (!isRoot) this.parents[this.stack.length] = parent;
+        this.stack.push(s);
+      });
+
+      return true;
     }
-
-    this.then(this);
   }
 
-  private evaluate(state: State, stream) {
-    const result = state.evaluate(this, stream);
-    if (result) this.top().values.push(result);
-  }
-
-  private peek(): State {
-    return this.queue[0];
-  }
-
-  private pop(): State {
-    console.debug('pop', this.clone(), this.top()?.clone())
-    return this.stack.pop();
-  }
-
-  private push(state: NonTerminal) {
-    console.debug('push', this.clone(), state.clone())
-    return this.stack.push(state);
-  }
-
-  private dequeue(stream): State {
-    const state = this.queue.shift();
-    if (state) {
-      console.debug('dequeue', this.clone(), state.clone())
-      const line = stream.lineOracle.line;
-      const ch = stream.column();
-      if (!this.states[line]) this.states[line] = {};
-      this.states[line][ch] = state;
-      for (const ch0 in this.states[line]) {
-        if (ch0 > ch) delete this.states[line][ch0];
-      }
+  private get parent(): st.NonTerminal {
+    const parent = this.parents[this.stack.length];
+    if (parent == null) {
+      return this.root;
+    } else {
+      return this.stack[parent] as st.NonTerminal;
     }
-    return state;
   }
-}
-
-function eoi(stream) {
-  const lineCount = stream.lineOracle.doc.size;
-  const line = stream.lineOracle.line;
-  return stream.eol() && line == lineCount - 1;
 }
