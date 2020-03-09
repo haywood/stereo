@@ -132,7 +132,7 @@ function fromArith(node: ArithNode): string {
 function fromFn(node: FnNode): string {
   const args = node.args.map(ensureFloat);
   return endent`
-  ${node.name}(${args.join('\n')})
+  ${node.name}(${args.join(', ')})
   `;
 }
 
