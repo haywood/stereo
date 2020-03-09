@@ -8,8 +8,8 @@ import { Error } from './error';
 import { NonTerminal } from './non_terminal';
 import { Pipe } from './pipe';
 import { Scalar } from './scalar';
-import { Terminal } from './terminal';
 import { State } from './state';
+import { Terminal } from './terminal';
 
 const ctxs = [];
 debug('pipe_ctxs', ctxs);
@@ -40,17 +40,7 @@ export class Context {
   }
 
   apply(stream): string {
-    let style;
-
-    if (stream.eatSpace()) {
-      style = 'space';
-    } else if (this.peek()) {
-      style = this.applyFromQueue(stream);
-    } else if (this.stack.length > 1) {
-      this.evaluate(this.pop(), stream);
-    } else {
-      this.enqueue(this.pop());
-    }
+    const style = stream.eatSpace() ? 'space' : this._apply(stream);
 
     if (eoi(stream)) {
       this.drain(stream);
@@ -84,19 +74,22 @@ export class Context {
     return this.stack[this.stack.length - 1];
   }
 
-  private applyFromQueue(stream): string {
-    const state = this.dequeue(stream);
-    const queued = this.queue.length;
-    let style = state.apply(stream, this);
+  private _apply(stream) {
+    const curr = this.dequeue(stream);
+    let style = curr?.apply(stream, this);
 
     if (style) {
-      this.evaluate(state, stream);
-    } else if (state instanceof Terminal) {
+      this.evaluate(curr, stream);
+    } else if (curr instanceof Terminal) {
       const error = new Error();
       style = error.apply(stream, this);
       this.evaluate(error, stream);
-    } else if (state instanceof NonTerminal) {
-      this.push(state);
+    } else if (curr instanceof NonTerminal) {
+      this.push(curr);
+    } else if (this.stack.length > 1) {
+      this.evaluate(this.pop(), stream);
+    } else {
+      this.enqueue(this.pop());
     }
 
     return style;
