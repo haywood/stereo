@@ -3,11 +3,12 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/lib/codemirror.css';
 
-import CodeMirror, {Editor} from 'codemirror';
+import cm, {Editor} from 'codemirror';
 import { re } from 're-template-tag';
 import {isEmpty} from 'lodash';
 import { ReplaySubject } from 'rxjs';
 import { escape } from 'xregexp';
+import {hint} from './hint';
 
 import { Change } from '../change';
 import { Input } from '../input';
@@ -27,7 +28,7 @@ export { Context } from './context';
 
 export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   private text: string;
-  private editor: CodeMirror.Editor;
+  private editor: cm.Editor;
   private ctx: Context<T>;
 
   constructor(
@@ -53,7 +54,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   protected _setup = () => {
     this.defineMode();
 
-    this.editor = CodeMirror(this.el.querySelector('div[contenteditable]'), {
+    this.editor = cm(this.el.querySelector('div[contenteditable]'), {
       lineNumbers: this.id == 'pipe',
       mode: this.id,
       readOnly: this.disabled ? 'nocursor' : false,
@@ -80,9 +81,14 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
         } else {
           console.error('found error(s) in ast', errors, ast);
         }
+
+        this.editor?.showHint({
+          hint: (editor: cm.Editor) => hint(editor, ast),
+          completeSingle: false,
+        });
       });
 
-    CodeMirror.defineMode(this.id, () => {
+    cm.defineMode(this.id, () => {
       return {
         startState,
         copyState: (ctx: Context<T>) => ctx.clone(),

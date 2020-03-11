@@ -1,4 +1,5 @@
 import { Pos, StringStream } from 'codemirror';
+import * as ast from './ast';
 import { isEqual } from 'lodash';
 
 import { State } from './state';
@@ -7,8 +8,8 @@ export function peek(pattern, stream: StringStream) {
   return stream.match(pattern, false);
 }
 
-export function pos(stream: StringStream) {
-  return Pos(line(stream), stream.pos);
+export function loc(stream: StringStream): ast.Location {
+  return {line: line(stream), column: stream.pos};
 }
 
 export function eoi(stream: StringStream) {
@@ -20,9 +21,9 @@ export function complete(state: State, stream: StringStream) {
 
   return (
     start?.line == 0 &&
-    start?.ch == 0 &&
+    start?.column == 0 &&
     end?.line == lines(stream) - 1 &&
-    end?.ch == length(stream, end.line)
+    end?.column == length(stream, end.line)
   );
 }
 

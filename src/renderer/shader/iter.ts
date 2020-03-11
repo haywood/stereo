@@ -82,7 +82,7 @@ function torus(args: Scalar[]) {
 }
 
 function spiral([d, r]: Scalar[]) {
-  const body = polar2cart(resolveInt(d), arith(MUL, r, fn(FnName.NORM2, [id('x')])));
+  const body = polar2cart(resolveInt(d), arith(MUL, [r, fn(FnName.NORM2, [id('x')])]));
 
   return endent`{ // spiral(${d}, ${r})
     ${body}

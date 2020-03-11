@@ -2,15 +2,21 @@ import { StringStream } from 'codemirror';
 import { cloneDeep, isEmpty } from 'lodash';
 import { re } from 're-template-tag';
 import { escape } from 'xregexp';
-import { peek, pos } from './util';
 
 import * as ast from './ast';
 import { Context } from './context';
+import { loc, peek } from './util';
 
 export abstract class State<T = any> {
-  abstract resolve(): T;
-  start: CodeMirror.Position;
-  end: CodeMirror.Position;
+  abstract resolve(): T|ast.ErrorNode;
+
+  start: ast.Location;
+  end: ast.Location;
+
+  get region(): ast.Region {
+    const { start, end } = this;
+    if (start && end) return { start, end };
+  }
 
   toString() {
     return `${this.constructor.name}`;
@@ -29,10 +35,10 @@ export abstract class NonTerminal<T = any> extends State<T> {
   successors(stream: StringStream): State[] {
     const successors = this._successors(stream) ?? [];
 
-    if (!this.start) this.start = pos(stream);
+    if (!this.start) this.start = loc(stream);
 
     for (const s of successors) {
-      s.start = pos(stream);
+      s.start = loc(stream);
     }
 
     return successors;
@@ -40,7 +46,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
 
   addValue(value: any, stream: StringStream) {
     if (value) this.values.push(value);
-    this.end = pos(stream);
+    this.end = loc(stream);
   }
 
   reset() {
@@ -60,7 +66,7 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
   }
 
   resolve() {
-    return ast.pipe(this.values.slice());
+    return ast.pipe(this.values.slice(), this.region);
   }
 }
 
@@ -71,7 +77,7 @@ export class AssignmentState extends NonTerminal<ast.AssignmentNode> {
 
   resolve() {
     const [name, value] = this.values;
-    return ast.assignment(name, value);
+    return ast.assignment(name, value, this.region);
   }
 }
 
@@ -87,7 +93,7 @@ export class StepState extends NonTerminal<ast.StepNode> {
 
   resolve() {
     const [type, args] = this.values;
-    return ast.step(type, args.slice());
+    return ast.step(type, args.slice(), this.region);
   }
 }
 
@@ -98,7 +104,7 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
     const needsTerm = this.needsTerm();
     if (this.needsTerm()) {
       if (peek(/[\w\(]/, stream)) {
-        return [new TermState()]
+        return [new TermState()];
       } else {
         return [new RejectState(this)];
       }
@@ -125,7 +131,7 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
       const pivot = values.indexOf('.');
       const receiver = values[pivot - 1];
       const member = values[pivot + 1];
-      const property = ast.property(receiver, member);
+      const property = ast.property(receiver, member, this.region);
       values.splice(pivot - 1, 3, property);
     }
 
@@ -134,11 +140,10 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
     for (const op of ops) {
       if (values.includes(op)) {
         const pivot = values.indexOf(op);
-        return ast.arith(
-          op,
+        return ast.arith(op, [
           this.buildAst(values.slice(0, pivot)),
           this.buildAst(values.slice(pivot + 1))
-        );
+        ]);
       }
     }
 
@@ -177,15 +182,11 @@ class TermState extends NonTerminal<ast.Scalar> {
 
 class ParenState extends NonTerminal<ast.ParenNode> {
   _successors(stream: StringStream) {
-    return [
-      Terminal.lparen(),
-      new ScalarState(),
-      Terminal.rparen(),
-    ];
+    return [Terminal.lparen(), new ScalarState(), Terminal.rparen()];
   }
 
   resolve() {
-    return ast.paren(this.values[0]);
+    return ast.paren(this.values[0], this.region);
   }
 }
 
@@ -201,7 +202,13 @@ class FnState extends NonTerminal<ast.FnNode> {
 
   resolve() {
     const [name, args] = this.values;
-    return ast.fn(name, args.slice());
+    if (name instanceof ast.ErrorNode) {
+      return name;
+    } else if (args instanceof ast.ErrorNode) {
+      return ast.fn(name, [args], this.region);
+    } else {
+      return ast.fn(name, args.slice(), this.region);
+    }
   }
 }
 
@@ -242,7 +249,7 @@ export class ElementState extends NonTerminal<ast.ElementNode> {
 
   resolve() {
     const [id, index] = this.values;
-    return ast.element(id, index);
+    return ast.element(id, index, this.region);
   }
 }
 
@@ -276,7 +283,9 @@ export class Terminal<T = any> extends State<T> {
   }
 
   static number() {
-    return new Terminal('number', NUMBER, text => ast.number(parseFloat(text)));
+    return new Terminal('number', NUMBER, (text, region) =>
+      ast.number(parseFloat(text), region)
+    );
   }
 
   static rbrack() {
@@ -300,22 +309,23 @@ export class Terminal<T = any> extends State<T> {
   constructor(
     private readonly _style: string,
     private readonly pattern,
-    private readonly factory: (s: string) => T
+    private readonly factory: (s: string, region: ast.Region) => T
   ) {
     super();
   }
 
   apply(stream: StringStream): string {
-    this.start = pos(stream);
+    this.start = loc(stream);
 
     if (stream.match(this.pattern)) {
       this.text = stream.current();
+      this.end = loc(stream);
       return this._style;
     }
   }
 
   resolve() {
-    return this.factory(this.text);
+    return this.factory(this.text, { start: this.start, end: this.end });
   }
 }
 
@@ -337,7 +347,7 @@ const SCALAR_OP = re`/\.|(${ARITH_OP})/`;
 const FN_NAME = or(ast.FnName);
 const STEP_TYPE = or(ast.StepType);
 const INT = /[+-]?(0|[1-9])\d*/;
-const MANT = /\.\d*/
+const MANT = /\.\d*/;
 const NUMBER = re`/(${INT}(${MANT})?|${MANT})([eE]${INT})?/i`;
 
 function or(o: object): RegExp {
