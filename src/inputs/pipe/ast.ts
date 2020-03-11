@@ -289,18 +289,23 @@ export class ElementNode {
   }
 }
 
-export function error(src: string): ErrorNode {
-  return new ErrorNode(src);
+export function error(src: string, location: Location): ErrorNode {
+  return new ErrorNode(src, location);
 }
 
 export class ErrorNode {
   readonly kind = 'error';
 
-  constructor(readonly src: string) {}
+  constructor(readonly src: string, readonly location: Location) {}
 
   toString() {
     return `<error>(${this.src})`;
   }
+}
+
+export interface Location {
+  line: number;
+  column: number;
 }
 
 type RangeFn = (domain: number) => number;

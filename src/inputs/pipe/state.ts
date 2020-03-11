@@ -97,8 +97,8 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
   _successors(stream: StringStream) {
     const needsTerm = this.needsTerm();
     if (this.needsTerm()) {
-      if (peek(/\w/, stream)) {
-        return this.term(stream);
+      if (peek(/[\w\(]/, stream)) {
+        return [new TermState()]
       } else {
         return [new RejectState(this)];
       }
@@ -109,18 +109,6 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
 
   resolve() {
     return this.buildAst(this.values.slice());
-  }
-
-  private term(stream: StringStream) {
-    if (peek(/\d/, stream)) {
-      return [Terminal.number()];
-    } else if (peek(/\w+\s*\(/, stream)) {
-      return [new FnState()];
-    } else if (peek(/\w+\s*\[/, stream)) {
-      return [new ElementState()];
-    } else if (peek(/\w/, stream)) {
-      return [Terminal.atom()];
-    }
   }
 
   private needsTerm() {
@@ -164,6 +152,40 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
     } else {
       return values[0];
     }
+  }
+}
+
+class TermState extends NonTerminal<ast.Scalar> {
+  _successors(stream: StringStream) {
+    if (peek('(', stream)) {
+      return [new ParenState()];
+    } else if (peek(/\d/, stream)) {
+      return [Terminal.number()];
+    } else if (peek(/\w+\s*\(/, stream)) {
+      return [new FnState()];
+    } else if (peek(/\w+\s*\[/, stream)) {
+      return [new ElementState()];
+    } else if (peek(/\w/, stream)) {
+      return [Terminal.atom()];
+    }
+  }
+
+  resolve() {
+    return this.values[0];
+  }
+}
+
+class ParenState extends NonTerminal<ast.ParenNode> {
+  _successors(stream: StringStream) {
+    return [
+      Terminal.lparen(),
+      new ScalarState(),
+      Terminal.rparen(),
+    ];
+  }
+
+  resolve() {
+    return ast.paren(this.values[0]);
   }
 }
 
