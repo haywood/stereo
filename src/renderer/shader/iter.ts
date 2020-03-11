@@ -69,8 +69,6 @@ function torus(args: Scalar[]) {
   });
 
   return endent`{ // torus(${args.join(', ')})
-    const int d = ${resolveInt(d)};
-
     ${sphere([number(2), r0])}
 
     float tmp[D_MAX];
