@@ -143,32 +143,39 @@ function rotate([d, phi, d0, d1]: Scalar[]) {
 }
 
 function stereo(args: Scalar[]) {
-  const from = resolveInt(args[0]);
+  let from = resolveInt(args[0]);
   const to = resolveInt(args[1]);
-  let stanzas = [];
-  let d0 = from;
 
-  if (d0 == to) {
-    stanzas.push('copy(x, y);');
-  }
+  return _stereo(from, to, '');
+}
 
-  while (d0 > to) {
-    stanzas.push(endent`
-    // ${d0} => ${d0 - 1}
-    for (int k = 0; k < ${--d0}; k++) {
+function _stereo(from: number, to: number, pre: string) {
+  if (from == to) {
+    return endent`
+    ${pre}
+
+    // stereo(${from}, ${to})
+    copy(x, y);
+    `;
+  } else if (from-- > to) {
+    return _stereo(from, to, endent`
+    ${pre}
+
+    // stereo(${from}, ${to})
+    for (int k = 0; k < ${from}; k++) {
       y[k] = x[k + 1] / (1. - x[0]);
     }
     copy(y, x);
     `);
-  }
+  } else if (from < to) {
+    return _stereo(from, to, endent`{ // stereo(${from}, ${to})
+      ${pre}
 
-  while (d0 < to) {
-    stanzas.push(endent`{ // ${d0} => ${d0 + 1}
       float n2 = norm2(x);
       float divisor = n2 + 1.;
       x[0] = (n2 - 1.) / divisor;
 
-      for (int k = 0; k < ${++d0}; k++) {
+      for (int k = 0; k < ${from}; k++) {
         y[k] = 2. * x[k - 1] / divisor;
       }
 
@@ -176,10 +183,6 @@ function stereo(args: Scalar[]) {
     }
     `);
   }
-
-  return endent`{ // stereo(${args.join(', ')})
-    ${stanzas.join('\n')}
-  } // stereo`;
 }
 
 function quaternion(args: Scalar[]) {
