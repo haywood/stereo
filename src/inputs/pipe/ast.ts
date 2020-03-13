@@ -34,24 +34,9 @@ export function findErrors(node: Node): ErrorNode[] {
   }
 }
 
-export function includes(node: Node, cursor: cm.Position): boolean {
-  const zero = {line: 0, column: 0};
-  const {start, end} = node.region ?? {start:zero, end: zero};
-  const {line, ch} = cursor;
-  if (start.line == line) {
-    return start.column <= ch;
-  } else if (start.line < line && line < end.line) {
-    return true;
-  } else if (line == end.line) {
-    return ch < end.column;
-  } else {
-    return false;
-  }
-}
-
 export type Node = PipeNode | Statement | Scalar | ErrorNode;
 
-export function pipe(statements: Statement[], region?: Region): PipeNode {
+export function pipe(statements: Statement[], location?: Location): PipeNode {
   const variables = { n: number(screenSize), d0: number(4) };
   const steps = [];
 
@@ -71,7 +56,7 @@ export function pipe(statements: Statement[], region?: Region): PipeNode {
     steps[i].args.unshift(number(d0.value));
   }
 
-  return new PipeNode(steps, variables, statements, region);
+  return new PipeNode(steps, variables, statements, location);
 }
 
 export type Statement = AssignmentNode | StepNode;
@@ -83,7 +68,7 @@ export class PipeNode {
     readonly steps: StepNode[],
     readonly variables: Variables,
     readonly statements: Statement[],
-    readonly region?: Region
+    readonly location?: Location
   ) {}
 
   toString() {
@@ -101,9 +86,9 @@ export interface Variables {
 export function assignment(
   name: string,
   value: Scalar,
-  region?: Region
+  location?: Location
 ): AssignmentNode {
-  return new AssignmentNode(name, value, region);
+  return new AssignmentNode(name, value, location);
 }
 
 export class AssignmentNode {
@@ -112,7 +97,7 @@ export class AssignmentNode {
   constructor(
     readonly name: string,
     readonly value: Scalar,
-    readonly region?: Region
+    readonly location?: Location
   ) {}
 
   toString() {
@@ -134,9 +119,9 @@ export enum StepType {
 export function step(
   type: StepType,
   args: Scalar[],
-  region?: Region
+  location?: Location
 ): StepNode {
-  return new StepNode(type, args, region);
+  return new StepNode(type, args, location);
 }
 
 export class StepNode {
@@ -145,7 +130,7 @@ export class StepNode {
   constructor(
     readonly type: StepType,
     readonly args: Scalar[],
-    readonly region?: Region
+    readonly location?: Location
   ) {}
 
   toString() {
@@ -166,9 +151,9 @@ export type Scalar =
 export function arith(
   op: ArithOp,
   operands: [Scalar, Scalar] | [Scalar],
-  region?: Region
+  location?: Location
 ): ArithNode {
-  return new ArithNode(op, operands, region);
+  return new ArithNode(op, operands, location);
 }
 
 export enum ArithOp {
@@ -186,7 +171,7 @@ export class ArithNode {
   constructor(
     readonly op: ArithOp,
     readonly operands: [Scalar, Scalar] | [Scalar],
-    readonly region?: Region
+    readonly location?: Location
   ) {}
 
   toString() {
@@ -199,22 +184,22 @@ export class ArithNode {
   }
 }
 
-export function number(value: number, region?: Region): NumberNode {
-  return new NumberNode(value, region);
+export function number(value: number, location?: Location): NumberNode {
+  return new NumberNode(value, location);
 }
 
 export class NumberNode {
   readonly kind = 'number';
 
-  constructor(readonly value: number, readonly region?: Region) {}
+  constructor(readonly value: number, readonly location?: Location) {}
 
   toString() {
     return this.value;
   }
 }
 
-export function fn(name: FnName, args: Scalar[], region?: Region): FnNode {
-  return new FnNode(name, args, region);
+export function fn(name: FnName, args: Scalar[], location?: Location): FnNode {
+  return new FnNode(name, args, location);
 }
 
 export enum FnName {
@@ -252,7 +237,7 @@ export class FnNode {
   constructor(
     readonly name: FnName,
     readonly args: Scalar[],
-    readonly region?: Region
+    readonly location?: Location
   ) {}
 
   toString() {
@@ -280,28 +265,28 @@ export enum BuiltinVariable {
   N = 'n'
 }
 
-export function id(id: string, region?: Region): IdNode {
-  return new IdNode(id, region);
+export function id(id: string, location?: Location): IdNode {
+  return new IdNode(id, location);
 }
 
 export class IdNode {
   readonly kind = 'id';
 
-  constructor(readonly id: string, readonly region?: Region) {}
+  constructor(readonly id: string, readonly location?: Location) {}
 
   toString() {
     return this.id;
   }
 }
 
-export function paren(scalar: Scalar, region?: Region): ParenNode {
-  return new ParenNode(scalar, region);
+export function paren(scalar: Scalar, location?: Location): ParenNode {
+  return new ParenNode(scalar, location);
 }
 
 export class ParenNode {
   readonly kind = 'paren';
 
-  constructor(readonly scalar: Scalar, readonly region?: Region) {}
+  constructor(readonly scalar: Scalar, readonly location?: Location) {}
 
   toString() {
     return `(${this.scalar})`;
@@ -311,9 +296,9 @@ export class ParenNode {
 export function property(
   receiver: IdNode | PropertyNode,
   name: IdNode,
-  region?: Region
+  location?: Location
 ) {
-  return new PropertyNode(receiver, name, region);
+  return new PropertyNode(receiver, name, location);
 }
 
 export class PropertyNode {
@@ -322,7 +307,7 @@ export class PropertyNode {
   constructor(
     readonly receiver: IdNode | PropertyNode,
     readonly name: IdNode,
-    readonly region?: Region
+    readonly location?: Location
   ) {}
 
   toString() {
@@ -333,9 +318,9 @@ export class PropertyNode {
 export function element(
   receiver: IdNode | ElementNode,
   index: Scalar,
-  region?: Region
+  location?: Location
 ) {
-  return new ElementNode(receiver, index, region);
+  return new ElementNode(receiver, index, location);
 }
 
 export class ElementNode {
@@ -344,7 +329,7 @@ export class ElementNode {
   constructor(
     readonly receiver: IdNode | ElementNode,
     readonly index: Scalar,
-    readonly region?: Region
+    readonly location?: Location
   ) {}
 
   toString() {
@@ -352,28 +337,23 @@ export class ElementNode {
   }
 }
 
-export function error(src: string, region?: Region): ErrorNode {
-  return new ErrorNode(src, region);
+export function error(src: string, location?: Location): ErrorNode {
+  return new ErrorNode(src, location);
 }
 
 export class ErrorNode {
   readonly kind = 'error';
 
-  constructor(readonly src: string, readonly region?: Region) {}
+  constructor(readonly src: string, readonly location?: Location) {}
 
   toString() {
     return `<error>(${this.src})`;
   }
 }
 
-export interface Region {
-  start: Location;
-  end: Location;
-}
-
 export interface Location {
-  line: number;
-  column: number;
+  start: number;
+  end: number;
 }
 
 type RangeFn = (domain: number) => number;

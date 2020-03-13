@@ -26,14 +26,20 @@ export const inputs = {
     Q(phi, phi, phi, phi)
     stereo(3)
     `,
-    { startState: then => Context.pipe(then) }
+    { startState: then => Context.pipe(then), tabIndex: 1, }
   ),
 
-  h: new PipeInput<Scalar>('h', 'audio.hue * abs(p[0])', { startState: then => Context.scalar(then) }),
+  h: new PipeInput<Scalar>('h', 'audio.hue * abs(p[0])', {
+    startState: then => Context.scalar(then)
+  }),
 
-  s: new PipeInput<Scalar>('s', '1', { startState: then => Context.scalar(then) }),
+  s: new PipeInput<Scalar>('s', '1', {
+    startState: then => Context.scalar(then)
+  }),
 
-  v: new PipeInput<Scalar>('v', 'audio.power', { startState: then => Context.scalar(then) }),
+  v: new PipeInput<Scalar>('v', 'audio.power', {
+    startState: then => Context.scalar(then)
+  }),
 
   animate: new ToggleInput('animate', '1'),
 

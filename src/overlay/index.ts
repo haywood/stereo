@@ -21,6 +21,7 @@ export class Overlay {
       .forEach(el => {
         el.onmouseover = () => (this.hasHover = true);
         el.onmouseout = () => (this.hasHover = false);
+        el.onfocus = () => this.show();
       });
   }
 
@@ -28,7 +29,7 @@ export class Overlay {
     return this.querySelector<HTMLElement>('#inputs');
   }
 
-  show = () => {
+  show() {
     this.domElement.style.opacity = '1';
   };
 

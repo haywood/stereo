@@ -5,18 +5,12 @@ import { escape } from 'xregexp';
 
 import * as ast from './ast';
 import { Context } from './context';
-import { loc, peek } from './util';
+import { loc, peek, pos } from './util';
 
 export abstract class State<T = any> {
-  abstract resolve(): T|ast.ErrorNode;
+  abstract resolve(): T | ast.ErrorNode;
 
-  start: ast.Location;
-  end: ast.Location;
-
-  get region(): ast.Region {
-    const { start, end } = this;
-    if (start && end) return { start, end };
-  }
+  location: ast.Location;
 
   toString() {
     return `${this.constructor.name}`;
@@ -35,18 +29,13 @@ export abstract class NonTerminal<T = any> extends State<T> {
   successors(stream: StringStream): State[] {
     const successors = this._successors(stream) ?? [];
 
-    if (!this.start) this.start = loc(stream);
-
-    for (const s of successors) {
-      s.start = loc(stream);
-    }
-
     return successors;
   }
 
-  addValue(value: any, stream: StringStream) {
+  resolveChild(child: State, stream: StringStream) {
+    const value = child.resolve();
     if (value) this.values.push(value);
-    this.end = loc(stream);
+    this.location.end = child.location.end;
   }
 
   reset() {
@@ -66,7 +55,7 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
   }
 
   resolve() {
-    return ast.pipe(this.values.slice(), this.region);
+    return ast.pipe(this.values.slice(), this.location);
   }
 }
 
@@ -77,7 +66,7 @@ export class AssignmentState extends NonTerminal<ast.AssignmentNode> {
 
   resolve() {
     const [name, value] = this.values;
-    return ast.assignment(name, value, this.region);
+    return ast.assignment(name, value, this.location);
   }
 }
 
@@ -93,7 +82,7 @@ export class StepState extends NonTerminal<ast.StepNode> {
 
   resolve() {
     const [type, args] = this.values;
-    return ast.step(type, args.slice(), this.region);
+    return ast.step(type, args.slice(), this.location);
   }
 }
 
@@ -131,7 +120,7 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
       const pivot = values.indexOf('.');
       const receiver = values[pivot - 1];
       const member = values[pivot + 1];
-      const property = ast.property(receiver, member, this.region);
+      const property = ast.property(receiver, member);
       values.splice(pivot - 1, 3, property);
     }
 
@@ -143,7 +132,7 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
         return ast.arith(op, [
           this.buildAst(values.slice(0, pivot)),
           this.buildAst(values.slice(pivot + 1))
-        ]);
+        ], this.location);
       }
     }
 
@@ -154,9 +143,9 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
         values.slice(),
         this.values.slice()
       );
-    } else {
-      return values[0];
     }
+
+    return values[0];
   }
 }
 
@@ -186,7 +175,7 @@ class ParenState extends NonTerminal<ast.ParenNode> {
   }
 
   resolve() {
-    return ast.paren(this.values[0], this.region);
+    return ast.paren(this.values[0], this.location);
   }
 }
 
@@ -205,9 +194,9 @@ class FnState extends NonTerminal<ast.FnNode> {
     if (name instanceof ast.ErrorNode) {
       return name;
     } else if (args instanceof ast.ErrorNode) {
-      return ast.fn(name, [args], this.region);
+      return ast.fn(name, [args], this.location);
     } else {
-      return ast.fn(name, args.slice(), this.region);
+      return ast.fn(name, args.slice(), this.location);
     }
   }
 }
@@ -249,7 +238,7 @@ export class ElementState extends NonTerminal<ast.ElementNode> {
 
   resolve() {
     const [id, index] = this.values;
-    return ast.element(id, index, this.region);
+    return ast.element(id, index, this.location);
   }
 }
 
@@ -283,8 +272,8 @@ export class Terminal<T = any> extends State<T> {
   }
 
   static number() {
-    return new Terminal('number', NUMBER, (text, region) =>
-      ast.number(parseFloat(text), region)
+    return new Terminal('number', NUMBER, (text, location) =>
+      ast.number(parseFloat(text), location)
     );
   }
 
@@ -309,23 +298,21 @@ export class Terminal<T = any> extends State<T> {
   constructor(
     private readonly _style: string,
     private readonly pattern,
-    private readonly factory: (s: string, region: ast.Region) => T
+    private readonly factory: (s: string, location: ast.Location) => T
   ) {
     super();
   }
 
   apply(stream: StringStream): string {
-    this.start = loc(stream);
-
     if (stream.match(this.pattern)) {
       this.text = stream.current();
-      this.end = loc(stream);
+      this.location.end = pos(stream);
       return this._style;
     }
   }
 
   resolve() {
-    return this.factory(this.text, { start: this.start, end: this.end });
+    return this.factory(this.text, this.location);
   }
 }
 

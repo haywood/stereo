@@ -30,12 +30,14 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   private text: string;
   private editor: cm.Editor;
   private ctx: Context<T>;
+  private tabIndex?: number;
 
   constructor(
     readonly id: string,
     defaultText: string,
     private readonly options: {
       startState: (then: (ctx) => void) => Context<T>;
+      tabIndex?: number;
     }
   ) {
     super(id, defaultText, {
@@ -45,6 +47,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     });
 
     this.text = defaultText;
+    this.tabIndex = options.tabIndex;
   }
 
   protected newSubject() {
@@ -58,7 +61,8 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       lineNumbers: this.id == 'pipe',
       mode: this.id,
       readOnly: this.disabled ? 'nocursor' : false,
-      value: this.initialText
+      value: this.initialText,
+      tabindex: this.tabIndex,
     });
 
     this.text = this.editor.getValue();

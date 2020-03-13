@@ -1,35 +1,45 @@
 import { StringStream } from 'codemirror';
-import { cloneDeep, isEmpty } from 'lodash';
-import { eoi, complete } from './util';
 import CodeMirror from 'codemirror';
 import endent from 'endent';
+import { cloneDeep, isEmpty } from 'lodash';
 
 import debug from '../../debug';
 import { pp } from '../../pp';
 import * as ast from './ast';
 import * as st from './state';
+import { complete, eoi, loc, pos } from './util';
+
+type Then<T> = (ctx: Context<T>) => void;
 
 export class Context<T> {
-  static pipe(then: (ctx: Context<ast.PipeNode>) => void) {
-    return new Context(new st.PipeState(), then);
+  static pipe(then: Then<ast.PipeNode>) {
+    return Context.start(new st.PipeState(), then);
   }
 
-  static scalar(then: (ctx: Context<ast.Scalar>) => void) {
-    return new Context(new st.ScalarState(), then);
+  static scalar(then: Then<ast.Scalar>) {
+    return Context.start(new st.ScalarState(), then);
   }
+
+  static start<T>(root: st.NonTerminal<T>, then: Then<T>): Context<T> {
+    root.location = { start: 0, end: 0 };
+    return new Context(root, then);
+  }
+
 
   constructor(
     private readonly root: st.NonTerminal<T>,
-    private readonly then: (ctx: Context<T>) => void,
+    private readonly then: Then<T>,
     private readonly stack: st.State[] = [],
     private readonly parents: number[] = [],
-    private readonly expanded: Set<st.NonTerminal> = new Set(),
-  ) {}
+    private readonly expanded: Set<st.NonTerminal> = new Set()
+  ) {
+  }
 
   resolve() {
     const value = this.root.resolve();
     console.info('resolve()', cloneDeep(this), cloneDeep(value));
     this.root.reset();
+    this.root.location = {start: 0, end: 0};
     this.stack.length = 0;
     this.parents.length = 0;
     this.expanded.clear();
@@ -62,11 +72,15 @@ export class Context<T> {
       this.then,
       stack,
       this.parents.slice(),
-      expanded,
+      expanded
     );
   }
 
   private apply(curr: st.State, stream: StringStream) {
+    if (curr && !curr.location) {
+      curr.location = loc(stream);
+    }
+
     if (curr instanceof st.Terminal) {
       return this.applyTerminal(curr, stream);
     } else if (curr instanceof st.NonTerminal) {
@@ -79,26 +93,42 @@ export class Context<T> {
   private applyTerminal(curr: st.Terminal, stream: StringStream) {
     const style = curr.apply(stream);
     if (style) {
-      const value = curr.resolve();
-      this.parent.addValue(value, stream);
+      this.parent.resolveChild(curr, stream);
     } else {
       this.stack.push(new st.RejectState(curr));
     }
 
     if (curr instanceof st.RejectState) {
-      console.warn(`encountered error on stack`, stream, curr.clone(), this.clone());
+      console.warn(
+        `encountered error on stack`,
+        stream,
+        curr.clone(),
+        this.clone()
+      );
     }
 
     if (eoi(stream)) {
-      while (this.stack.length) {
-        const state = this.stack.pop();
-        this.parent.addValue(state.resolve(), stream);
+      let last;
+      while (curr = this.stack.pop()) {
+        this.parent.resolveChild(curr, stream);
+        last = curr;
       }
 
       if (complete(this.root, stream)) {
+        console.info(
+          `parse complete; calling then()`,
+          stream,
+          last.clone(),
+          this.clone()
+        );
         this.then(this);
       } else {
-        console.warn(`reached EOI, but root is incomplete`, stream, curr.clone(), this.clone());
+        console.warn(
+          `reached EOI, but root is incomplete`,
+          stream,
+          curr.clone(),
+          this.clone()
+        );
       }
     }
 
@@ -107,7 +137,7 @@ export class Context<T> {
 
   private applyNonTerminal(curr: st.NonTerminal, stream: StringStream) {
     if (!this.expand(curr, stream)) {
-      this.parent.addValue(curr.resolve(), stream);
+      this.parent.resolveChild(curr, stream);
     }
   }
 

@@ -1,7 +1,8 @@
 import { Pos, StringStream } from 'codemirror';
-import * as ast from './ast';
+import cm from 'codemirror';
 import { isEqual } from 'lodash';
 
+import * as ast from './ast';
 import { State } from './state';
 
 export function peek(pattern, stream: StringStream) {
@@ -9,22 +10,38 @@ export function peek(pattern, stream: StringStream) {
 }
 
 export function loc(stream: StringStream): ast.Location {
-  return {line: line(stream), column: stream.pos};
+  const start = pos(stream);
+  const end = start;
+  return { start, end };
+}
+
+export function pos(stream: StringStream): number {
+  const doc = lineOracle(stream).doc as cm.Doc;
+  let pos = 0;
+
+  doc.getValue().split('\n').forEach((text, i) => {
+    if (i < line(stream)) {
+      pos += text.length + 1;
+    } else if (i == line(stream)) {
+      pos += stream.pos;
+      return;
+    }
+  });
+
+  return pos;
 }
 
 export function eoi(stream: StringStream) {
-  return stream.eol() && line(stream) == lines(stream) - 1;
+  return pos(stream) == lineOracle(stream).doc.getValue().length;
 }
 
 export function complete(state: State, stream: StringStream) {
-  const { start, end } = state;
+  const doc = lineOracle(stream).doc as cm.Doc;
+  const {
+    location: { start, end }
+  } = state;
 
-  return (
-    start?.line == 0 &&
-    start?.column == 0 &&
-    end?.line == lines(stream) - 1 &&
-    end?.column == length(stream, end.line)
-  );
+  return start == 0 && end == doc.getValue().length;
 }
 
 function line(stream: StringStream) {

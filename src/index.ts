@@ -72,5 +72,3 @@ inputs.save.stream.subscribe(async () => {
 });
 
 window.onresize = () => renderer.setSize();
-
-document.querySelector('#overlay').style.opacity = '1';
