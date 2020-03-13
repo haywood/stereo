@@ -29,7 +29,7 @@ export const inputs = {
     { startState: then => Context.pipe(then) }
   ),
 
-  h: new PipeInput<Scalar>('h', 'audio.hue * p[0]', { startState: then => Context.scalar(then) }),
+  h: new PipeInput<Scalar>('h', 'audio.hue * abs(p[0])', { startState: then => Context.scalar(then) }),
 
   s: new PipeInput<Scalar>('s', '1', { startState: then => Context.scalar(then) }),
 
