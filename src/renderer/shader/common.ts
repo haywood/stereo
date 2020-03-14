@@ -16,7 +16,7 @@ import { pp } from '../../pp';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
 
-export const uniforms = endent`
+export const uniforms = `
 uniform float t;
 uniform struct Audio {
   float hue;

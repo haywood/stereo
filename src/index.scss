@@ -17,6 +17,13 @@ body {
   &.data.cursor-inactive {
     cursor: none;
   }
+
+  .hint-description {
+    color: black;
+    position: absolute;
+    min-height: 20px;
+    width: 200px;
+  }
 }
 
 input,

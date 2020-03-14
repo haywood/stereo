@@ -20,7 +20,34 @@ export function hint(
     list = hintScalar(node, cursor, editor);
   }
 
-  return { list: list ?? [], from, to };
+  const completions = { list: list ?? [], from, to };
+  cm.on(completions, 'select', (hint, el: HTMLElement) => {
+    if (hint.description) {
+      const rect = el.parentElement.getBoundingClientRect();
+      const pre = findOrAdd();
+
+      pre.innerText = hint.description;
+      pre.style.top = `${rect.top}px`;
+      pre.style.left = `${rect.right}px`;
+
+      function findOrAdd() {
+        let d = document.querySelector<HTMLElement>('.hint-description');
+        if (!d) {
+          d = document.createElement('div');
+          d.classList.add('hint-description');
+          el.parentElement.classList.forEach(c => d.classList.add(c));
+          document.body.appendChild(d);
+        }
+        return d;
+      }
+    }
+  });
+
+  cm.on(completions, 'close', () => {
+    document.querySelector('.hint-description')?.remove();
+  });
+
+  return completions;
 }
 
 function hintPipe(node: ast.PipeNode, cursor, editor) {
@@ -28,7 +55,8 @@ function hintPipe(node: ast.PipeNode, cursor, editor) {
   if (statement) {
     return hintStatement(statement, cursor, editor);
   } else {
-    return hintEmptyStatement('', node.location, editor);
+    //TODO this causes an annoying stutter while typing
+    //return hintEmptyStatement('', cursor, cursor, editor);
   }
 }
 
@@ -44,23 +72,29 @@ function hintStatement(node: ast.Statement, cursor, editor) {
     // an assignment missing lhs
     return hintId(ast.id('', node.location), cursor, editor, []);
   } else if (!after.trim()) {
-    return hintEmptyStatement(node.src, node.location, editor);
+    const { start, end } = node.location;
+    return hintEmptyStatement(
+      node.src,
+      offset2pos(start, editor),
+      offset2pos(end, editor),
+      editor
+    );
   }
 }
 
-function hintEmptyStatement(src, {start, end}: ast.Location, editor: cm.Editor) {
+function hintEmptyStatement(
+  src: string,
+  from: cm.Position,
+  to: cm.Position,
+  editor: cm.Editor
+) {
   const list = [];
 
   variableHints(src, editor).forEach(hint => {
     list.push(hint);
   });
 
-  stepTypeHints(
-    src,
-    offset2pos(start, editor),
-    offset2pos(end, editor),
-    editor
-  ).forEach(hint => list.push(hint));
+  stepTypeHints(src, from, to, editor).forEach(hint => list.push(hint));
 
   return list;
 }
@@ -150,7 +184,6 @@ function hintProperty(node, cursor, editor, ancestors) {
 }
 
 function hintId(node, cursor, editor, ancestors) {
-  debug('id', node, cursor, editor, ancestors);
   const list = [];
 
   addConstants(list, node.id, node.location, editor);
@@ -198,7 +231,8 @@ function stepTypeHints(
         hint: () => {
           editor.replaceRange(text, from, to);
           editor.setCursor({ line: to.line, ch: from.ch + type.length + 1 });
-        }
+        },
+        description: descriptions[type],
       });
     }
   }
@@ -214,7 +248,7 @@ function addConstants(
 ) {
   for (const name of Object.values(ast.BuiltinConstant)) {
     if (name.startsWith(src)) {
-      list.push({ text: name, displayText: name });
+      list.push({ text: name, displayText: name, description: descriptions[name] });
     }
   }
 }
@@ -223,7 +257,11 @@ function variableHints(src: string, editor: cm.Editor): cm.Hint[] {
   return Object.values(ast.BuiltinVariable)
     .filter(name => name.startsWith(src))
     .map(name => {
-      return { text: name, displayText: name };
+      return {
+        text: name,
+        displayText: name,
+        description: descriptions[name],
+      };
     });
 }
 
@@ -243,7 +281,8 @@ function addFnNames(
         hint: () => {
           editor.replaceRange(text, from, to);
           editor.setCursor({ line: to.line, ch: from.ch + name.length + 1 });
-        }
+        },
+        description: descriptions[name],
       });
     }
   }
@@ -255,8 +294,6 @@ function includes(node: ast.Node, cursor: cm.Position, editor): boolean {
   const { start, end } = node.location;
   const spos = offset2pos(start, editor);
   const epos = offset2pos(end, editor);
-
-  debug('includes', node, cursor, editor, []);
 
   if (cursor.line < spos.line || cursor.line > epos.line) {
     return false;
@@ -288,3 +325,34 @@ function debug(name, node: ast.Node, cursor, editor, ancestors) {
     editor
   });
 }
+
+const descriptions = {
+  // Builtin Constants
+  [ast.BuiltinConstant.AUDIO]: 'The current audio analysis data.',
+  [ast.BuiltinConstant.E]: 'Euler\'s number.',
+  [ast.BuiltinConstant.I]: 'The index of the current point.',
+  [ast.BuiltinConstant.LN10]: 'Natural logarithm of 10.',
+  [ast.BuiltinConstant.LN2]: 'Natural logarithm of 2.',
+  [ast.BuiltinConstant.LOG10E]: 'Log base 10 of e.',
+  [ast.BuiltinConstant.LOG2E]: 'Log base 2 of e.',
+  [ast.BuiltinConstant.TIME]: 'Elapsed seconds from start of scene.',
+
+  // Builtin Variables
+  [ast.BuiltinVariable.N]:
+    'The number of points to generate. Defaults to screen width * height.',
+  [ast.BuiltinVariable.D0]:
+    'The initial dimension of the generated scene. Defaults to 4.',
+
+  // Fn Names
+  [ast.FnName.ABS]: 'The absolute value funciton.',
+
+  // Step Types
+  [ast.StepType.CUBE]: 'Map the points onto a cube.',
+  [ast.StepType.LATTICE]: 'Map the points into a lattice.',
+  [ast.StepType.QUATERNION]: 'Right multiples each point by the given quaternion.',
+  [ast.StepType.ROTATE]: 'Rotate the points by the given angle in the given plane.',
+  [ast.StepType.SPHERE]: 'Map the points onto a sphere.',
+  [ast.StepType.SPIRAL]: 'Maps the points into a spiral.',
+  [ast.StepType.STEREO]: 'Perform stereographic projection into the given dimension.',
+  [ast.StepType.TORUS]: 'Map the points onto a torus.',
+};

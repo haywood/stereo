@@ -252,7 +252,7 @@ export enum BuiltinConstant {
   LN10 = 'ln10',
   LN2 = 'ln2',
   LOG10E = 'log10e',
-  LOG2e = 'log2e',
+  LOG2E = 'log2e',
   P = 'p',
   PI = 'pi',
   SQRT1_2 = 'sqrt1_2',
