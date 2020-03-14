@@ -3,7 +3,10 @@ import * as cm from 'codemirror';
 import * as ast from './ast';
 import { Context } from './context';
 
-export function hint(editor: cm.Editor, node: ast.PipeNode|ast.Scalar): cm.Hints {
+export function hint(
+  editor: cm.Editor,
+  node: ast.PipeNode | ast.Scalar
+): cm.Hints {
   let list: cm.Hint[];
   const cursor = editor.getCursor();
   const token = editor.getTokenAt(cursor);
@@ -22,7 +25,11 @@ export function hint(editor: cm.Editor, node: ast.PipeNode|ast.Scalar): cm.Hints
 
 function hintPipe(node: ast.PipeNode, cursor, editor) {
   const statement = node.statements.find(s => includes(s, cursor, editor));
-  if (statement) return hintStatement(statement, cursor, editor);
+  if (statement) {
+    return hintStatement(statement, cursor, editor);
+  } else {
+    return hintEmptyStatement('', node.location, editor);
+  }
 }
 
 function hintStatement(node: ast.Statement, cursor, editor) {
@@ -37,20 +44,25 @@ function hintStatement(node: ast.Statement, cursor, editor) {
     // an assignment missing lhs
     return hintId(ast.id('', node.location), cursor, editor, []);
   } else if (!after.trim()) {
-    const list = [];
-
-    variableHints(node.src, node.location, editor).forEach(hint => {
-      hint.text += ' = ';
-      hint.displayText += ' = ';
-      list.push(hint)
-    });
-
-    stepTypeHints(node.src, node.location, editor).forEach(hint =>
-      list.push(hint)
-    );
-
-    return list;
+    return hintEmptyStatement(node.src, node.location, editor);
   }
+}
+
+function hintEmptyStatement(src, {start, end}: ast.Location, editor: cm.Editor) {
+  const list = [];
+
+  variableHints(src, editor).forEach(hint => {
+    list.push(hint);
+  });
+
+  stepTypeHints(
+    src,
+    offset2pos(start, editor),
+    offset2pos(end, editor),
+    editor
+  ).forEach(hint => list.push(hint));
+
+  return list;
 }
 
 function hintAssignment(
@@ -62,9 +74,7 @@ function hintAssignment(
   const { line, ch } = offset2pos(name.location.start, editor);
   if (includes(name, cursor, editor)) {
     const list = [];
-    variableHints(name.id, name.location, editor).forEach(hint =>
-      list.push(hint)
-    );
+    variableHints(name.id, editor).forEach(hint => list.push(hint));
     return list;
   } else if (includes(value, cursor, editor)) {
     return hintScalar(value, cursor, editor);
@@ -144,9 +154,7 @@ function hintId(node, cursor, editor, ancestors) {
   const list = [];
 
   addConstants(list, node.id, node.location, editor);
-  variableHints(node.id, node.location, editor).forEach(hint =>
-    list.push(hint)
-  );
+  variableHints(node.id, editor).forEach(hint => list.push(hint));
   addFnNames(list, node.id, node.location, editor);
 
   return list;
@@ -174,13 +182,16 @@ function hintError(
   }
 }
 
-function stepTypeHints(src, { start, end }: ast.Location, editor: cm.Editor) {
+function stepTypeHints(
+  src,
+  from: cm.Position,
+  to: cm.Position,
+  editor: cm.Editor
+) {
   const list = [];
 
   for (const type of Object.values(ast.StepType)) {
     if (type.startsWith(src)) {
-      const from = offset2pos(start, editor);
-      const to = offset2pos(end, editor);
       const text = `${type}()`;
       list.push({
         text,
@@ -208,11 +219,7 @@ function addConstants(
   }
 }
 
-function variableHints(
-  src: string,
-  { start, end }: ast.Location,
-  editor: cm.Editor
-): cm.Hint[] {
+function variableHints(src: string, editor: cm.Editor): cm.Hint[] {
   return Object.values(ast.BuiltinVariable)
     .filter(name => name.startsWith(src))
     .map(name => {
