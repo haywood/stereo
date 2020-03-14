@@ -39,7 +39,7 @@ export class Context<T> {
 
   resolve() {
     const value = this.root.resolve();
-    console.info('resolve()', this.clone(), cloneDeep(value));
+    console.info('resolve()', this.clone(this.src), cloneDeep(value));
     this.root.reset();
     this.stack.length = 0;
     this.parents.length = 0;
@@ -84,16 +84,16 @@ export class Context<T> {
     } else if (curr instanceof st.NonTerminal) {
       this.applyNonTerminal(curr, stream);
     } else if (!this.expand(this.root, stream)) {
-      this.stack.push(new st.RejectState(stream));
+      this.stack.push(new st.RejectState(stream, this.src));
     }
   }
 
   private applyTerminal(curr: st.Terminal, stream: StringStream) {
-    const style = curr.apply(stream);
+    const style = curr.apply(stream, this.src);
     if (style) {
       this.parent.resolveChild(curr, stream);
     } else {
-      this.stack.push(new st.RejectState(stream));
+      this.stack.push(new st.RejectState(stream, this.src));
     }
 
     if (curr instanceof st.RejectState) {
@@ -101,7 +101,7 @@ export class Context<T> {
         `encountered error on stack`,
         stream,
         curr.clone(),
-        this.clone()
+        this.clone(this.src)
       );
     }
 
@@ -117,7 +117,7 @@ export class Context<T> {
 
     while (this.stack.length) {
       state = this.stack.pop();
-      if (!state.location) state.location = loc(stream);
+      if (!state.location) state.location = loc(stream, this.src);
       this.parent.resolveChild(state, stream);
     }
 
@@ -126,7 +126,7 @@ export class Context<T> {
         `parse complete; calling then()`,
         stream,
         state.clone(),
-        this.clone()
+        this.clone(this.src)
       );
       setTimeout(() => this.then(this));
     } else {
@@ -134,7 +134,7 @@ export class Context<T> {
         `reached EOI, but root is incomplete`,
         stream,
         state.clone(),
-        this.clone()
+        this.clone(this.src)
       );
     }
   }
@@ -148,13 +148,13 @@ export class Context<T> {
   private expand(curr: st.NonTerminal, stream: StringStream) {
     if (this.expanded.has(curr) && !curr.repeatable) return false;
 
-    const successors = curr.successors(stream);
+    const successors = curr.successors(stream, this.src);
     this.expanded.add(curr);
 
     if (stream.current()) {
       console.error(
         'non-terminal advanced the stream',
-        this.clone(),
+        this.clone(this.src),
         curr.clone()
       );
     }

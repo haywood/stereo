@@ -25,15 +25,14 @@ export abstract class NonTerminal<T = any> extends State<T> {
   protected readonly values = [];
   readonly repeatable: boolean = false;
 
-  abstract _successors(stream: StringStream): State[];
-  successors(stream: StringStream): State[] {
+  protected abstract _successors(stream: StringStream, src: string): State[];
+
+  successors(stream: StringStream, src: string): State[] {
     if (!this.location) {
-        this.location = loc(stream);
+        this.location = loc(stream, src);
     }
 
-    const successors = this._successors(stream) ?? [];
-
-    return successors;
+    return this._successors(stream, src) ?? [];
   }
 
   resolveChild(child: State, stream: StringStream) {
@@ -151,7 +150,7 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
 }
 
 class TermState extends NonTerminal<ast.Scalar> {
-  _successors(stream: StringStream) {
+  _successors(stream: StringStream, src: string) {
     if (peek('(', stream)) {
       return [new ParenState()];
     } else if (peek(/\d/, stream)) {
@@ -163,7 +162,7 @@ class TermState extends NonTerminal<ast.Scalar> {
     } else if (peek(/\w/, stream)) {
       return [Terminal.atom()];
     } else {
-      return [new RejectState(stream)];
+      return [new RejectState(stream, src)];
     }
   }
 
@@ -306,14 +305,14 @@ export class Terminal<T = any> extends State<T> {
     super();
   }
 
-  apply(stream: StringStream): string {
+  apply(stream: StringStream, src: string): string {
     if (!this.location) {
-        this.location = loc(stream);
+        this.location = loc(stream, src);
     }
 
     if (stream.match(this.pattern)) {
       this.text = stream.current();
-      this.location.end = pos(stream);
+      this.location.end = pos(stream, src);
 
       return this._style;
     }
@@ -327,11 +326,11 @@ export class Terminal<T = any> extends State<T> {
 export class RejectState extends Terminal<ast.ErrorNode> {
   private readonly context: string;
 
-  constructor(stream: StringStream) {
+  constructor(stream: StringStream, src: string) {
     super('error', /[^\s]*/, ast.error);
 
     this.context = stream.string.slice(stream.pos);
-    this.location = loc(stream);
+    this.location = loc(stream, src);
   }
 
   toString() {

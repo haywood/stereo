@@ -9,17 +9,16 @@ export function peek(pattern, stream: StringStream) {
   return stream.match(pattern, false);
 }
 
-export function loc(stream: StringStream): ast.Location {
-  const start = pos(stream);
+export function loc(stream: StringStream, src: string): ast.Location {
+  const start = pos(stream, src);
   const end = start;
   return { start, end };
 }
 
-export function pos(stream: StringStream): number {
-  const doc = lineOracle(stream).doc as cm.Doc;
+export function pos(stream: StringStream, src: string): number {
   let pos = 0;
 
-  doc.getValue().split('\n').forEach((text, i) => {
+  src.split('\n').forEach((text, i) => {
     if (i < line(stream)) {
       pos += text.length + 1;
     } else if (i == line(stream)) {
@@ -32,7 +31,7 @@ export function pos(stream: StringStream): number {
 }
 
 export function eoi(stream: StringStream, src: string) {
-  return pos(stream) == src.length;
+  return pos(stream, src) == src.length;
 }
 
 export function complete(state: State, stream: StringStream, src: string) {
@@ -44,21 +43,5 @@ export function complete(state: State, stream: StringStream, src: string) {
 }
 
 function line(stream: StringStream) {
-  return lineOracle(stream)?.line;
-}
-
-function lines(stream: StringStream) {
-  return lineOracle(stream).doc.size;
-}
-
-function length(stream: StringStream, line: number) {
-  return doc(stream).lineInfo(line).text.length;
-}
-
-function doc(stream: StringStream) {
-  return lineOracle(stream).doc;
-}
-
-function lineOracle(stream: StringStream) {
-  return (stream as any).lineOracle;
+  return (stream as any).lineOracle?.line;
 }
