@@ -140,7 +140,7 @@ function fromArith(node: ArithNode): string {
     [EXP]: exp,
     [EXP_CARET]: exp,
     [MUL]: binary(MUL),
-    [SUB]: b ? binary(SUB) : () => `-${a}`
+    [SUB]: binary(SUB),
   };
 
   return ops[op]();

@@ -2,34 +2,31 @@ const screenSize = Math.round(window.screen.width * window.screen.height);
 import cm from 'codemirror';
 
 export function findErrors(node: Node): ErrorNode[] {
-  switch (node.kind) {
-    case 'pipe':
+  if (node instanceof PipeNode) {
       return node.statements.reduce(
         (errors, n) => errors.concat(findErrors(n)),
         []
       );
-    case 'assignment':
+  } else if (node instanceof AssignmentNode) {
       return findErrors(node.value);
-    case 'step':
+  } else if (node instanceof StepNode) {
       return node.args.reduce((errors, n) => errors.concat(findErrors(n)), []);
-    case 'arith':
+  } else if (node instanceof ArithNode) {
       return node.operands.reduce(
         (errors, n) => errors.concat(findErrors(n)),
         []
       );
-    case 'fn':
+  } else if (node instanceof FnNode) {
       return node.args.reduce((errors, n) => errors.concat(findErrors(n)), []);
-    case 'property':
+  } else if (node instanceof PropertyNode) {
       return findErrors(node.receiver).concat(findErrors(node.name));
-    case 'element':
+  } else if (node instanceof ElementNode) {
       return findErrors(node.receiver).concat(findErrors(node.index));
-    case 'paren':
+  } else if (node instanceof ParenNode) {
       return findErrors(node.scalar);
-    case 'id':
-    case 'number':
+  } else if (node instanceof IdNode || node instanceof NumberNode) {
       return [];
-    case 'error':
-    default:
+  } else {
       return [node];
   }
 }

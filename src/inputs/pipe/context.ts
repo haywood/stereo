@@ -121,7 +121,7 @@ export class Context<T> {
     }
 
     if (complete(this.root, stream, this.src)) {
-      setTimeout(() => this.then(this));
+      this.then(this);
     } else {
       console.warn(
         `reached EOI, but root is incomplete`,
