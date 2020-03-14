@@ -39,7 +39,6 @@ export class Context<T> {
 
   resolve() {
     const value = this.root.resolve();
-    console.info('resolve()', this.clone(this.src), cloneDeep(value));
     this.root.reset();
     this.stack.length = 0;
     this.parents.length = 0;
@@ -122,12 +121,6 @@ export class Context<T> {
     }
 
     if (complete(this.root, stream, this.src)) {
-      console.info(
-        `parse complete; calling then()`,
-        stream,
-        state.clone(),
-        this.clone(this.src)
-      );
       setTimeout(() => this.then(this));
     } else {
       console.warn(

@@ -3,12 +3,11 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/lib/codemirror.css';
 
-import cm, {Editor} from 'codemirror';
+import cm, { Editor } from 'codemirror';
+import { isEmpty, isEqual } from 'lodash';
 import { re } from 're-template-tag';
-import {isEmpty} from 'lodash';
 import { ReplaySubject } from 'rxjs';
 import { escape } from 'xregexp';
-import {hint} from './hint';
 
 import { Change } from '../change';
 import { Input } from '../input';
@@ -23,6 +22,7 @@ import {
   findErrors
 } from './ast';
 import { Context } from './context';
+import { hint } from './hint';
 
 export { Context } from './context';
 
@@ -64,7 +64,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       mode: this.id,
       readOnly: this.disabled ? 'nocursor' : false,
       value: this.initialText,
-      tabindex: this.tabIndex,
+      tabindex: this.tabIndex
     });
 
     this.updateHash();
@@ -74,6 +74,8 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     const startState = () =>
       this.options.startState(this.text, ctx => {
         const ast = ctx.resolve();
+
+        if (isEqual(ast, this.value)) return;
 
         // TODO also check for semantic errors
         // e.g. wrong number of function args, redefining a constant, invalid
@@ -89,14 +91,15 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
 
         this.editor?.showHint({
           hint: (editor: cm.Editor) => hint(editor, ast),
-          completeSingle: false,
+          completeSingle: false
         });
       });
 
     cm.defineMode(this.id, () => {
       return {
         startState,
-        copyState: (ctx: Context<T>) => ctx.clone(this.editor?.getValue() ?? this.text),
+        copyState: (ctx: Context<T>) =>
+          ctx.clone(this.editor?.getValue() ?? this.text),
         token: (stream, ctx: Context<T>) => ctx.token(stream)
       };
     });

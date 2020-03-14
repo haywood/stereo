@@ -11,13 +11,13 @@ export function hint(editor: cm.Editor, node: ast.Node): cm.Hints {
   const from = token.string.trim() ? cm.Pos(cursor.line, token.start) : to;
 
   if (node instanceof ast.PipeNode) {
-    list = hintPipe(node as ast.PipeNode, cursor, editor) ?? [];
+    list = hintPipe(node as ast.PipeNode, cursor, editor);
   } else {
     // assume Scalar
-    list = hintScalar((node as any) as ast.Scalar, cursor, editor) ?? [];
+    list = hintScalar((node as any) as ast.Scalar, cursor, editor);
   }
 
-  return { list, from, to };
+  return { list: list ?? [], from, to };
 }
 
 function hintPipe(node: ast.PipeNode, cursor, editor) {
