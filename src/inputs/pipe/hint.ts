@@ -3,7 +3,7 @@ import * as cm from 'codemirror';
 import * as ast from './ast';
 import { Context } from './context';
 
-export function hint(editor: cm.Editor, node: ast.Node): cm.Hints {
+export function hint(editor: cm.Editor, node: ast.PipeNode|ast.Scalar): cm.Hints {
   let list: cm.Hint[];
   const cursor = editor.getCursor();
   const token = editor.getTokenAt(cursor);
@@ -11,10 +11,10 @@ export function hint(editor: cm.Editor, node: ast.Node): cm.Hints {
   const from = token.string.trim() ? cm.Pos(cursor.line, token.start) : to;
 
   if (node instanceof ast.PipeNode) {
-    list = hintPipe(node as ast.PipeNode, cursor, editor);
+    list = hintPipe(node, cursor, editor);
   } else {
     // assume Scalar
-    list = hintScalar((node as any) as ast.Scalar, cursor, editor);
+    list = hintScalar(node, cursor, editor);
   }
 
   return { list: list ?? [], from, to };
