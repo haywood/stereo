@@ -19,7 +19,7 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
-    phi = audio.power * tan(t / 5)
+    phi = audio.power * tan(audio.onset + t / 5)
     d0 = 4
 
     sphere(1)
