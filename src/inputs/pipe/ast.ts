@@ -59,7 +59,7 @@ export function pipe(statements: Statement[], location?: Location): PipeNode {
   return new PipeNode(steps, variables, statements, location);
 }
 
-export type Statement = AssignmentNode | StepNode;
+export type Statement = AssignmentNode | StepNode | ErrorNode;
 
 export class PipeNode {
   readonly kind = 'pipe';
@@ -84,7 +84,7 @@ export interface Variables {
 }
 
 export function assignment(
-  name: string,
+  name: IdNode,
   value: Scalar,
   location?: Location
 ): AssignmentNode {
@@ -95,7 +95,7 @@ export class AssignmentNode {
   readonly kind = 'assignment';
 
   constructor(
-    readonly name: string,
+    readonly name: IdNode,
     readonly value: Scalar,
     readonly location?: Location
   ) {}

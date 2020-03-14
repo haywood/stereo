@@ -31,17 +31,16 @@ export function pos(stream: StringStream): number {
   return pos;
 }
 
-export function eoi(stream: StringStream) {
-  return pos(stream) == lineOracle(stream).doc.getValue().length;
+export function eoi(stream: StringStream, src: string) {
+  return pos(stream) == src.length;
 }
 
-export function complete(state: State, stream: StringStream) {
-  const doc = lineOracle(stream).doc as cm.Doc;
+export function complete(state: State, stream: StringStream, src: string) {
   const {
     location: { start, end }
   } = state;
 
-  return start == 0 && end == doc.getValue().length;
+  return start == 0 && end == src.length;
 }
 
 function line(stream: StringStream) {

@@ -27,6 +27,10 @@ export abstract class NonTerminal<T = any> extends State<T> {
 
   abstract _successors(stream: StringStream): State[];
   successors(stream: StringStream): State[] {
+    if (!this.location) {
+        this.location = loc(stream);
+    }
+
     const successors = this._successors(stream) ?? [];
 
     return successors;
@@ -39,6 +43,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
   }
 
   reset() {
+    this.location = {start: 0, end: 0};
     this.values.length = 0;
   }
 }
@@ -92,11 +97,7 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
   _successors(stream: StringStream) {
     const needsTerm = this.needsTerm();
     if (this.needsTerm()) {
-      if (peek(/[\w\(]/, stream)) {
-        return [new TermState()];
-      } else {
-        return [new RejectState(this)];
-      }
+      return [new TermState()];
     } else if (peek(SCALAR_OP, stream)) {
       return [Terminal.scalarOp()];
     }
@@ -161,6 +162,8 @@ class TermState extends NonTerminal<ast.Scalar> {
       return [new ElementState()];
     } else if (peek(/\w/, stream)) {
       return [Terminal.atom()];
+    } else {
+      return [new RejectState(stream)];
     }
   }
 
@@ -304,9 +307,14 @@ export class Terminal<T = any> extends State<T> {
   }
 
   apply(stream: StringStream): string {
+    if (!this.location) {
+        this.location = loc(stream);
+    }
+
     if (stream.match(this.pattern)) {
       this.text = stream.current();
       this.location.end = pos(stream);
+
       return this._style;
     }
   }
@@ -317,12 +325,17 @@ export class Terminal<T = any> extends State<T> {
 }
 
 export class RejectState extends Terminal<ast.ErrorNode> {
-  constructor(readonly expected: State) {
+  private readonly context: string;
+
+  constructor(stream: StringStream) {
     super('error', /[^\s]*/, ast.error);
+
+    this.context = stream.string.slice(stream.pos);
+    this.location = loc(stream);
   }
 
   toString() {
-    return `${super.toString()}, expected '${this.expected}'`;
+    return `${super.toString()} at '${this.context}'`;
   }
 }
 

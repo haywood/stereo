@@ -4,7 +4,7 @@ import * as ast from './ast';
 import { Context } from './context';
 
 export function hint(editor: cm.Editor, node: ast.Node): cm.Hints {
-  let list: (string | cm.Hint)[];
+  let list: cm.Hint[];
   const cursor = editor.getCursor();
   const token = editor.getTokenAt(cursor);
   const to = cursor;
@@ -25,24 +25,55 @@ export function hint(editor: cm.Editor, node: ast.Node): cm.Hints {
 function hintPipe(node: ast.PipeNode, cursor, editor) {
   debug('pipe', node, cursor, editor, []);
   const statement = node.statements.find(s => includes(s, cursor, editor));
-  return statement ? hintStatement(statement, cursor, editor) : [];
-}
+  const line = editor.getLine(cursor.line);
+  const after = line.slice(cursor.ch);
 
-function hintStatement(node: ast.Statement, cursor, editor) {
-  debug('statement', node, cursor, editor, []);
-  switch (node.kind) {
-    case 'assignment':
-      return hintAssignment(node, cursor, editor);
+  if (statement instanceof ast.AssignmentNode) {
+    return hintAssignment(statement, cursor, editor);
+  } else if (statement instanceof ast.StepNode) {
+    return hintStep(statement, cursor, editor);
+  } else if (/^\s*=/.test(after)) {
+    // an assignment missing lhs
+    return hintId(ast.id('', node.location), cursor, editor, []);
+  } else if (!after.trim()) {
+    const list = [];
+
+    variableHints(statement?.src ?? '', node.location, editor).forEach(hint => {
+      hint.text += ' = ';
+      hint.displayText += ' = ';
+      list.push(hint)
+    });
+
+    stepTypeHints(statement?.src ?? '', node.location, editor).forEach(hint =>
+      list.push(hint)
+    );
+
+    return list;
   }
 }
 
-function hintAssignment(node: ast.AssignmentNode, cursor, editor) {
+function hintAssignment(
+  node: ast.AssignmentNode,
+  cursor: cm.Position,
+  editor: cm.Editor
+) {
   debug('assignment', node, cursor, editor, []);
   const { name, value } = node;
-  if (includes(value, cursor, editor)) {
+  const { line, ch } = offset2pos(name.location.start, editor);
+  //console.debug({ line, ch, cursor, name });
+  if (includes(name, cursor, editor)) {
+    const list = [];
+    variableHints(name.id, name.location, editor).forEach(hint =>
+      list.push(hint)
+    );
+    return list;
+  } else if (includes(value, cursor, editor)) {
     return hintScalar(value, cursor, editor);
   }
-  return [];
+}
+
+function hintStep(node: ast.StepNode, cursor: cm.Position, editor: cm.Editor) {
+  debug('step', node, cursor, editor, []);
 }
 
 function hintScalar(node: ast.Scalar, cursor, editor, ancestors = []) {
@@ -57,9 +88,9 @@ function hintScalar(node: ast.Scalar, cursor, editor, ancestors = []) {
     case 'id':
       return hintId(node, cursor, editor, ancestors);
     case 'paren':
-      return hintParen(node, cursor, ancestors);
+      return hintParen(node, cursor, editor, ancestors);
     case 'element':
-      return hintElement(node, cursor, ancestors);
+      return hintElement(node, cursor, editor, ancestors);
     case 'error':
       return hintError(node, cursor, editor, ancestors);
   }
@@ -83,13 +114,28 @@ function hintArith(
   }
 }
 
-function hintFn(node: ast.FnNode, cursor, editor, ancestors) {
+function hintFn(
+  node: ast.FnNode,
+  cursor: cm.Position,
+  editor: cm.Editor,
+  ancestors
+) {
   debug('fn', node, cursor, editor, ancestors);
-  const arg = node.args.find(a => includes(a, cursor, editor));
-  if (arg) {
-    return hintScalar(arg, cursor, editor, [...ancestors, node]);
-  } else {
-    return [')'];
+  const idx = node.args.findIndex(a => includes(a, cursor, editor));
+  const before = editor.getLine(cursor.line).slice(0, cursor.ch);
+  const after = editor.getLine(cursor.line).slice(cursor.ch);
+  const isRparen = /,\s*$/.test(before);
+  const isComma = /,\s*$/.test(before);
+  const hasRparen = /^\s*\)/.test(after);
+  let list;
+
+  if (idx >= 0) {
+    return hintScalar(node.args[idx], cursor, editor, [...ancestors, node]);
+  } else if (isComma) {
+    return hintScalar(ast.id('', node.location), cursor, editor, [
+      ...ancestors,
+      node
+    ]);
   }
 }
 
@@ -102,32 +148,54 @@ function hintId(node, cursor, editor, ancestors) {
   const list = [];
 
   addConstants(list, node.id, node.location, editor);
-  addVariables(list, node.id, node.location, editor);
+  variableHints(node.id, node.location, editor).forEach(hint =>
+    list.push(hint)
+  );
   addFnNames(list, node.id, node.location, editor);
 
   return list;
 }
 
-function hintParen(node, cursor, ancestors) {
+function hintParen(node, cursor, editor, ancestors) {
   debug('paren', node, cursor, editor, ancestors);
 }
 
-function hintElement(node, cursor, ancestors) {
+function hintElement(node, cursor, editor, ancestors) {
   debug('element', node, cursor, editor, ancestors);
 }
 
 function hintError(
   node: ast.ErrorNode,
-  cursor,
+  cursor: cm.Position,
   editor: cm.Editor,
   ancestors: ast.Node[]
 ) {
   const parent = ancestors.pop();
-  const list = [];
-  if (parent instanceof ast.ArithNode) {
-    hintId(ast.id('', node.location), cursor, editor, ancestors);
-  }
   debug('error', node, cursor, editor, ancestors);
+
+  if (parent instanceof ast.ArithNode) {
+    return hintId(ast.id('', node.location), cursor, editor, ancestors);
+  }
+}
+
+function stepTypeHints(src, { start, end }: ast.Location, editor: cm.Editor) {
+  const list = [];
+
+  for (const type of Object.values(ast.StepType)) {
+    if (type.startsWith(src)) {
+      const from = offset2pos(start, editor);
+      const to = offset2pos(end, editor);
+      const text = `${type}()`;
+      list.push({
+        text,
+        hint: () => {
+          editor.replaceRange(text, from, to);
+          editor.setCursor({ line: to.line, ch: from.ch + type.length + 1 });
+        }
+      });
+    }
+  }
+
   return list;
 }
 
@@ -139,26 +207,21 @@ function addConstants(
 ) {
   for (const name of Object.values(ast.BuiltinConstant)) {
     if (name.startsWith(src)) {
-      list.push(name);
+      list.push({ text: name, displayText: name });
     }
   }
-
-  console.debug('hint/addConstants()', src, list);
 }
 
-function addVariables(
-  list,
-  src,
+function variableHints(
+  src: string,
   { start, end }: ast.Location,
   editor: cm.Editor
-) {
-  for (const name of Object.values(ast.BuiltinVariable)) {
-    if (name.startsWith(src)) {
-      list.push(name);
-    }
-  }
-
-  console.debug('hint/addVariables()', src, list);
+): cm.Hint[] {
+  return Object.values(ast.BuiltinVariable)
+    .filter(name => name.startsWith(src))
+    .map(name => {
+      return { text: name, displayText: name };
+    });
 }
 
 function addFnNames(
@@ -181,8 +244,6 @@ function addFnNames(
       });
     }
   }
-
-  console.debug('hint/addFnNames()', src, list);
 }
 
 function includes(node: ast.Node, cursor: cm.Position, editor): boolean {
@@ -215,12 +276,12 @@ function offset2pos(offset: number, editor: cm.Editor) {
 }
 
 function debug(name, node: ast.Node, cursor, editor, ancestors) {
-  console.debug(`hint/${name}()`, {
-    node,
-    cursor,
-    ancestors,
-    start: offset2pos(node.location.start, editor),
-    end: offset2pos(node.location.end, editor),
-    editor
-  });
+  //console.debug(`hint/${name}()`, {
+    //node,
+    //cursor,
+    //ancestors,
+    //start: offset2pos(node.location.start, editor),
+    //end: offset2pos(node.location.end, editor),
+    //editor
+  //});
 }

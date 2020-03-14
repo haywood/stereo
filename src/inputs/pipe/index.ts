@@ -36,7 +36,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     readonly id: string,
     defaultText: string,
     private readonly options: {
-      startState: (then: (ctx) => void) => Context<T>;
+      startState: (src: string, then: (ctx) => void) => Context<T>;
       tabIndex?: number;
     }
   ) {
@@ -55,9 +55,11 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   }
 
   protected _setup = () => {
+    const div = this.el.querySelector<HTMLElement>('div[contenteditable]');
+    this.text = this.initialText;
     this.defineMode();
 
-    this.editor = cm(this.el.querySelector('div[contenteditable]'), {
+    this.editor = cm(div, {
       lineNumbers: this.id == 'pipe',
       mode: this.id,
       readOnly: this.disabled ? 'nocursor' : false,
@@ -65,13 +67,12 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       tabindex: this.tabIndex,
     });
 
-    this.text = this.editor.getValue();
     this.updateHash();
   };
 
   defineMode() {
     const startState = () =>
-      this.options.startState(ctx => {
+      this.options.startState(this.text, ctx => {
         const ast = ctx.resolve();
 
         // TODO also check for semantic errors
@@ -95,7 +96,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     cm.defineMode(this.id, () => {
       return {
         startState,
-        copyState: (ctx: Context<T>) => ctx.clone(),
+        copyState: (ctx: Context<T>) => ctx.clone(this.editor?.getValue() ?? this.text),
         token: (stream, ctx: Context<T>) => ctx.token(stream)
       };
     });
