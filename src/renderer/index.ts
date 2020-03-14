@@ -15,7 +15,7 @@ import {
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import debug from '../debug';
 import { inputs } from '../inputs';
-import { PipeNode } from '../inputs/pipe/ast';
+import { PipeNode, Variables } from '../inputs/pipe/ast';
 import { HSV, Scope } from '../types';
 import { defines, far, fov, near } from './shader/common';
 import { fragment } from './shader/fragment';
@@ -28,6 +28,7 @@ export class Renderer {
   private camera: PerspectiveCamera;
   private renderer: WebGLRenderer;
   private scene: Scene;
+  private variables: Variables;
   private t0: number;
 
   private material: ShaderMaterial = new ShaderMaterial({
@@ -58,6 +59,7 @@ export class Renderer {
       geometry,
       material: { uniforms }
     } = this;
+    this.variables = pipe.variables;
     const n = pipe.variables.n.value;
     const i = new Float32Array(n);
     i.forEach((_, k) => (i[k] = k));
@@ -75,7 +77,7 @@ export class Renderer {
 
   setHsv(hsv: HSV) {
     const { material } = this;
-    const fragmentShader = fragment(hsv);
+    const fragmentShader = fragment(hsv, this.variables);
 
     material.fragmentShader = fragmentShader;
     material.needsUpdate = true;

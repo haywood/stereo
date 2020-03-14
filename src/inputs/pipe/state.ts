@@ -29,7 +29,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
 
   successors(stream: StringStream, src: string): State[] {
     if (!this.location) {
-        this.location = loc(stream, src);
+      this.location = loc(stream, src);
     }
 
     return this._successors(stream, src) ?? [];
@@ -42,7 +42,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
   }
 
   reset() {
-    this.location = {start: 0, end: 0};
+    this.location = { start: 0, end: 0 };
     this.values.length = 0;
   }
 }
@@ -115,12 +115,16 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
     return typeof last != 'object';
   }
 
-  private buildAst(values: any[]): any {
+  private buildAst(values: any[]): ast.Scalar {
+    console.debug('buildAst', { scalar: this.clone(), values: values.slice() });
     while (values.includes('.')) {
       const pivot = values.indexOf('.');
       const receiver = values[pivot - 1];
       const member = values[pivot + 1];
-      const property = ast.property(receiver, member);
+      const property = ast.property(receiver, member, {
+        start: receiver.location?.start,
+        end: member.location?.end
+      });
       values.splice(pivot - 1, 3, property);
     }
 
@@ -129,10 +133,17 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
     for (const op of ops) {
       if (values.includes(op)) {
         const pivot = values.indexOf(op);
-        return ast.arith(op, [
-          this.buildAst(values.slice(0, pivot)),
-          this.buildAst(values.slice(pivot + 1))
-        ], this.location);
+        const a = this.buildAst(values.slice(0, pivot));
+        const b = this.buildAst(values.slice(pivot + 1));
+        console.debug({pivot, a, b, values: values.slice()});
+        return ast.arith(
+          op,
+          [a, b],
+          {
+            start: Math.min(a.location?.start, b.location?.start),
+            end: Math.max(a.location?.end, b.location?.end),
+          }
+        );
       }
     }
 
@@ -307,7 +318,7 @@ export class Terminal<T = any> extends State<T> {
 
   apply(stream: StringStream, src: string): string {
     if (!this.location) {
-        this.location = loc(stream, src);
+      this.location = loc(stream, src);
     }
 
     if (stream.match(this.pattern)) {

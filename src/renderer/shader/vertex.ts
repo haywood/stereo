@@ -9,7 +9,7 @@ import {
   Scalar,
   StepNode
 } from '../../inputs/pipe/ast';
-import { ensureFloat, from, uniforms, varyings } from './common';
+import { ensureFloat, from, header } from './common';
 import util from './glsl/util.glsl';
 import { init } from './init';
 import { iter } from './iter';
@@ -26,13 +26,9 @@ const reset = `
 export function vertex(pipe: PipeNode): string {
   const last = pipe.steps[pipe.steps.length - 1];
   const d = last.type == 'stereo' ? last.args[1] : last.args[0];
-  const variables = Object.entries(pipe.variables).map(([name, value]) => {
-    return `float ${name} = ${ensureFloat(value)};`;
-  });
 
   return endent`
-    ${uniforms}
-    ${varyings}
+    ${header(pipe.variables)}
 
     float x[D_MAX], y[D_MAX];
 
@@ -44,7 +40,6 @@ export function vertex(pipe: PipeNode): string {
 
     void main() {
       i = position[0];
-      ${variables.join('\n')}
 
       ${init(pipe.steps[0])}
 

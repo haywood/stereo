@@ -10,13 +10,14 @@ import {
   PipeNode,
   PropertyNode,
   Scalar,
-  StepNode
+  StepNode,
+  Variables
 } from '../../inputs/pipe/ast';
 import { pp } from '../../pp';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
 
-export const uniforms = `
+const uniforms = `
 uniform float t;
 uniform struct Audio {
   float hue;
@@ -27,7 +28,7 @@ uniform struct Audio {
 } audio;
 `;
 
-export const varyings = endent`
+const varyings = endent`
 varying vec3 p;
 varying float i;
 `;
@@ -56,6 +57,22 @@ export const defines: { [name: string]: number } = {
   sqrt1_2: Math.SQRT1_2,
   sqrt2: Math.SQRT2
 };
+
+export function header(vs: Variables) {
+  return endent`
+  ${uniforms}
+
+  ${varyings}
+
+  ${variables(vs)}
+  `;
+}
+
+function variables(vs: Variables) {
+  return Object.entries(vs).map(([name, value]) => {
+    return `float ${name} = ${ensureFloat(value)};`;
+  }).join('\n');
+}
 
 export function from(node: Scalar): string {
   switch (node.kind) {
