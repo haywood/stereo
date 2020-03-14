@@ -42,7 +42,7 @@ export function pipe(statements: Statement[], location?: Location): PipeNode {
 
   for (const node of statements) {
     if (node instanceof AssignmentNode) {
-      variables[node.name] = node.value;
+      variables[node.name.id] = node.value;
     } else if (node instanceof StepNode) {
       steps.push(node);
     }
