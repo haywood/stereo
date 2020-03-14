@@ -58,7 +58,13 @@ export function iter({ type, args }: StepNode): string {
 function torus(args: Scalar[]) {
   const d = args[0];
   const r0 = args[1];
-  const r = args.slice(2).map(ensureFloat);
+  let r;
+
+  if (args.length == 2) {
+    r = new Array(resolveInt(d)).fill(r0);
+  } else {
+    r = args.slice(2).map(ensureFloat);
+  }
 
   const stanzas = r.map((rk, k) => {
     return endent`
@@ -186,7 +192,13 @@ function _stereo(from: number, to: number, pre: string) {
 }
 
 function quaternion(args: Scalar[]) {
-  const [_, r, i, j, k] = args;
+  let r, i, j, k;
+  if (args.length == 2) {
+    r = i = j = k = args[1];
+  } else {
+    [r, i, j, k] = args.slice(1);
+  }
+
   return endent`{ // quaternion(${args.join(', ')})
     float r = ${ensureFloat(r)};
     float i = ${ensureFloat(i)};
