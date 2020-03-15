@@ -1,24 +1,28 @@
 export function findErrors(node: Node): ErrorNode[] {
   if (node instanceof PipeNode) {
-      return node.statements.reduce(
-        (errors, n) => errors.concat(findErrors(n)),
-        []
-      );
+    return [
+      ...node.assignments.map(findErrors).flat(),
+      ...node.steps.map(findErrors).flat(),
+      ...node.errors,
+    ];
   } else if (node instanceof AssignmentNode) {
-      return findErrors(node.name) || findErrors(node.value);
+      return [...findErrors(node.name), ...findErrors(node.value)];
   } else if (node instanceof StepNode) {
-      return node.args.reduce((errors, n) => errors.concat(findErrors(n)), []);
+      return node.args.map(findErrors).flat();
   } else if (node instanceof ArithNode) {
-      return node.operands.reduce(
-        (errors, n) => errors.concat(findErrors(n)),
-        []
-      );
+      return node.operands.map(findErrors).flat();
   } else if (node instanceof FnNode) {
-      return node.args.reduce((errors, n) => errors.concat(findErrors(n)), []);
+      return node.args.map(findErrors).flat();
   } else if (node instanceof PropertyNode) {
-      return findErrors(node.receiver).concat(findErrors(node.name));
+    return [
+      ...findErrors(node.receiver),
+      ...findErrors(node.name),
+    ];
   } else if (node instanceof ElementNode) {
-      return findErrors(node.receiver).concat(findErrors(node.index));
+    return [
+      ...findErrors(node.receiver),
+      ...findErrors(node.index),
+    ];
   } else if (node instanceof ParenNode) {
       return findErrors(node.scalar);
   } else if (node instanceof IdNode || node instanceof NumberNode) {
@@ -30,43 +34,39 @@ export function findErrors(node: Node): ErrorNode[] {
 
 export type Node = PipeNode | Statement | Scalar | ErrorNode;
 
-export function pipe(statements: Statement[], location?: Location): PipeNode {
-  const variables = { d0: number(4) };
-  const steps = [];
-
-  for (const node of statements) {
-    if (node instanceof AssignmentNode) {
-      variables[node.name.id] = node.value;
-    } else if (node instanceof StepNode) {
-      steps.push(node);
-    }
-  }
-
-  steps[0]?.args.unshift(variables.d0);
-
-  for (let i = 1; i < steps.length; i++) {
-    const rangeFn = rangeFns[steps[i].type];
-    const d0 = steps[i - 1].args[0] as NumberNode;
-    steps[i].args.unshift(number(d0.value));
-  }
-
-  return new PipeNode(steps, variables, statements, location);
+export function pipe(assignments: AssignmentNode[], steps: StepNode[], errors: ErrorNode[], location?: Location): PipeNode {
+  return new PipeNode(assignments, steps, errors, location);
 }
 
 export type Statement = AssignmentNode | StepNode | ErrorNode;
 
 export class PipeNode {
+  readonly variables: Variables;
   readonly kind = 'pipe';
 
   constructor(
+    readonly assignments: AssignmentNode[],
     readonly steps: StepNode[],
-    readonly variables: Variables,
-    readonly statements: Statement[],
+    readonly errors: ErrorNode[],
     readonly location?: Location
-  ) {}
+  ) {
+    this.variables = { d0: number(4) };
+
+    for (const node of assignments) {
+      this.variables[node.name.id] = node.value;
+    }
+
+    steps[0]?.args.unshift(this.variables.d0);
+
+    for (let i = 1; i < steps.length; i++) {
+      const rangeFn = rangeFns[steps[i].type];
+      const d0 = steps[i - 1].args[0] as NumberNode;
+      steps[i].args.unshift(number(d0.value));
+    }
+  }
 
   toString() {
-    return this.statements.join('\n');
+    return [...this.assignments, ...this.steps].join('\n');
   }
 }
 

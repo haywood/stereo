@@ -53,16 +53,27 @@ export abstract class NonTerminal<T = any> extends State<T> {
 }
 
 export class PipeState extends NonTerminal<ast.PipeNode> {
-  private readonly assignedNames = new Set<string>();
+  private readonly assignments: ast.AssignmentNode[] = [];
+  private readonly steps: ast.StepNode[] = [];
+  private readonly errors: ast.ErrorNode[] = [];
   private hasSteps = false;
   readonly repeatable = true;
 
   _successors(stream: StringStream, src: string) {
     if (peek(/\w+\s*=/, stream)) {
-      if (this.hasSteps) {
-        return [new RejectState(stream, src, /.+/, 'Assignments cannot take place after steps have begun.')];
+      if (isEmpty(this.steps)) {
+        return [
+          new AssignmentState(new Set(this.assignments.map(a => a.name.id)))
+        ];
       } else {
-        return [new AssignmentState(this.assignedNames)];
+        return [
+          new RejectState(
+            stream,
+            src,
+            /.+/,
+            'Assignments cannot take place after steps have begun.'
+          )
+        ];
       }
     } else if (peek(/\w+\(/, stream)) {
       return [new StepState()];
@@ -70,13 +81,17 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
   }
 
   protected onResolveChild(value: any) {
-    if (value instanceof ast.StepNode) {
-      this.hasSteps = true;
+    if (value instanceof ast.AssignmentNode) {
+      this.assignments.push(value);
+    } else if (value instanceof ast.StepNode) {
+      this.steps.push(value);
+    } else {
+      this.errors.push(value);
     }
   }
 
   resolve() {
-    return ast.pipe(this.values.slice(), this.location);
+    return ast.pipe(this.assignments, this.steps, this.errors, this.location);
   }
 }
 
@@ -389,8 +404,15 @@ class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
 export class RejectState extends Terminal<ast.ErrorNode> {
   private readonly context: string;
 
-  constructor(stream: StringStream, src: string, pattern?: RegExp, private readonly reason?: string) {
-    super('error', pattern ?? /[^\s]*/, (s, l) => ast.error(this.reason ?? s, l));
+  constructor(
+    stream: StringStream,
+    src: string,
+    pattern?: RegExp,
+    private readonly reason?: string
+  ) {
+    super('error', pattern ?? /[^\s]*/, (s, l) =>
+      ast.error(this.reason ?? s, l)
+    );
 
     this.context = stream.string.slice(stream.pos);
     this.location = loc(stream, src);
