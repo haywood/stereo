@@ -44,7 +44,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
     this.location.end = child.location.end;
   }
 
-  onResolveChild(value: any) {}
+  protected onResolveChild(value: any) {}
 
   reset() {
     this.location = { start: 0, end: 0 };
@@ -54,13 +54,24 @@ export abstract class NonTerminal<T = any> extends State<T> {
 
 export class PipeState extends NonTerminal<ast.PipeNode> {
   private readonly assignedNames = new Set<string>();
+  private hasSteps = false;
   readonly repeatable = true;
 
-  _successors(stream: StringStream) {
+  _successors(stream: StringStream, src: string) {
     if (peek(/\w+\s*=/, stream)) {
-      return [new AssignmentState(this.assignedNames)];
+      if (this.hasSteps) {
+        return [new RejectState(stream, src, /.+/, 'Assignments cannot take place after steps have begun.')];
+      } else {
+        return [new AssignmentState(this.assignedNames)];
+      }
     } else if (peek(/\w+\(/, stream)) {
       return [new StepState()];
+    }
+  }
+
+  protected onResolveChild(value: any) {
+    if (value instanceof ast.StepNode) {
+      this.hasSteps = true;
     }
   }
 
@@ -82,7 +93,7 @@ export class AssignmentState extends NonTerminal<ast.AssignmentNode> {
     ];
   }
 
-  onResolveChild(value: any) {
+  protected onResolveChild(value: any) {
     if (value instanceof ast.IdNode) {
       this.assignedNames.add(value.id);
     }
@@ -378,15 +389,15 @@ class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
 export class RejectState extends Terminal<ast.ErrorNode> {
   private readonly context: string;
 
-  constructor(stream: StringStream, src: string) {
-    super('error', /[^\s]*/, ast.error);
+  constructor(stream: StringStream, src: string, pattern?: RegExp, private readonly reason?: string) {
+    super('error', pattern ?? /[^\s]*/, (s, l) => ast.error(this.reason ?? s, l));
 
     this.context = stream.string.slice(stream.pos);
     this.location = loc(stream, src);
   }
 
   toString() {
-    return `${super.toString()} at '${this.context}'`;
+    return `${super.toString()} at '${this.context}', because ${this.reason}`;
   }
 }
 
