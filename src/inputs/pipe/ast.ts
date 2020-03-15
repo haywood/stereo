@@ -1,6 +1,3 @@
-const screenSize = Math.round(window.screen.width * window.screen.height);
-import cm from 'codemirror';
-
 export function findErrors(node: Node): ErrorNode[] {
   if (node instanceof PipeNode) {
       return node.statements.reduce(
@@ -34,7 +31,7 @@ export function findErrors(node: Node): ErrorNode[] {
 export type Node = PipeNode | Statement | Scalar | ErrorNode;
 
 export function pipe(statements: Statement[], location?: Location): PipeNode {
-  const variables = { n: number(screenSize), d0: number(4) };
+  const variables = { d0: number(4) };
   const steps = [];
 
   for (const node of statements) {
@@ -74,7 +71,6 @@ export class PipeNode {
 }
 
 export interface Variables {
-  n: NumberNode;
   d0: NumberNode;
 
   [name: string]: Scalar;

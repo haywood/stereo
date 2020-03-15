@@ -16,8 +16,9 @@ import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import debug from '../debug';
 import { inputs } from '../inputs';
 import { PipeNode, Variables } from '../inputs/pipe/ast';
+import * as ast from '../inputs/pipe/ast';
 import { HSV, Scope } from '../types';
-import { defines, far, fov, near } from './shader/common';
+import { defines, far, fov, near, resolveInt, screenSize } from './shader/common';
 import { fragment } from './shader/fragment';
 import { vertex } from './shader/vertex';
 
@@ -61,7 +62,10 @@ export class Renderer {
       material: { uniforms }
     } = this;
     this.variables = pipe.variables;
-    const n = pipe.variables.n.value;
+    if (this.variables.n == null) {
+      this.variables.n = ast.number(screenSize);
+    }
+    const n = resolveInt(this.variables.n);
     const i = new Float32Array(n);
     i.forEach((_, k) => (i[k] = k));
     const vertexShader = vertex(pipe);

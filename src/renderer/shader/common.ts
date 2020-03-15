@@ -33,6 +33,9 @@ varying vec3 p;
 varying float i;
 `;
 
+export const screenSize = Math.round(
+  window.screen.width * window.screen.height
+);
 export const far = Math.hypot(window.screen.width, window.screen.height);
 export const near = far / 100000;
 export const fov = 100;
