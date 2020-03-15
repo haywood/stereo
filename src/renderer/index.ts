@@ -23,6 +23,7 @@ import { vertex } from './shader/vertex';
 
 export class Renderer {
   readonly canvas = document.querySelector('canvas');
+  private readonly video = document.querySelector('video');
 
   private geometry = new BufferGeometry();
   private camera: PerspectiveCamera;
@@ -52,6 +53,30 @@ export class Renderer {
 
     this.setSize();
     this.renderer.setAnimationLoop(() => this.render());
+
+    this.video.srcObject = this.canvas.captureStream(1);
+    const interactions = ['click', 'mousemove'];
+    const options = {capture: true};
+
+    inputs.animate.stream.subscribe(({newValue}) => {
+      if (newValue) {
+        this.video.play();
+      } else {
+        this.video.pause();
+      }
+    })
+
+    for (const type of interactions) {
+      document.addEventListener(type, listener, options);
+    }
+
+    function listener() {
+      document.querySelector('video').play();
+
+      for (const type of interactions) {
+        document.removeEventListener(type, listener, options);
+      }
+    }
   }
 
   setPipe(pipe: PipeNode) {

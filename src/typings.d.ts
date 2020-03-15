@@ -64,3 +64,7 @@ declare interface MultirangeHTMLInputElement extends HTMLInputElement {
 
 // fix broken type from lib.dom.ts
 declare interface AudioParamMap extends Map<string, AudioParam> {}
+
+declare interface HTMLCanvasElement {
+  captureStream(frameRate?: number): MediaStream;
+}
