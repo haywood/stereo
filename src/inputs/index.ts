@@ -19,11 +19,8 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
-    phi = audio.power * tan(audio.onset + t / 5)
-    d0 = 4
-
     sphere(1)
-    Q(phi, phi, phi, phi)
+    Q(tan(audio.power + t / 5))
     stereo(3)
     `,
     { startState: Context.pipe, tabIndex: 1 }
@@ -33,11 +30,11 @@ export const inputs = {
     startState: Context.scalar
   }),
 
-  s: new PipeInput<Scalar>('s', '1', {
+  s: new PipeInput<Scalar>('s', '1 - audio.power / 2', {
     startState: Context.scalar
   }),
 
-  v: new PipeInput<Scalar>('v', 'audio.power', {
+  v: new PipeInput<Scalar>('v', 'mix(audio.onset, 1, 0.1)', {
     startState: Context.scalar
   }),
 
