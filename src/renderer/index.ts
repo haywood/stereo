@@ -40,43 +40,19 @@ export class Renderer {
   });
 
   constructor() {
+    const points = new Points(this.geometry, this.material);
+    this.camera = new PerspectiveCamera(fov, 0, near, far);
     this.renderer = new WebGLRenderer({
       canvas: this.canvas,
       context: this.canvas.getContext('webgl')
     });
-    this.camera = new PerspectiveCamera(fov, 0, near, far);
-    this.camera.position.z = 2;
-    const points = new Points(this.geometry, this.material);
-
     this.scene = new Scene();
-    this.scene.add(points);
 
-    this.setSize();
     this.renderer.setAnimationLoop(() => this.render());
-
-    this.video.srcObject = this.canvas.captureStream(1);
-    const interactions = ['click', 'mousemove'];
-    const options = {capture: true};
-
-    inputs.animate.stream.subscribe(({newValue}) => {
-      if (newValue) {
-        this.video.play();
-      } else {
-        this.video.pause();
-      }
-    })
-
-    for (const type of interactions) {
-      document.addEventListener(type, listener, options);
-    }
-
-    function listener() {
-      document.querySelector('video').play();
-
-      for (const type of interactions) {
-        document.removeEventListener(type, listener, options);
-      }
-    }
+    this.camera.position.z = 2;
+    this.scene.add(points);
+    this.keepAwake();
+    this.setSize();
   }
 
   setPipe(pipe: PipeNode) {
@@ -143,6 +119,33 @@ export class Renderer {
       } = this;
       uniforms.t = { value: Date.now() / 1000 - t0 };
       this.renderer.render(this.scene, this.camera);
+    }
+  }
+
+  private keepAwake() {
+    const interactions = ['click', 'mousemove'];
+    const options = {capture: true};
+
+    this.video.srcObject = this.canvas.captureStream(1);
+
+    inputs.animate.stream.subscribe(({newValue, event}) => {
+      if (newValue) {
+        this.video.play();
+      } else {
+        this.video.pause();
+      }
+    })
+
+    for (const type of interactions) {
+      document.addEventListener(type, listener, options);
+    }
+
+    function listener() {
+      document.querySelector('video').play();
+
+      for (const type of interactions) {
+        document.removeEventListener(type, listener, options);
+      }
     }
   }
 }
