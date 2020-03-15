@@ -1,9 +1,9 @@
 import endent from 'endent';
 
 import {
-  ElementNode,
   ArithNode,
   ArithOp,
+  ElementNode,
   FnNode,
   IdNode,
   NumberNode,
@@ -34,7 +34,7 @@ varying float i;
 `;
 
 export const screenDiag = Math.hypot(window.screen.width, window.screen.height);
-export const near = Math.max(screenDiag / 100000, 0.01);
+export const near = screenDiag / 100000;
 export const far = screenDiag;
 export const fov = 100;
 
@@ -69,9 +69,11 @@ export function header(vs: Variables) {
 }
 
 function variables(vs: Variables) {
-  return Object.entries(vs).map(([name, value]) => {
-    return `float ${name} = ${ensureFloat(value)};`;
-  }).join('\n');
+  return Object.entries(vs)
+    .map(([name, value]) => {
+      return `float ${name} = ${ensureFloat(value)};`;
+    })
+    .join('\n');
 }
 
 export function from(node: Scalar): string {
@@ -140,7 +142,7 @@ function fromArith(node: ArithNode): string {
     [EXP]: exp,
     [EXP_CARET]: exp,
     [MUL]: binary(MUL),
-    [SUB]: binary(SUB),
+    [SUB]: binary(SUB)
   };
 
   return ops[op]();
@@ -169,7 +171,7 @@ function fromProperty({ receiver, name }: PropertyNode) {
   }
 }
 
-function fromElement({receiver, index}: ElementNode) {
+function fromElement({ receiver, index }: ElementNode) {
   if (receiver instanceof ElementNode) {
     return `${fromElement(receiver)}.${resolve(index)}`;
   } else {
