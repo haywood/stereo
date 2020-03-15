@@ -5,7 +5,7 @@ export function findErrors(node: Node): ErrorNode[] {
         []
       );
   } else if (node instanceof AssignmentNode) {
-      return findErrors(node.value);
+      return findErrors(node.name) || findErrors(node.value);
   } else if (node instanceof StepNode) {
       return node.args.reduce((errors, n) => errors.concat(findErrors(n)), []);
   } else if (node instanceof ArithNode) {

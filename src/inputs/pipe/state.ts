@@ -37,9 +37,14 @@ export abstract class NonTerminal<T = any> extends State<T> {
 
   resolveChild(child: State, stream: StringStream) {
     const value = child.resolve();
-    if (value) this.values.push(value);
+    if (value) {
+      this.values.push(value);
+      this.onResolveChild(value);
+    }
     this.location.end = child.location.end;
   }
+
+  onResolveChild(value: any) {}
 
   reset() {
     this.location = { start: 0, end: 0 };
@@ -48,11 +53,12 @@ export abstract class NonTerminal<T = any> extends State<T> {
 }
 
 export class PipeState extends NonTerminal<ast.PipeNode> {
+  private readonly assignedNames = new Set<string>();
   readonly repeatable = true;
 
   _successors(stream: StringStream) {
     if (peek(/\w+\s*=/, stream)) {
-      return [new AssignmentState()];
+      return [new AssignmentState(this.assignedNames)];
     } else if (peek(/\w+\(/, stream)) {
       return [new StepState()];
     }
@@ -64,8 +70,22 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
 }
 
 export class AssignmentState extends NonTerminal<ast.AssignmentNode> {
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream) {
-    return [Terminal.def(), Terminal.eq(), new ScalarState()];
+    return [
+      new LhsState(new Set(this.assignedNames)),
+      Terminal.eq(),
+      new ScalarState()
+    ];
+  }
+
+  onResolveChild(value: any) {
+    if (value instanceof ast.IdNode) {
+      this.assignedNames.add(value.id);
+    }
   }
 
   resolve() {
@@ -135,15 +155,11 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
         const pivot = values.indexOf(op);
         const a = this.buildAst(values.slice(0, pivot));
         const b = this.buildAst(values.slice(pivot + 1));
-        console.debug({pivot, a, b, values: values.slice()});
-        return ast.arith(
-          op,
-          [a, b],
-          {
-            start: Math.min(a.location?.start, b.location?.start),
-            end: Math.max(a.location?.end, b.location?.end),
-          }
-        );
+        console.debug({ pivot, a, b, values: values.slice() });
+        return ast.arith(op, [a, b], {
+          start: Math.min(a.location?.start, b.location?.start),
+          end: Math.max(a.location?.end, b.location?.end)
+        });
       }
     }
 
@@ -331,6 +347,31 @@ export class Terminal<T = any> extends State<T> {
 
   resolve() {
     return this.factory(this.text, this.location);
+  }
+}
+
+class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
+  private isReassignment = false;
+  constructor(private readonly assignedNames: Set<string>) {
+    super('variable def', ID, ast.id);
+  }
+
+  apply(stream: StringStream, src: string) {
+    const style = super.apply(stream, src);
+    if (this.assignedNames.has(this.text)) {
+      this.isReassignment = true;
+      return 'error';
+    } else {
+      return style;
+    }
+  }
+
+  resolve() {
+    if (this.isReassignment) {
+      return ast.error(`name '${this.text}' is already defined`, this.location);
+    } else {
+      return super.resolve();
+    }
   }
 }
 
