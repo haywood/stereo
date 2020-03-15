@@ -33,9 +33,8 @@ varying vec3 p;
 varying float i;
 `;
 
-export const screenDiag = Math.hypot(window.screen.width, window.screen.height);
-export const near = screenDiag / 100000;
-export const far = screenDiag;
+export const far = Math.hypot(window.screen.width, window.screen.height);
+export const near = far / 100000;
 export const fov = 100;
 
 export const D_MAX = 10;
