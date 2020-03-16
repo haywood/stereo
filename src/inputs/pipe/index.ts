@@ -74,6 +74,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     const startState = () =>
       this.options.startState(this.text, ctx => {
         const ast = ctx.resolve();
+        console.info(`ctx resolved to`, {ast, ctx});
 
         if (isEqual(ast, this.value)) return;
 

@@ -162,7 +162,6 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
   }
 
   private buildAst(values: any[]): ast.Scalar {
-    console.debug('buildAst', { scalar: this.clone(), values: values.slice() });
     while (values.includes('.')) {
       const pivot = values.indexOf('.');
       const receiver = values[pivot - 1];
@@ -181,7 +180,6 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
         const pivot = values.indexOf(op);
         const a = this.buildAst(values.slice(0, pivot));
         const b = this.buildAst(values.slice(pivot + 1));
-        console.debug({ pivot, a, b, values: values.slice() });
         return ast.arith(op, [a, b], {
           start: Math.min(a.location?.start, b.location?.start),
           end: Math.max(a.location?.end, b.location?.end)

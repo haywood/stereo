@@ -116,7 +116,6 @@ function hintAssignment(
 }
 
 function hintStep(node: ast.StepNode, cursor: cm.Position, editor: cm.Editor) {
-  debug('step', node, cursor, editor, []);
 }
 
 function hintScalar(node: ast.Scalar, cursor, editor, ancestors = []) {
@@ -180,7 +179,6 @@ function hintFn(
 }
 
 function hintProperty(node, cursor, editor, ancestors) {
-  debug('property', node, cursor, editor, ancestors);
 }
 
 function hintId(node, cursor, editor, ancestors) {
@@ -194,11 +192,9 @@ function hintId(node, cursor, editor, ancestors) {
 }
 
 function hintParen(node, cursor, editor, ancestors) {
-  debug('paren', node, cursor, editor, ancestors);
 }
 
 function hintElement(node, cursor, editor, ancestors) {
-  debug('element', node, cursor, editor, ancestors);
 }
 
 function hintError(
@@ -208,8 +204,6 @@ function hintError(
   ancestors: ast.Node[]
 ) {
   const parent = ancestors.pop();
-  debug('error', node, cursor, editor, ancestors);
-
   if (parent instanceof ast.ArithNode) {
     return hintId(ast.id('', node.location), cursor, editor, ancestors);
   }
@@ -313,17 +307,6 @@ function offset2pos(offset: number, editor: cm.Editor) {
   const line = prefix.match(/\n/g)?.length ?? 0;
   const ch = offset - prefix.lastIndexOf('\n') - 1;
   return cm.Pos(line, ch);
-}
-
-function debug(name, node: ast.Node, cursor, editor, ancestors) {
-  console.debug(`hint/${name}()`, {
-    node,
-    cursor,
-    ancestors,
-    start: offset2pos(node.location.start, editor),
-    end: offset2pos(node.location.end, editor),
-    editor
-  });
 }
 
 const descriptions = {
