@@ -4,6 +4,7 @@ import {
   ArithNode,
   ArithOp,
   ElementNode,
+  BuiltinVariable,
   FnNode,
   IdNode,
   NumberNode,
@@ -60,20 +61,27 @@ export const defines: { [name: string]: number } = {
   sqrt2: Math.SQRT2
 };
 
+const builtins = Object.values(BuiltinVariable);
 export function header(vs: Variables) {
   return endent`
   ${uniforms}
 
   ${varyings}
 
-  ${variables(vs)}
+  ${builtins.map((name) => {
+    if (vs) {
+      return `float ${name} = ${ensureFloat(vs[name])};`
+    }
+  }).join('\n')}
   `;
 }
 
-function variables(vs: Variables) {
-  return Object.entries(vs)
+export function variables(vs: Variables) {
+  return Object.entries(vs ?? {})
     .map(([name, value]) => {
-      return `float ${name} = ${ensureFloat(value)};`;
+      if (!builtins.includes(name as BuiltinVariable)) {
+        return `float ${name} = ${ensureFloat(value)};`;
+      }
     })
     .join('\n');
 }

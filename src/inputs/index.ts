@@ -19,24 +19,27 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
-    phi = 0.5 / sqrt(2 * pi * t / 60)
-    r = 0.0001
-    d0 = 5
+    phi = 2 * pi * log(t) / 10
+    omega = abs(cos(phi * i / n))
+    step = 2 * audio.power
+    r = 0.001
+    d0 = 3
+
     spiral(100 * pi, r)
-    Q(phi)
+    Q(mix(sin(phi), audio.power, step))
     `,
     { startState: Context.pipe, tabIndex: 1 }
   ),
 
-  h: new PipeInput<Scalar>('h', 'audio.hue * sin(2 * pi * i * t / n)', {
+  h: new PipeInput<Scalar>('h', 'mix(omega, audio.hue, step)', {
     startState: Context.scalar
   }),
 
-  s: new PipeInput<Scalar>('s', '1', {
+  s: new PipeInput<Scalar>('s', 'mix(omega, audio.power, step)', {
     startState: Context.scalar
   }),
 
-  v: new PipeInput<Scalar>('v', '1', {
+  v: new PipeInput<Scalar>('v', 'mix(omega, audio.onset, step)', {
     startState: Context.scalar
   }),
 

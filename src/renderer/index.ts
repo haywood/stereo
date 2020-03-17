@@ -25,33 +25,27 @@ import { vertex } from './shader/vertex';
 export class Renderer {
   readonly canvas = document.querySelector('canvas');
   private readonly video = document.querySelector('video');
-
-  private geometry = new BufferGeometry();
-  private camera: PerspectiveCamera;
-  private renderer: WebGLRenderer;
-  private scene: Scene;
-  private variables: Variables;
-  private t0: number;
-
-  private material: ShaderMaterial = new ShaderMaterial({
+  private readonly geometry = new BufferGeometry();
+  private readonly camera = new PerspectiveCamera(fov, 0, near, far);
+  private readonly scene = new Scene();
+  private readonly renderer = new WebGLRenderer({
+    canvas: this.canvas,
+    context: this.canvas.getContext('webgl')
+  });
+  private readonly material: ShaderMaterial = new ShaderMaterial({
     uniforms: {
       audio: { value: AUDIO_PLACEHOLDER }
     },
     defines
   });
 
-  constructor() {
-    const points = new Points(this.geometry, this.material);
-    this.camera = new PerspectiveCamera(fov, 0, near, far);
-    this.renderer = new WebGLRenderer({
-      canvas: this.canvas,
-      context: this.canvas.getContext('webgl')
-    });
-    this.scene = new Scene();
+  private variables: Variables;
+  private t0: number;
 
+  constructor() {
     this.renderer.setAnimationLoop(() => this.render());
     this.camera.position.z = 2;
-    this.scene.add(points);
+    this.scene.add(new Points(this.geometry, this.material));
     this.keepAwake();
     this.setSize();
   }
@@ -61,7 +55,9 @@ export class Renderer {
       geometry,
       material: { uniforms }
     } = this;
+
     this.variables = pipe.variables;
+
     if (this.variables.n == null) {
       this.variables.n = ast.number(screenSize);
     }

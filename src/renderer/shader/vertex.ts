@@ -9,7 +9,7 @@ import {
   Scalar,
   StepNode
 } from '../../inputs/pipe/ast';
-import { ensureFloat, from, header } from './common';
+import { ensureFloat, header, variables } from './common';
 import util from './glsl/util.glsl';
 import { init } from './init';
 import { iter } from './iter';
@@ -40,6 +40,7 @@ export function vertex(pipe: PipeNode): string {
 
     void main() {
       i = position[0];
+      ${variables(pipe.variables)}
 
       ${init(pipe.steps[0])}
 

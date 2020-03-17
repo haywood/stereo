@@ -10,7 +10,7 @@ import {
   StepNode,
   StepType
 } from '../../inputs/pipe/ast';
-import { ensureFloat, from, resolveInt, uniforms, varyings } from './common';
+import { ensureFloat, from, resolveInt } from './common';
 
 const {
   CUBE,

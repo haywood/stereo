@@ -22,8 +22,6 @@ import {
   ensureFloat,
   from,
   resolveInt,
-  uniforms,
-  varyings
 } from './common';
 
 const {
