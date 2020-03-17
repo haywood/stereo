@@ -59,7 +59,7 @@ function torus(args: Scalar[]) {
   let r;
 
   if (args.length == 2) {
-    r = new Array(resolveInt(d)).fill(r0);
+    r = new Array(resolveInt(d)).fill(ensureFloat(r0));
   } else {
     r = args.slice(2).map(ensureFloat);
   }

@@ -8,7 +8,6 @@ import {
   PointsMaterial,
   Scene,
   ShaderMaterial,
-  VertexColors,
   WebGLRenderer
 } from 'three';
 
