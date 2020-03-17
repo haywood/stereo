@@ -19,9 +19,10 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
-    sphere(1)
-    Q(tan(audio.power + t / 5))
-    stereo(3)
+    phi = 0.5 * sin(2 * pi * t / 60)
+    d0 = 3
+    spiral(100 * pi, 0.0001)
+    Q(phi)
     `,
     { startState: Context.pipe, tabIndex: 1 }
   ),
@@ -30,7 +31,7 @@ export const inputs = {
     startState: Context.scalar
   }),
 
-  s: new PipeInput<Scalar>('s', '1 - audio.power / 2', {
+  s: new PipeInput<Scalar>('s', '1', {
     startState: Context.scalar
   }),
 

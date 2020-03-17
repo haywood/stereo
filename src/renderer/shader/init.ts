@@ -42,9 +42,8 @@ function interval_0_2pi(args: Scalar[]) {
   return interval(d, '0.', '2. * pi');
 }
 
-function spiral(args: Scalar[]): string {
-  const d = resolveInt(args[0]) - 1;
-  return interval(d, '0.', from(args[1]));
+function spiral([d, tau]: Scalar[]): string {
+  return interval(resolveInt(d) - 1, '0.', ensureFloat(tau));
 }
 
 function interval_0_1(args: Scalar[]): string {
