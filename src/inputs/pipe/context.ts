@@ -12,17 +12,17 @@ import { complete, eoi, loc, pos } from './util';
 type Then<T> = (ctx: Context<T>) => void;
 
 export class Context<T> {
-  static pipe(src: string, then: Then<ast.PipeNode>) {
+  static pipe(src: () => string, then: Then<ast.PipeNode>) {
     return Context.start(new st.PipeState(), src, then);
   }
 
-  static scalar(src: string, then: Then<ast.Scalar>) {
+  static scalar(src: () => string, then: Then<ast.Scalar>) {
     return Context.start(new st.ScalarState(), src, then);
   }
 
   static start<T>(
     root: st.NonTerminal<T>,
-    src: string,
+    src: () => string,
     then: Then<T>
   ): Context<T> {
     return new Context(root, src, then);
@@ -30,7 +30,7 @@ export class Context<T> {
 
   constructor(
     private readonly root: st.NonTerminal<T>,
-    private readonly src: string,
+    private readonly src: () => string,
     private readonly then: Then<T>,
     private readonly stack: st.State[] = [],
     private readonly parents: number[] = [],
@@ -55,7 +55,7 @@ export class Context<T> {
     return style;
   }
 
-  clone(src: string) {
+  clone() {
     const stack = [];
     const expanded = new Set<st.NonTerminal>();
 
@@ -69,7 +69,7 @@ export class Context<T> {
 
     return new Context(
       this.root.clone(),
-      src,
+      this.src,
       this.then,
       stack,
       this.parents.slice(),
@@ -83,16 +83,16 @@ export class Context<T> {
     } else if (curr instanceof st.NonTerminal) {
       this.applyNonTerminal(curr, stream);
     } else if (!this.expand(this.root, stream)) {
-      this.stack.push(new st.RejectState(stream, this.src));
+      this.stack.push(new st.RejectState(stream, this.src()));
     }
   }
 
   private applyTerminal(curr: st.Terminal, stream: StringStream) {
-    const style = curr.apply(stream, this.src);
+    const style = curr.apply(stream, this.src());
     if (style) {
       this.parent.resolveChild(curr, stream);
     } else {
-      this.stack.push(new st.RejectState(stream, this.src));
+      this.stack.push(new st.RejectState(stream, this.src()));
     }
 
     if (curr instanceof st.RejectState) {
@@ -100,11 +100,11 @@ export class Context<T> {
         `encountered error on stack`,
         stream,
         curr.clone(),
-        this.clone(this.src)
+        this.clone(this.src())
       );
     }
 
-    if (eoi(stream, this.src)) {
+    if (eoi(stream, this.src())) {
       this.drain(stream);
     }
 
@@ -116,18 +116,18 @@ export class Context<T> {
 
     while (this.stack.length) {
       state = this.stack.pop();
-      if (!state.location) state.location = loc(stream, this.src);
+      if (!state.location) state.location = loc(stream, this.src());
       this.parent.resolveChild(state, stream);
     }
 
-    if (complete(this.root, stream, this.src)) {
+    if (complete(this.root, stream, this.src())) {
       this.then(this);
     } else {
       console.warn(
         `reached EOI, but root is incomplete`,
         stream,
         state.clone(),
-        this.clone(this.src)
+        this.clone()
       );
     }
   }
@@ -141,13 +141,13 @@ export class Context<T> {
   private expand(curr: st.NonTerminal, stream: StringStream) {
     if (this.expanded.has(curr) && !curr.repeatable) return false;
 
-    const successors = curr.successors(stream, this.src);
+    const successors = curr.successors(stream, this.src());
     this.expanded.add(curr);
 
     if (stream.current()) {
       console.error(
         'non-terminal advanced the stream',
-        this.clone(this.src),
+        this.clone(this.src()),
         curr.clone()
       );
     }

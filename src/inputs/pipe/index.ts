@@ -36,7 +36,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     readonly id: string,
     defaultText: string,
     private readonly options: {
-      startState: (src: string, then: (ctx) => void) => Context<T>;
+      startState: (src: () => string, then: (ctx) => void) => Context<T>;
       tabIndex?: number;
     }
   ) {
@@ -70,9 +70,13 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     this.updateHash();
   };
 
+  private src() {
+    return this.editor?.getValue() ?? this.text;
+  }
+
   defineMode() {
     const startState = () =>
-      this.options.startState(this.text, ctx => {
+      this.options.startState(() => this.src(), ctx => {
         const ast = ctx.resolve();
         console.info(`ctx resolved to`, {ast, ctx});
 

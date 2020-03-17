@@ -68,6 +68,14 @@ export class PipeNode {
   toString() {
     return [...this.assignments, ...this.steps].join('\n');
   }
+
+  get statements() {
+    return [
+      ...this.errors,
+      ...this.steps,
+      ...this.assignments,
+    ]
+  }
 }
 
 export interface Variables {

@@ -132,7 +132,11 @@ export class StepState extends NonTerminal<ast.StepNode> {
 
   resolve() {
     const [type, args] = this.values;
-    return ast.step(type, args.slice(), this.location);
+    if (args instanceof ast.ErrorNode) {
+      return ast.step(type, [args], this.location);
+    } else {
+      return ast.step(type, args?.slice() ?? [], this.location);
+    }
   }
 }
 
