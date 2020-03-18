@@ -42,7 +42,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   ) {
     super(id, defaultText, {
       persistent: true,
-      parse: () => ({} as T),
+      parse: () => null,
       stringify: () => this.text
     });
 
@@ -66,8 +66,6 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       value: this.initialText,
       tabindex: this.tabIndex
     });
-
-    this.updateHash();
   };
 
   private src() {

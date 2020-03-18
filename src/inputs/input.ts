@@ -74,7 +74,7 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
     this.updateHash();
   }
 
-  protected updateHash = () => {
+  private updateHash = () => {
     if (!this.persistent) return;
 
     const text = this.stringify(this.value);
