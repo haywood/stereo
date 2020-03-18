@@ -25,32 +25,7 @@ export function hint(
   }
 
   const completions = { list: list ?? [], from, to };
-  cm.on(completions, 'select', (hint, el: HTMLElement) => {
-    if (hint.description) {
-      const rect = el.parentElement.getBoundingClientRect();
-      const pre = findOrAdd();
-
-      if (typeof hint.description == 'string') {
-        pre.innerText = hint.description;
-      } else {
-        pre.appendChild(renderDescription(hint.description));
-      }
-
-      pre.style.top = `${rect.top}px`;
-      pre.style.left = `${rect.right}px`;
-
-      function findOrAdd() {
-        let d = document.querySelector<HTMLElement>('.hint-description');
-        if (!d) {
-          d = document.createElement('div');
-          d.classList.add('hint-description');
-          el.parentElement.classList.forEach(c => d.classList.add(c));
-          document.body.appendChild(d);
-        }
-        return d;
-      }
-    }
-  });
+  cm.on(completions, 'select', onSelect);
 
   cm.on(completions, 'close', () => {
     document.querySelector('.hint-description')?.remove();
@@ -315,6 +290,33 @@ function offset2pos(offset: number, editor: cm.Editor) {
   const line = prefix.match(/\n/g)?.length ?? 0;
   const ch = offset - prefix.lastIndexOf('\n') - 1;
   return cm.Pos(line, ch);
+}
+
+function onSelect(hint: Hint, el: HTMLElement) {
+  if (hint.description) {
+    const rect = el.parentElement.getBoundingClientRect();
+    const pre = findOrAdd();
+
+    if (typeof hint.description == 'string') {
+      pre.innerText = hint.description;
+    } else {
+      pre.appendChild(renderDescription(hint.description));
+    }
+
+    pre.style.top = `${rect.top}px`;
+    pre.style.left = `${rect.right}px`;
+
+    function findOrAdd() {
+      let d = document.querySelector<HTMLElement>('.hint-description');
+      if (!d) {
+        d = document.createElement('div');
+        d.classList.add('hint-description');
+        el.parentElement.classList.forEach(c => d.classList.add(c));
+        document.body.appendChild(d);
+      }
+      return d;
+    }
+  }
 }
 
 function renderDescription(descr) {
