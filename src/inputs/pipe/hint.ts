@@ -60,8 +60,7 @@ function hintPipe(node: ast.PipeNode, cursor, editor) {
   if (statement) {
     return hintStatement(statement, cursor, editor);
   } else {
-    //TODO this causes an annoying stutter while typing
-    //return hintEmptyStatement('', cursor, cursor, editor);
+    return hintEmptyStatement('', cursor, cursor, editor);
   }
 }
 
