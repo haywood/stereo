@@ -12,26 +12,24 @@ import { complete, eoi, loc, pos } from './util';
 type Then<T> = (ctx: Context<T>) => void;
 
 export class Context<T> {
-  static pipe(src: () => string, then: Then<ast.PipeNode>) {
-    return Context.start(new st.PipeState(), src, then);
+  static pipe(src: () => string) {
+    return Context.start(new st.PipeState(), src);
   }
 
-  static scalar(src: () => string, then: Then<ast.Scalar>) {
-    return Context.start(new st.ScalarState(), src, then);
+  static scalar(src: () => string) {
+    return Context.start(new st.ScalarState(), src);
   }
 
   static start<T>(
     root: st.NonTerminal<T>,
     src: () => string,
-    then: Then<T>
   ): Context<T> {
-    return new Context(root, src, then);
+    return new Context(root, src);
   }
 
   constructor(
     private readonly root: st.NonTerminal<T>,
     private readonly src: () => string,
-    private readonly then: Then<T>,
     private readonly stack: st.State[] = [],
     private readonly parents: number[] = [],
     private readonly expanded: Set<st.NonTerminal> = new Set()
@@ -70,7 +68,6 @@ export class Context<T> {
     return new Context(
       this.root.clone(),
       this.src,
-      this.then,
       stack,
       this.parents.slice(),
       expanded
@@ -120,9 +117,7 @@ export class Context<T> {
       this.parent.resolveChild(state, stream);
     }
 
-    if (complete(this.root, stream, this.src())) {
-      this.then(this);
-    } else {
+    if (!complete(this.root, stream, this.src())) {
       console.warn(
         `reached EOI, but root is incomplete`,
         stream,

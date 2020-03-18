@@ -30,14 +30,13 @@ export { Context } from './context';
 export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   private text: string;
   private editor: cm.Editor;
-  private ctx: Context<T>;
   private tabIndex?: number;
 
   constructor(
     readonly id: string,
     defaultText: string,
     private readonly options: {
-      startState: (src: () => string, then: (ctx) => void) => Context<T>;
+      startState: (src: () => string) => Context<T>;
       tabIndex?: number;
     }
   ) {
@@ -67,40 +66,50 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       value: this.initialText,
       tabindex: this.tabIndex
     });
+
+    this.editor.on('change', () => this.maybeUpdateValue());
+    this.editor.on('change', () => this.hint());
+
+    this.maybeUpdateValue();
   };
 
   private src() {
     return this.editor?.getValue() ?? this.text;
   }
 
-  defineMode() {
-    const startState = () =>
-      this.options.startState(
-        () => this.src(),
-        ctx => {
-          const ast = ctx.resolve();
-          console.info(`ctx resolved to`, { ast, ctx });
+  private maybeUpdateValue() {
+    const ast = this.ctx().resolve();
 
-          if (isEqual(ast, this.value)) return;
+    if (isEqual(ast, this.value)) return;
 
-          // TODO also check for semantic errors
-          // e.g. wrong number of function args, redefining a constant, invalid
-          // property access
-          const errors = findErrors(ast);
-          if (isEmpty(errors)) {
-            if (this.editor) this.text = this.editor.getValue();
+    // TODO also check for semantic errors
+    // e.g. wrong number of function args, redefining a constant, invalid
+    // property access
+    const errors = findErrors(ast);
+    if (isEmpty(errors)) {
+      if (this.editor) this.text = this.editor.getValue();
 
-            this.value = ast;
-          } else {
-            console.error('found error(s) in ast', errors, ast);
-          }
+      this.value = ast;
+    } else {
+      console.error('found error(s) in ast', errors, ast);
+    }
+  }
 
-          this.editor?.showHint({
-            hint: (editor: cm.Editor) => hint(editor, ast),
-            completeSingle: false
-          });
-        }
-      );
+  private hint() {
+    const ast = this.ctx().resolve();
+
+    this.editor?.showHint({
+      hint: (editor: cm.Editor) => hint(editor, ast),
+        completeSingle: false
+    });
+  }
+
+  private ctx() {
+    return this.editor.getStateAfter(null, true);
+  }
+
+  private defineMode() {
+    const startState = () => this.options.startState(() => this.src());
 
     cm.defineMode(this.id, () => {
       return {
