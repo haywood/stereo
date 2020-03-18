@@ -34,14 +34,6 @@ export function eoi(stream: StringStream, src: string) {
   return pos(stream, src) == src.length;
 }
 
-export function complete(state: State, stream: StringStream, src: string) {
-  const {
-    location: { start, end }
-  } = state;
-
-  return start == 0 && end == src.length;
-}
-
 function line(stream: StringStream) {
   return (stream as any).lineOracle?.line;
 }

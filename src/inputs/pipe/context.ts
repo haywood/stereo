@@ -7,7 +7,7 @@ import debug from '../../debug';
 import { pp } from '../../pp';
 import * as ast from './ast';
 import * as st from './state';
-import { complete, eoi, loc, pos } from './util';
+import { eoi, loc, pos } from './util';
 
 type Then<T> = (ctx: Context<T>) => void;
 
@@ -36,12 +36,7 @@ export class Context<T> {
   ) {}
 
   resolve() {
-    const value = this.root.resolve();
-    this.root.reset();
-    this.stack.length = 0;
-    this.parents.length = 0;
-    this.expanded.clear();
-    return value;
+    return this.root.resolve();
   }
 
   token(stream: StringStream) {
@@ -115,15 +110,6 @@ export class Context<T> {
       state = this.stack.pop();
       if (!state.location) state.location = loc(stream, this.src());
       this.parent.resolveChild(state, stream);
-    }
-
-    if (!complete(this.root, stream, this.src())) {
-      console.warn(
-        `reached EOI, but root is incomplete`,
-        stream,
-        state.clone(),
-        this.clone()
-      );
     }
   }
 
