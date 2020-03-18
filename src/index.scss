@@ -23,6 +23,22 @@ body {
     position: absolute;
     min-height: 20px;
     width: 200px;
+
+    ol {
+      list-style: none;
+      padding-left: 16px;
+    }
+
+    .arg {
+      display: flex;
+      flex-flow: row nowrap;
+
+      .name {
+        color: blue;
+        font-weight: bolder;
+        padding-right: 8px;
+      }
+    }
   }
 
   video {

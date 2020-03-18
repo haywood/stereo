@@ -26,7 +26,12 @@ export function hint(
       const rect = el.parentElement.getBoundingClientRect();
       const pre = findOrAdd();
 
-      pre.innerText = hint.description;
+      if (typeof hint.description == 'string') {
+        pre.innerText = hint.description;
+      } else {
+        pre.appendChild(renderDescription(hint.description));
+      }
+
       pre.style.top = `${rect.top}px`;
       pre.style.left = `${rect.right}px`;
 
@@ -115,8 +120,7 @@ function hintAssignment(
   }
 }
 
-function hintStep(node: ast.StepNode, cursor: cm.Position, editor: cm.Editor) {
-}
+function hintStep(node: ast.StepNode, cursor: cm.Position, editor: cm.Editor) {}
 
 function hintScalar(node: ast.Scalar, cursor, editor, ancestors = []) {
   switch (node.kind) {
@@ -178,8 +182,7 @@ function hintFn(
   }
 }
 
-function hintProperty(node, cursor, editor, ancestors) {
-}
+function hintProperty(node, cursor, editor, ancestors) {}
 
 function hintId(node, cursor, editor, ancestors) {
   const list = [];
@@ -191,11 +194,9 @@ function hintId(node, cursor, editor, ancestors) {
   return list;
 }
 
-function hintParen(node, cursor, editor, ancestors) {
-}
+function hintParen(node, cursor, editor, ancestors) {}
 
-function hintElement(node, cursor, editor, ancestors) {
-}
+function hintElement(node, cursor, editor, ancestors) {}
 
 function hintError(
   node: ast.ErrorNode,
@@ -226,7 +227,7 @@ function stepTypeHints(
           editor.replaceRange(text, from, to);
           editor.setCursor({ line: to.line, ch: from.ch + type.length + 1 });
         },
-        description: descriptions[type],
+        description: descriptions[type]
       });
     }
   }
@@ -242,7 +243,11 @@ function addConstants(
 ) {
   for (const name of Object.values(ast.BuiltinConstant)) {
     if (name.startsWith(src)) {
-      list.push({ text: name, displayText: name, description: descriptions[name] });
+      list.push({
+        text: name,
+        displayText: name,
+        description: descriptions[name]
+      });
     }
   }
 }
@@ -254,7 +259,7 @@ function variableHints(src: string, editor: cm.Editor): cm.Hint[] {
       return {
         text: name,
         displayText: name,
-        description: descriptions[name],
+        description: descriptions[name]
       };
     });
 }
@@ -276,7 +281,7 @@ function addFnNames(
           editor.replaceRange(text, from, to);
           editor.setCursor({ line: to.line, ch: from.ch + name.length + 1 });
         },
-        description: descriptions[name],
+        description: descriptions[name]
       });
     }
   }
@@ -309,10 +314,33 @@ function offset2pos(offset: number, editor: cm.Editor) {
   return cm.Pos(line, ch);
 }
 
+function renderDescription(descr) {
+  const span = document.createElement('span');
+  span.textContent = descr.summary;
+
+  if (descr.args) {
+    const args = span.appendChild(document.createElement('ol'));
+    for (const arg of descr.args) {
+      const li = args.appendChild(document.createElement('li'));
+      li.classList.add('arg');
+
+      const name = li.appendChild(document.createElement('span'));
+      name.classList.add('name');
+      name.textContent = arg.name;
+
+      const d = li.appendChild(document.createElement('span'))
+      d.classList.add('description');
+      d.textContent = arg.description;
+    }
+  }
+
+  return span;
+}
+
 const descriptions = {
   // Builtin Constants
   [ast.BuiltinConstant.AUDIO]: 'The current audio analysis data.',
-  [ast.BuiltinConstant.E]: 'Euler\'s number.',
+  [ast.BuiltinConstant.E]: "Euler's number.",
   [ast.BuiltinConstant.I]: 'The index of the current point.',
   [ast.BuiltinConstant.LN10]: 'Natural logarithm of 10.',
   [ast.BuiltinConstant.LN2]: 'Natural logarithm of 2.',
@@ -330,12 +358,84 @@ const descriptions = {
   [ast.FnName.ABS]: 'The absolute value funciton.',
 
   // Step Types
-  [ast.StepType.CUBE]: 'Map the points onto a cube.',
-  [ast.StepType.LATTICE]: 'Map the points into a lattice.',
-  [ast.StepType.QUATERNION]: 'Right multiples each point by the given quaternion.',
-  [ast.StepType.ROTATE]: 'Rotate the points by the given angle in the given plane.',
-  [ast.StepType.SPHERE]: 'Map the points onto a sphere.',
-  [ast.StepType.SPIRAL]: 'Maps the points into a spiral.',
-  [ast.StepType.STEREO]: 'Perform stereographic projection into the given dimension.',
-  [ast.StepType.TORUS]: 'Map the points onto a torus.',
+  [ast.StepType.CUBE]: {
+    summary: 'Map the points onto a cube.',
+    args: [{ name: 'l', description: 'the side length of the cube.' }]
+  },
+
+  [ast.StepType.LATTICE]: {
+    summary: 'Map the points into a lattice.',
+    args: [{ name: 'l', description: 'the side length of the lattice.' }]
+  },
+
+  [ast.StepType.QUATERNION]: {
+    summary: 'Right multiples each point by the given quaternion.',
+    args: [
+      { name: 'r', description: 'the real part of the quaternion.' },
+      { name: 'i', description: 'the i part of the quaternion.' },
+      { name: 'j', description: 'the j part of the quaternion.' },
+      { name: 'k', description: 'the k part of the quaternion.' }
+    ]
+  },
+
+  [ast.StepType.ROTATE]: {
+    summary: 'Rotate the points by the given angle in the given plane.',
+    args: [
+      {
+        name: 'phi',
+        description: 'the angle in radians through which to rotate the points.'
+      },
+      {
+        name: 'd0',
+        description: 'the zero-indexed first axis of the plane of rotation.'
+      },
+      {
+        name: 'd1',
+        description: 'the zero-indexed second axis of the plane of rotation.'
+      }
+    ]
+  },
+
+  [ast.StepType.SPHERE]: {
+    summary: 'Map the points onto a sphere.',
+    args: [{ name: 'r', description: 'the radius of the sphere.' }]
+  },
+
+  [ast.StepType.SPIRAL]: {
+    summary: 'Maps the points into a spiral.',
+    args: [
+      {
+        name: 'phi',
+        description:
+          'an angle in radians describing how far around the spiral to go.'
+      },
+      {
+        name: 'r',
+        description:
+          'the "radius" of the spiral. Each turn around the spiral causes it to grow in magnitude by r.'
+      }
+    ]
+  },
+
+  [ast.StepType.STEREO]: {
+    summary: 'Perform stereographic projection into the given dimension.',
+    args: [
+      {
+        name: 'to',
+        description:
+          'the dimension into which to project. Can be greater than, less than, or equal to (no-op) the dimension of the previous step. If the difference between to and the previous dimension is greater than 1, then the projection is done iteratively.'
+      }
+    ]
+  },
+
+  [ast.StepType.TORUS]: {
+    summary: 'Map the points onto a torus.',
+    args: [
+      {
+        name: '...r',
+        description:
+          'the radii of the cross-sections. In total, there should be one radius for each dimension.'
+      }
+    ]
+  }
 };
