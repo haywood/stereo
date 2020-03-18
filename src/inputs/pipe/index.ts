@@ -12,6 +12,7 @@ import { escape } from 'xregexp';
 import { Change } from '../change';
 import { Input } from '../input';
 import { Options } from '../options';
+import { eoi, complete } from './util';
 import {
   ArithOp,
   BuiltinConstant,
@@ -74,35 +75,37 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
 
   defineMode() {
     const startState = () =>
-      this.options.startState(() => this.src(), ctx => {
-        const ast = ctx.resolve();
-        console.info(`ctx resolved to`, {ast, ctx});
+      this.options.startState(
+        () => this.src(),
+        ctx => {
+          const ast = ctx.resolve();
+          console.info(`ctx resolved to`, { ast, ctx });
 
-        if (isEqual(ast, this.value)) return;
+          if (isEqual(ast, this.value)) return;
 
-        // TODO also check for semantic errors
-        // e.g. wrong number of function args, redefining a constant, invalid
-        // property access
-        const errors = findErrors(ast);
-        if (isEmpty(errors)) {
-          if (this.editor) this.text = this.editor.getValue();
+          // TODO also check for semantic errors
+          // e.g. wrong number of function args, redefining a constant, invalid
+          // property access
+          const errors = findErrors(ast);
+          if (isEmpty(errors)) {
+            if (this.editor) this.text = this.editor.getValue();
 
-          this.value = ast;
-        } else {
-          console.error('found error(s) in ast', errors, ast);
+            this.value = ast;
+          } else {
+            console.error('found error(s) in ast', errors, ast);
+          }
+
+          this.editor?.showHint({
+            hint: (editor: cm.Editor) => hint(editor, ast),
+            completeSingle: false
+          });
         }
-
-        this.editor?.showHint({
-          hint: (editor: cm.Editor) => hint(editor, ast),
-          completeSingle: false
-        });
-      });
+      );
 
     cm.defineMode(this.id, () => {
       return {
         startState,
-        copyState: (ctx: Context<T>) =>
-          ctx.clone(this.editor?.getValue() ?? this.text),
+        copyState: (ctx: Context<T>) => ctx.clone(),
         token: (stream, ctx: Context<T>) => ctx.token(stream)
       };
     });

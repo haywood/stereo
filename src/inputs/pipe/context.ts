@@ -100,7 +100,7 @@ export class Context<T> {
         `encountered error on stack`,
         stream,
         curr.clone(),
-        this.clone(this.src())
+        this.clone()
       );
     }
 
@@ -147,7 +147,7 @@ export class Context<T> {
     if (stream.current()) {
       console.error(
         'non-terminal advanced the stream',
-        this.clone(this.src()),
+        this.clone(),
         curr.clone()
       );
     }
