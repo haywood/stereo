@@ -295,20 +295,22 @@ function offset2pos(offset: number, editor: cm.Editor) {
 function onSelect(hint: Hint, el: HTMLElement) {
   if (hint.description) {
     const rect = el.parentElement.getBoundingClientRect();
-    const pre = findOrAdd();
+    const panel = findOrAdd();
 
     if (typeof hint.description == 'string') {
-      pre.innerText = hint.description;
+      panel.textContent = hint.description;
     } else {
-      pre.appendChild(renderDescription(hint.description));
+      panel.appendChild(renderDescription(hint.description));
     }
 
-    pre.style.top = `${rect.top}px`;
-    pre.style.left = `${rect.right}px`;
+    panel.style.top = `${rect.top}px`;
+    panel.style.left = `${rect.right}px`;
 
     function findOrAdd() {
       let d = document.querySelector<HTMLElement>('.hint-description');
-      if (!d) {
+      if (d) {
+        d.textContent = '';
+      } else {
         d = document.createElement('div');
         d.classList.add('hint-description');
         el.parentElement.classList.forEach(c => d.classList.add(c));
