@@ -68,7 +68,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     });
 
     this.editor.on('change', () => this.maybeUpdateValue());
-    this.editor.on('change', () => this.hint());
+    this.editor.on('cursorActivity', () => this.hint());
 
     this.maybeUpdateValue();
   };
