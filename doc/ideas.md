@@ -9,10 +9,6 @@
     - show the description for Q when someone mouses over the Q
     - show where a variable assignment was made when mousing over it
 
-- trigger hint based on cursor movement/editing and use a saved copy of the ctx
-  instead of basing it on when parsing happens
-
-
 ## Redo color
 
 Make it a single input similar to pipe with its own grammar. Have the user
