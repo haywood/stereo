@@ -12,7 +12,7 @@ import { escape } from 'xregexp';
 import { Change } from '../change';
 import { Input } from '../input';
 import { Options } from '../options';
-import { eoi, complete } from './util';
+import { eoi } from './util';
 import {
   ArithOp,
   BuiltinConstant,
@@ -68,14 +68,11 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     });
 
     this.editor.on('change', () => this.maybeUpdateValue());
+
     this.editor.on('cursorActivity', () => this.hint());
 
     this.maybeUpdateValue();
   };
-
-  private src() {
-    return this.editor?.getValue() ?? this.text;
-  }
 
   private maybeUpdateValue() {
     const ast = this.ctx().resolve();
@@ -105,11 +102,12 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   }
 
   private ctx() {
-    return this.editor.getStateAfter(null, true);
+    // typings are wrong and don't document the second arg to getStateAfter
+    return (this.editor as any).getStateAfter(null, true);
   }
 
   private defineMode() {
-    const startState = () => this.options.startState(() => this.src());
+    const startState = () => this.options.startState(() => this.editor?.getValue() ?? this.text);
 
     cm.defineMode(this.id, () => {
       return {

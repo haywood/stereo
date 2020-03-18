@@ -3,11 +3,15 @@ import * as cm from 'codemirror';
 import * as ast from './ast';
 import { Context } from './context';
 
+type Hint = cm.Hint & {
+  description?: any;
+}
+
 export function hint(
   editor: cm.Editor,
   node: ast.PipeNode | ast.Scalar
 ): cm.Hints {
-  let list: cm.Hint[];
+  let list: Hint[];
   const cursor = editor.getCursor();
   const token = editor.getTokenAt(cursor);
   const to = cursor;
@@ -251,7 +255,7 @@ function addConstants(
   }
 }
 
-function variableHints(src: string, editor: cm.Editor): cm.Hint[] {
+function variableHints(src: string, editor: cm.Editor): Hint[] {
   return Object.values(ast.BuiltinVariable)
     .filter(name => name.startsWith(src))
     .map(name => {
@@ -264,7 +268,7 @@ function variableHints(src: string, editor: cm.Editor): cm.Hint[] {
 }
 
 function addFnNames(
-  list: (string | cm.Hint)[],
+  list: Hint[],
   src: string,
   { start, end }: ast.Location,
   editor: cm.Editor
