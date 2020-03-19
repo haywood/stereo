@@ -99,7 +99,14 @@ function hintAssignment(
 }
 
 function hintStep(node: ast.StepNode, cursor: cm.Position, editor: cm.Editor) {
-  return hintFnLike(node, cursor, editor);
+  return hintFnLike(
+    node.type,
+    node,
+    // First arg is synthetic dimension arg
+    node.args.slice(1),
+    cursor,
+    editor
+  );
 }
 
 function hintScalar(node: ast.Scalar, cursor, editor, ancestors = []) {
@@ -144,31 +151,42 @@ function hintFn(
   editor: cm.Editor,
   ancestors
 ) {
-  return hintFnLike(node, cursor, editor, ancestors);
+  return hintFnLike(node.name, node, node.args, cursor, editor, ancestors);
 }
 
 function hintFnLike(
+  name: string,
   node: ast.FnNode | ast.StepNode,
+  args: ast.Scalar[],
   cursor: cm.Position,
   editor: cm.Editor,
   ancestors = []
 ) {
-  const idx = node.args.findIndex(a => includes(a, cursor, editor));
+  const idx = args.findIndex(a => includes(a, cursor, editor));
   const before = editor.getLine(cursor.line).slice(0, cursor.ch);
   const after = editor.getLine(cursor.line).slice(cursor.ch);
-  const isRparen = /,\s*$/.test(before);
+  const isLparen = /\(\s*$/.test(before);
   const isComma = /,\s*$/.test(before);
-  const hasRparen = /^\s*\)/.test(after);
+  const needsTerm = isLparen || isComma;
+  const knownArgs = descriptions[name]?.args?.length ?? Infinity;
   let list;
 
   if (idx >= 0) {
-    return hintScalar(node.args[idx], cursor, editor, [...ancestors, node]);
-  } else if (isComma) {
-    return hintScalar(ast.id('', node.location), cursor, editor, [
+    list = hintScalar(args[idx], cursor, editor, [...ancestors, node]);
+  } else if (needsTerm && args.length < knownArgs) {
+    list = hintScalar(ast.id('', node.location), cursor, editor, [
       ...ancestors,
       node
     ]);
   }
+
+  if (idx == args.length - 1 && args.length < knownArgs) {
+    for (const hint of list) {
+      hint.text += ', ';
+    }
+  }
+
+  return list;
 }
 
 function hintProperty(node, cursor, editor, ancestors) {}

@@ -262,7 +262,10 @@ class ArgListState extends NonTerminal<ast.Scalar[]> {
   readonly repeatable = true;
 
   _successors(stream: StringStream) {
-    if (this.needsArg()) {
+    const canHasArg = this.canHasArg();
+    if (peek(')', stream) && canHasArg) {
+      return [];
+    } else if (canHasArg) {
       return [new ScalarState()];
     } else if (peek(',', stream)) {
       return [Terminal.comma()];
@@ -273,7 +276,7 @@ class ArgListState extends NonTerminal<ast.Scalar[]> {
     return this.values.filter(v => v != ',');
   }
 
-  private needsArg() {
+  private canHasArg() {
     if (isEmpty(this.values)) {
       return true;
     }

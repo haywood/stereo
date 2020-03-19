@@ -59,8 +59,8 @@ function lattice_1(args: Scalar[]): string {
 function interval(d: number, a: string, b: string): string {
   return endent`{ // interval(${d}, ${a}, ${b})
     const int d = ${d};
-    const float a = ${a};
-    const float b = ${b};
+    float a = ${a};
+    float b = ${b};
     float branching_factor = round(pow(n, 1. / float(d)));
 
     for (int k = 0; k < d; k++) {
