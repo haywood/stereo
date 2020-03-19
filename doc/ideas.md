@@ -56,6 +56,20 @@ Enables an effect like the following:
 Then the points of each color will vary together with the intensity of their
 associated note.
 
+## WebGL 2
+
+Currently using WebGL 1, because it's portable. But the site is never really
+gonna look great on phones, and fuck desktop Safari.
+
+WebGL 2 has two extremely useful array improvements
+  - use non-constant expressions for indices. This means that `d0` could be
+    time dependent, for example.
+
+  - return arrays from functions. This means that the generated code can have
+    simpler scoping and better encapsulation. the glsl functions for various
+    shapes can be written in .glsl files and simply take the same parameters as
+    the steps in the pipe language.
+
 ## Misc
 
 - publish on push
