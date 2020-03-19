@@ -5,7 +5,7 @@ import { Context } from './context';
 
 type Hint = cm.Hint & {
   description?: any;
-}
+};
 
 export function hint(
   editor: cm.Editor,
@@ -98,7 +98,9 @@ function hintAssignment(
   }
 }
 
-function hintStep(node: ast.StepNode, cursor: cm.Position, editor: cm.Editor) {}
+function hintStep(node: ast.StepNode, cursor: cm.Position, editor: cm.Editor) {
+  return hintFnLike(node, cursor, editor);
+}
 
 function hintScalar(node: ast.Scalar, cursor, editor, ancestors = []) {
   switch (node.kind) {
@@ -142,6 +144,15 @@ function hintFn(
   editor: cm.Editor,
   ancestors
 ) {
+  return hintFnLike(node, cursor, editor, ancestors);
+}
+
+function hintFnLike(
+  node: ast.FnNode | ast.StepNode,
+  cursor: cm.Position,
+  editor: cm.Editor,
+  ancestors = []
+) {
   const idx = node.args.findIndex(a => includes(a, cursor, editor));
   const before = editor.getLine(cursor.line).slice(0, cursor.ch);
   const after = editor.getLine(cursor.line).slice(cursor.ch);
@@ -184,6 +195,8 @@ function hintError(
 ) {
   const parent = ancestors.pop();
   if (parent instanceof ast.ArithNode) {
+    return hintId(ast.id('', node.location), cursor, editor, ancestors);
+  } else if (parent instanceof ast.StepNode) {
     return hintId(ast.id('', node.location), cursor, editor, ancestors);
   }
 }
@@ -265,7 +278,11 @@ function addFnNames(
   }
 }
 
-function includes(node: ast.Node, cursor: cm.Position, editor): boolean {
+function includes(
+  node: ast.Node,
+  cursor: cm.Position,
+  editor: cm.Editor
+): boolean {
   if (!node.location) return false;
 
   const { start, end } = node.location;
@@ -283,6 +300,14 @@ function includes(node: ast.Node, cursor: cm.Position, editor): boolean {
   } else {
     return true;
   }
+}
+
+/**
+ * Whether the cursor is after the given offset.
+ */
+function after(offset: number, cursor: cm.Position, editor: cm.Editor) {
+  const pos = offset2pos(offset, editor);
+  return pos.line <= cursor.line && pos.ch < cursor.ch;
 }
 
 function offset2pos(offset: number, editor: cm.Editor) {
@@ -335,7 +360,7 @@ function renderDescription(descr) {
       name.classList.add('name');
       name.textContent = arg.name;
 
-      const d = li.appendChild(document.createElement('span'))
+      const d = li.appendChild(document.createElement('span'));
       d.classList.add('description');
       d.textContent = arg.description;
     }
