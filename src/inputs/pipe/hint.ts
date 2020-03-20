@@ -332,6 +332,8 @@ function variableHints(src: string, variables: ast.Variables): Hint[] {
     });
 
   for (const name in variables) {
+    if (ast.builtinIds.has(name)) continue;
+
     if (name.startsWith(src)) {
       list.push({
         text: name,
