@@ -369,3 +369,18 @@ const rangeFns: Record<StepType, RangeFn> = {
   [StepType.STEREO]: domain => domain,
   [StepType.QUATERNION]: domain => domain
 };
+
+export const builtinIds = new Set<string>([
+  ...Object.values(BuiltinConstant),
+  ...Object.values(BuiltinVariable),
+  ...Object.values(FnName),
+  ...Object.values(StepType),
+  // TODO this is not correct, but I'm going to get rid of properties when
+  // I redo audio anyway...
+  'power',
+  'hue',
+  'onset',
+  'pitch',
+  'tempo'
+]);
+

@@ -337,21 +337,7 @@ export class ElementState extends NonTerminal<ast.ElementNode> {
 export class Terminal<T = any> extends State<T> {
   static atom(assignedNames: Set<string>) {
     return new Terminal('atom', ID, ast.id, text => {
-      const builtins = new Set<string>([
-        ...Object.values(ast.BuiltinConstant),
-        ...Object.values(ast.BuiltinVariable),
-        ...Object.values(ast.FnName),
-        ...Object.values(ast.StepType),
-        // TODO this is not correct, but I'm going to get rid of properties when
-        // I redo audio anyway...
-        'power',
-        'hue',
-        'onset',
-        'pitch',
-        'tempo'
-      ]);
-
-      return assignedNames.has(text) || builtins.has(text);
+      return assignedNames.has(text) || ast.builtinIds.has(text);
     });
   }
 

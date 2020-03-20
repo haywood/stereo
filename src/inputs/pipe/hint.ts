@@ -180,7 +180,7 @@ function hintFnLike(
   }
 
   if (idx == args.length - 1 && args.length < knownArgs) {
-    for (const hint of list) {
+    for (const hint of list ?? []) {
       hint.text += ', ';
     }
   }
@@ -192,6 +192,12 @@ function hintProperty(node, cursor, editor, ancestors) {}
 
 function hintId(node, cursor, editor, ancestors) {
   const list = [];
+
+  for (const id of ast.builtinIds) {
+    if (id == node.id) {
+      return list;
+    }
+  }
 
   addConstants(list, node.id, node.location, editor);
   variableHints(node.id, editor).forEach(hint => list.push(hint));
@@ -211,10 +217,9 @@ function hintError(
   ancestors: ast.Node[]
 ) {
   const parent = ancestors.pop();
-  if (parent instanceof ast.ArithNode) {
-    return hintId(ast.id('', node.location), cursor, editor, ancestors);
-  } else if (parent instanceof ast.StepNode) {
-    return hintId(ast.id('', node.location), cursor, editor, ancestors);
+  const ctor = parent.constructor;
+  if ([ast.ArithNode, ast.StepNode, ast.FnNode].includes(ctor)) {
+    return hintId(ast.id(node.src, node.location), cursor, editor, ancestors);
   }
 }
 

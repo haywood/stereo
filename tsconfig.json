@@ -14,7 +14,7 @@
     "tsBuildInfoFile": ".tsbuildinfo",
     "allowJs": true,
     "experimentalDecorators": true,
-    "lib": ["dom", "esnext", "esnext.array"]
+    "lib": ["dom", "esnext"]
   },
   "compileOnSave": true,
   "include": ["src/**/*"]
