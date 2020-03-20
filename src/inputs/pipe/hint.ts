@@ -164,7 +164,6 @@ function hintFnLike(
 ) {
   const idx = args.findIndex(a => includes(a, cursor, editor));
   const before = editor.getLine(cursor.line).slice(0, cursor.ch);
-  const after = editor.getLine(cursor.line).slice(cursor.ch);
   const isLparen = /\(\s*$/.test(before);
   const isComma = /,\s*$/.test(before);
   const needsTerm = isLparen || isComma;

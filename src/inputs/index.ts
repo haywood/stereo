@@ -32,15 +32,15 @@ export const inputs = {
   ),
 
   h: new PipeInput<Scalar>('h', 'mix(omega, audio.hue, step)', {
-    startState: Context.scalar
+    startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
   s: new PipeInput<Scalar>('s', 'mix(omega, audio.power, step)', {
-    startState: Context.scalar
+    startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
   v: new PipeInput<Scalar>('v', 'mix(omega, audio.onset, step)', {
-    startState: Context.scalar
+    startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
   animate: new ToggleInput('animate', '1'),

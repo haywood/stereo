@@ -4,7 +4,6 @@ import { re } from 're-template-tag';
 import { escape } from 'xregexp';
 
 import * as ast from './ast';
-import { Context } from './context';
 import { loc, peek, pos } from './util';
 
 export abstract class State<T = any> {
@@ -56,15 +55,16 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
   private readonly assignments: ast.AssignmentNode[] = [];
   private readonly steps: ast.StepNode[] = [];
   private readonly errors: ast.ErrorNode[] = [];
-  private hasSteps = false;
   readonly repeatable = true;
+
+  private get assignmentSet() {
+    return new Set(this.assignments.map(a => a.name.id));
+  }
 
   _successors(stream: StringStream, src: string) {
     if (peek(/\w+\s*=/, stream)) {
       if (isEmpty(this.steps)) {
-        return [
-          new AssignmentState(new Set(this.assignments.map(a => a.name.id)))
-        ];
+        return [new AssignmentState(this.assignmentSet)];
       } else {
         return [
           new RejectState(
@@ -76,7 +76,7 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
         ];
       }
     } else if (peek(/\w+\(/, stream)) {
-      return [new StepState()];
+      return [new StepState(this.assignmentSet)];
     }
   }
 
@@ -104,7 +104,7 @@ export class AssignmentState extends NonTerminal<ast.AssignmentNode> {
     return [
       new LhsState(new Set(this.assignedNames)),
       Terminal.eq(),
-      new ScalarState()
+      new ScalarState(this.assignedNames)
     ];
   }
 
@@ -121,11 +121,15 @@ export class AssignmentState extends NonTerminal<ast.AssignmentNode> {
 }
 
 export class StepState extends NonTerminal<ast.StepNode> {
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream) {
     return [
       Terminal.stepType(),
       Terminal.lparen(),
-      new ArgListState(),
+      new ArgListState(this.assignedNames),
       Terminal.rparen()
     ];
   }
@@ -143,10 +147,14 @@ export class StepState extends NonTerminal<ast.StepNode> {
 export class ScalarState extends NonTerminal<ast.Scalar> {
   readonly repeatable = true;
 
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream) {
     const needsTerm = this.needsTerm();
     if (this.needsTerm()) {
-      return [new TermState()];
+      return [new TermState(this.assignedNames)];
     } else if (peek(SCALAR_OP, stream)) {
       return [Terminal.scalarOp()];
     }
@@ -205,17 +213,21 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
 }
 
 class TermState extends NonTerminal<ast.Scalar> {
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream, src: string) {
     if (peek('(', stream)) {
-      return [new ParenState()];
+      return [new ParenState(this.assignedNames)];
     } else if (peek(/\d/, stream)) {
       return [Terminal.number()];
     } else if (peek(/\w+\s*\(/, stream)) {
-      return [new FnState()];
+      return [new FnState(this.assignedNames)];
     } else if (peek(/\w+\s*\[/, stream)) {
-      return [new ElementState()];
+      return [new ElementState(this.assignedNames)];
     } else if (peek(/\w/, stream)) {
-      return [Terminal.atom()];
+      return [Terminal.atom(this.assignedNames)];
     } else {
       return [new RejectState(stream, src)];
     }
@@ -227,8 +239,16 @@ class TermState extends NonTerminal<ast.Scalar> {
 }
 
 class ParenState extends NonTerminal<ast.ParenNode> {
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream) {
-    return [Terminal.lparen(), new ScalarState(), Terminal.rparen()];
+    return [
+      Terminal.lparen(),
+      new ScalarState(this.assignedNames),
+      Terminal.rparen()
+    ];
   }
 
   resolve() {
@@ -237,11 +257,15 @@ class ParenState extends NonTerminal<ast.ParenNode> {
 }
 
 class FnState extends NonTerminal<ast.FnNode> {
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream) {
     return [
       Terminal.fnName(),
       Terminal.lparen(),
-      new ArgListState(),
+      new ArgListState(this.assignedNames),
       Terminal.rparen()
     ];
   }
@@ -261,12 +285,16 @@ class FnState extends NonTerminal<ast.FnNode> {
 class ArgListState extends NonTerminal<ast.Scalar[]> {
   readonly repeatable = true;
 
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream) {
     const canHasArg = this.canHasArg();
     if (peek(')', stream) && canHasArg) {
       return [];
     } else if (canHasArg) {
-      return [new ScalarState()];
+      return [new ScalarState(this.assignedNames)];
     } else if (peek(',', stream)) {
       return [Terminal.comma()];
     }
@@ -287,11 +315,15 @@ class ArgListState extends NonTerminal<ast.Scalar[]> {
 }
 
 export class ElementState extends NonTerminal<ast.ElementNode> {
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
   _successors(stream: StringStream) {
     return [
-      Terminal.atom(),
+      Terminal.atom(this.assignedNames),
       Terminal.lbrack(),
-      new ScalarState(),
+      new ScalarState(this.assignedNames),
       Terminal.rbrack()
     ];
   }
@@ -303,8 +335,24 @@ export class ElementState extends NonTerminal<ast.ElementNode> {
 }
 
 export class Terminal<T = any> extends State<T> {
-  static atom() {
-    return new Terminal('atom', ID, ast.id);
+  static atom(assignedNames: Set<string>) {
+    return new Terminal('atom', ID, ast.id, text => {
+      const builtins = new Set<string>([
+        ...Object.values(ast.BuiltinConstant),
+        ...Object.values(ast.BuiltinVariable),
+        ...Object.values(ast.FnName),
+        ...Object.values(ast.StepType),
+        // TODO this is not correct, but I'm going to get rid of properties when
+        // I redo audio anyway...
+        'power',
+        'hue',
+        'onset',
+        'pitch',
+        'tempo'
+      ]);
+
+      return assignedNames.has(text) || builtins.has(text);
+    });
   }
 
   static comma() {
@@ -358,7 +406,8 @@ export class Terminal<T = any> extends State<T> {
   constructor(
     private readonly _style: string,
     private readonly pattern,
-    private readonly factory: (s: string, location: ast.Location) => T
+    private readonly factory: (s: string, location: ast.Location) => T,
+    private readonly valid = (s: string) => true
   ) {
     super();
   }
@@ -372,12 +421,20 @@ export class Terminal<T = any> extends State<T> {
       this.text = stream.current();
       this.location.end = pos(stream, src);
 
-      return this._style;
+      if (this.valid(this.text)) {
+        return this._style;
+      } else {
+        return 'error';
+      }
     }
   }
 
   resolve() {
-    return this.factory(this.text, this.location);
+    if (this.valid(this.text)) {
+      return this.factory(this.text, this.location);
+    } else {
+      return ast.error(this.text, this.location);
+    }
   }
 }
 

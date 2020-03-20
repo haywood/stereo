@@ -16,8 +16,9 @@ export class Context<T> {
     return Context.start(new st.PipeState(), src);
   }
 
-  static scalar(src: () => string) {
-    return Context.start(new st.ScalarState(), src);
+  static scalar(src: () => string, variables?: ast.Variables) {
+    const assignmentSet = new Set(Object.keys(variables));
+    return Context.start(new st.ScalarState(assignmentSet), src);
   }
 
   static start<T>(
@@ -70,12 +71,16 @@ export class Context<T> {
   }
 
   private apply(curr: st.State, stream: StringStream) {
-    if (curr instanceof st.Terminal) {
-      return this.applyTerminal(curr, stream);
-    } else if (curr instanceof st.NonTerminal) {
-      this.applyNonTerminal(curr, stream);
-    } else if (!this.expand(this.root, stream)) {
-      this.stack.push(new st.RejectState(stream, this.src()));
+    try {
+      if (curr instanceof st.Terminal) {
+        return this.applyTerminal(curr, stream);
+      } else if (curr instanceof st.NonTerminal) {
+        this.applyNonTerminal(curr, stream);
+      } else if (!this.expand(this.root, stream)) {
+        this.stack.push(new st.RejectState(stream, this.src()));
+      }
+    } catch (err) {
+      console.error(err, {ctx: this.clone(), curr: curr.clone()});
     }
   }
 
