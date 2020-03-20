@@ -5,8 +5,6 @@
 - show description panel for the current argument when
   filling in step args
 
-- hinting for user-defined variables in scalar contexts
-
 - display explanations of errors somewhere in the editor
 
 - pop-up descriptions when mousing over tokens
