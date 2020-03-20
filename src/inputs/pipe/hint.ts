@@ -93,9 +93,19 @@ function hintAssignment(
   const { name, value } = node;
   const { line, ch } = offset2pos(name.location.start, editor);
   if (includes(name, cursor, editor)) {
-    const list = [];
-    variableHints(name.id, variables).forEach(hint => list.push(hint));
-    return list;
+    for (const id in variables) {
+      if (id == name.id) {
+        return [];
+      }
+    }
+
+    for (const id of ast.builtinIds) {
+      if (id == name.id) {
+        return [];
+      }
+    }
+
+    return variableHints(name.id, variables);
   } else if (includes(value, cursor, editor)) {
     return hintScalar(value, cursor, editor, variables);
   }
