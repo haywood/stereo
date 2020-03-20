@@ -9,6 +9,7 @@ import { re } from 're-template-tag';
 import { ReplaySubject } from 'rxjs';
 import { escape } from 'xregexp';
 
+import { inputs } from '..';
 import { Change } from '../change';
 import { Input } from '../input';
 import { Options } from '../options';
@@ -96,7 +97,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     const ast = this.ctx().resolve();
 
     this.editor?.showHint({
-      hint: (editor: cm.Editor) => hint(editor, ast),
+      hint: (editor: cm.Editor) => hint(editor, ast, ast.variables ?? inputs.pipe.value.variables),
         completeSingle: false
     });
   }
