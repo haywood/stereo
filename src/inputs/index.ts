@@ -19,13 +19,9 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
-    x0 = (1.1 - abs(sin(t / 10))) + sin(pi * audio.power)
-    w = 2 * pi * i / n
-    phi = w * tan(x0)
-    omega = abs(cos(w * log(t)))
-    r = 0.1
-    d0 = 4
-
+    phi = t + audio.power
+    n = 1000000
+    r = 1/log(n)
     spiral(phi, r)
     Q(sin(phi))
     stereo(3)
@@ -33,7 +29,7 @@ export const inputs = {
     { startState: Context.pipe, tabIndex: 1 }
   ),
 
-  h: new PipeInput<Scalar>('h', 'mix(omega, audio.hue, audio.onset)', {
+  h: new PipeInput<Scalar>('h', 'sin(phi * i / n)', {
     startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
