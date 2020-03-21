@@ -57,36 +57,9 @@ function lattice_1(args: Scalar[]): string {
 }
 
 function interval(d: number, a: string, b: string): string {
-  return endent`{ // interval(${d}, ${a}, ${b})
-    const int d = ${d};
-    float a = ${a};
-    float b = ${b};
-    float branching_factor = round(pow(n, 1. / float(d)));
-
-    for (int k = 0; k < d; k++) {
-      float exp = float(d - k - 1);
-      float dividend = round(i / pow(branching_factor, exp));
-      float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
-      x[k] = a + tmp * (b - a);
-    }
-  } // init interval`;
+  return `interval(${d}, ${a}, ${b});`;
 }
 
-function cube(args: Scalar[]): string {
-  const [d, l] = args;
-  return endent`{ // init cube(${args.join(', ')})
-    const int d = ${resolveInt(d)};
-    float l = ${ensureFloat(l)};
-
-    float n_face = round(n / float(d) / 2.);
-    float branching_factor = round(pow(n_face, 1. / float(d)));
-
-    for (int k = 0; k < d; k++) {
-      float exp = float(d - k - 1);
-      float dividend = round(i / pow(branching_factor, exp));
-      float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
-      y[k] = l * (tmp - 0.5);
-    }
-  } // init cube
-  `;
+function cube([d, l]: Scalar[]): string {
+  return `cube(${resolveInt(d)}, ${ensureFloat(l)});`;
 }
