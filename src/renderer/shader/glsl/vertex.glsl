@@ -1,6 +1,6 @@
 #define vector float[D_MAX];
 
-float[D_MAX]  interval(int d, float a, float b, float i) {
+float[D_MAX]  interval(int d, float a, float b, float i, float n) {
   float branching_factor = round(pow(n, 1. / float(d)));
   float[D_MAX] x;
 
@@ -14,7 +14,7 @@ float[D_MAX]  interval(int d, float a, float b, float i) {
   return x;
 }
 
-float[D_MAX] init_cube(int d, float l, float i) {
+float[D_MAX] init_cube(int d, float l, float i, float n) {
   float n_face = round(n / float(d) / 2.);
   float branching_factor = round(pow(n_face, 1. / float(d)));
   float[D_MAX] x;
@@ -56,7 +56,7 @@ float[D_MAX] lattice(int d, float l, float[D_MAX] x) {
   return x;
 }
 
-float[D_MAX] cube(int d, float l, float[D_MAX] x) {
+float[D_MAX] cube(int d, float l, float[D_MAX] x, float n) {
   float sign = i <= n / 2. ? 1. : -1.;
   float value = sign * l / 2.;
 

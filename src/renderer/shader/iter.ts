@@ -79,7 +79,7 @@ function lattice([_, l]: Scalar[], x: string, d: string) {
 
 function cube([_, l]: Scalar[], x: string, d: string) {
   return {
-    y: `cube(${d}, ${ensureFloat(l)}, ${x})`,
+    y: `cube(${d}, ${ensureFloat(l)}, ${x}, n)`,
     d,
   };
 }

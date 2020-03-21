@@ -3,17 +3,15 @@ import endent from 'endent';
 import {
   ArithNode,
   ArithOp,
-  ElementNode,
   BuiltinVariable,
+  ElementNode,
   FnNode,
   PropertyNode,
-  Variables,
   Scalar,
+  Variables
 } from '../../inputs/pipe/ast';
-
-import common from './glsl/common.glsl';
-
 import { pp } from '../../pp';
+import common from './glsl/common.glsl';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
 
@@ -68,23 +66,13 @@ export function header(vs: Variables) {
 
   ${varyings}
 
-  ${builtins.map((name) => {
-    if (name != 'd0') {
-      return `float ${name} = ${ensureFloat(vs[name])};`
-    }
-  }).join('\n')}
-
   ${common}
   `;
 }
 
 export function variables(vs: Variables) {
   return Object.entries(vs ?? {})
-    .map(([name, value]) => {
-      if (name == 'd0' || !builtins.includes(name as BuiltinVariable)) {
-        return `float ${name} = ${ensureFloat(value)};`;
-      }
-    })
+    .map(([name, value]) => `float ${name} = ${ensureFloat(value)};`)
     .filter(s => !!s)
     .join('\n');
 }

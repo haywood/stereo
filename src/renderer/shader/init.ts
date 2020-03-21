@@ -46,14 +46,14 @@ function lattice_1(i: string) {
 
 function interval(d: string, a: string, b: string, i: string) {
   return {
-    y: `interval(${d}, ${a}, ${b}, ${i})`,
+    y: `interval(${d}, ${a}, ${b}, ${i}, n)`,
     d,
   };
 }
 
 function cube(i: string, [_, l]: Scalar[]) {
   return {
-    y: `init_cube(${d0}, ${ensureFloat(l)}, ${i})`,
+    y: `init_cube(${d0}, ${ensureFloat(l)}, ${i}, n)`,
     d: d0,
   };
 }
