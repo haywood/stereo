@@ -1,3 +1,5 @@
+import { combineLatest } from 'rxjs';
+import { audioStream } from '../audio';
 import {
   BufferAttribute,
   BufferGeometry,
@@ -18,7 +20,11 @@ import { defines, far, fov, near, screenSize } from './shader/common';
 import { fragment } from './shader/fragment';
 import { vertex } from './shader/vertex';
 
-export class Renderer {
+export function start() {
+  new Renderer();
+}
+
+class Renderer {
   readonly canvas = document.querySelector('canvas');
   private readonly video = document.querySelector('video');
   private readonly geometry = new BufferGeometry();
@@ -50,20 +56,53 @@ export class Renderer {
     i.forEach((_, k) => (i[k] = k));
     this.geometry.setAttribute('position', new BufferAttribute(i, 1));
 
+    inputs.pipe.stream.subscribe(({ newValue: pipe }) => {
+      this.setPipe(pipe);
+    });
+
+    combineLatest(inputs.h.stream, inputs.s.stream, inputs.v.stream).subscribe(
+      () => {
+        this.setHsv({
+          h: inputs.h.value,
+          s: inputs.s.value,
+          v: inputs.v.value
+        });
+      }
+    );
+
+    audioStream.subscribe(audio => {
+      this.setScope({ audio });
+    });
+
+    inputs.save.stream.subscribe(async () => {
+      const blob = await this.renderPng();
+      const url = URL.createObjectURL(blob);
+      try {
+        const a = document.createElement('a');
+        a.download = `stereo${document.location.hash}`;
+        a.href = url;
+        a.click();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    window.onresize = () => this.setSize();
+
     debug('renderer', this);
   }
 
-  setPipe(pipe: PipeNode) {
+  private setPipe(pipe: PipeNode) {
     this.pipe = pipe;
     this.setShaders();
   }
 
-  setHsv(hsv: HSV) {
+  private setHsv(hsv: HSV) {
     this.hsv = hsv;
     this.setShaders();
   }
 
-  setScope(scope: Scope) {
+  private setScope(scope: Scope) {
     const {
       material: { uniforms }
     } = this;
@@ -73,7 +112,12 @@ export class Renderer {
     });
   }
 
-  setSize() {
+  private renderPng(): Promise<Blob> {
+    this.render(); // need to call render first, since three.js clears the draw buffers
+    return new Promise(r => this.canvas.toBlob(r));
+  }
+
+  private setSize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const aspect = width / height;
@@ -81,11 +125,6 @@ export class Renderer {
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
-  }
-
-  renderPng(): Promise<Blob> {
-    this.render(); // need to call render first, since three.js clears the draw buffers
-    return new Promise(r => this.canvas.toBlob(r));
   }
 
   private setShaders() {
@@ -139,5 +178,3 @@ export class Renderer {
     }
   }
 }
-
-export const renderer = new Renderer();
