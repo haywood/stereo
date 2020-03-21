@@ -6,13 +6,8 @@ import {
   ElementNode,
   BuiltinVariable,
   FnNode,
-  IdNode,
-  NumberNode,
-  PipeNode,
   PropertyNode,
   Scalar,
-  StepNode,
-  Variables
 } from '../../inputs/pipe/ast';
 
 import common from './glsl/common.glsl';

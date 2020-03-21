@@ -1,15 +1,7 @@
 import endent from 'endent';
 
-import {
-  ArithNode,
-  FnNode,
-  IdNode,
-  NumberNode,
-  PipeNode,
-  Scalar,
-  StepNode
-} from '../../inputs/pipe/ast';
-import { ensureFloat, header, variables } from './common';
+import { PipeNode } from '../../inputs/pipe/ast';
+import { header, variables } from './common';
 import vertexFns from './glsl/vertex.glsl';
 import { init } from './init';
 import { iter } from './iter';
