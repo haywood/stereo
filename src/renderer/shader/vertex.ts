@@ -8,11 +8,12 @@ import { iter } from './iter';
 
 export function vertex(pipe: PipeNode): string {
   const steps = pipe.steps;
-  const x0 = init(steps[0], 'position[0]');
-  const y = steps.reduce((x, s, i) => {
+  const {y: x0, d: d0} = init(steps[0], 'position[0]');
+  const {x: y} = steps.reduce(({x, d0}, s, i) => {
     const ws = '\n' + '  '.repeat(1 + steps.length - i);
-    return endent`${iter(s, `${ws}${x}`)}`;
-  }, x0);
+    const {y, d} = iter(s, `${ws}${x}`, d0);
+    return {x: y, d0: d};
+  }, {x: x0, d0});
 
   return endent`
     ${header(pipe.variables)}

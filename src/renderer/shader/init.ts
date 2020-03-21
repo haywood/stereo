@@ -3,7 +3,7 @@ import {
   StepNode,
   StepType
 } from '../../inputs/pipe/ast';
-import { ensureFloat } from './common';
+import { d0, ensureFloat } from './common';
 
 const {
   CUBE,
@@ -13,11 +13,9 @@ const {
   TORUS
 } = StepType;
 
-const d0 = 'int(d0)';
 const d0m1 = 'int(d0) - 1';
-
-export function init({ type, args }: StepNode, i: string): string {
-  type StepFn = (i: string, args: Scalar[]) => string;
+export function init({ type, args }: StepNode, i: string): {y: string, d: string} {
+  type StepFn = (i: string, args: Scalar[]) => {y: string, d: string};
 
   const fns: Partial<Record<StepType, StepFn>> = {
     [SPHERE]: interval_0_2pi,
@@ -34,22 +32,28 @@ function interval_0_2pi(i: string) {
   return interval(d0m1, '0.', '2. * pi', i);
 }
 
-function spiral(i: string, [_, tau]: Scalar[]): string {
+function spiral(i: string, [_, tau]: Scalar[]) {
   return interval(d0m1, '0.', ensureFloat(tau), i);
 }
 
-function interval_0_1(i: string): string {
+function interval_0_1(i: string) {
   return interval(d0, '0.', '1.', i);
 }
 
-function lattice_1(i: string): string {
+function lattice_1(i: string) {
   return interval(d0, '-0.5', '0.5', i);
 }
 
-function interval(d: string, a: string, b: string, i: string): string {
-  return `interval(${d}, ${a}, ${b}, i)`;
+function interval(d: string, a: string, b: string, i: string) {
+  return {
+    y: `interval(${d}, ${a}, ${b}, ${i})`,
+    d,
+  };
 }
 
-function cube(i: string, [d, l]: Scalar[]): string {
-  return `init_cube(${d0}, ${ensureFloat(l)}, i)`;
+function cube(i: string, [_, l]: Scalar[]) {
+  return {
+    y: `init_cube(${d0}, ${ensureFloat(l)}, ${i})`,
+    d: d0,
+  };
 }

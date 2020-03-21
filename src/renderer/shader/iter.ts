@@ -20,8 +20,8 @@ const {
   TORUS
 } = StepType;
 
-export function iter({ type, args }: StepNode, x: string): string {
-  type StepFn = (args: Scalar[], x: string) => string;
+export function iter({ type, args }: StepNode, x: string, d0: string): {y: string, d: string} {
+  type StepFn = (args: Scalar[], x: string, d0: string) => {y: string, d: string};
 
   const fns: Record<StepType, StepFn> = {
     [TORUS]: torus,
@@ -34,14 +34,13 @@ export function iter({ type, args }: StepNode, x: string): string {
     [QUATERNION]: quaternion
   };
 
-  return fns[type](args, x);
+  return fns[type](args, x, d0);
 }
 
-function torus(args: Scalar[], x: string) {
-  const d = resolveInt(args[0]);
+function torus(args: Scalar[], x: string, d0: string) {
   const rs = [];
 
-  for (let i = 1; i < Math.min(d + 1, args.length); i++) {
+  for (let i = 1; i < args.length; i++) {
     rs.push(ensureFloat(args[i]));
   }
 
@@ -51,37 +50,56 @@ function torus(args: Scalar[], x: string) {
   }
 
   const r = `float[](${rs.join(', ')})`;
-  return `torus(${d}, ${r}, ${x})`;
+  const d = `${d0} + 1`;
+  return {y: `torus(${d}, ${r}, ${x})`, d};
 }
 
-function spiral([d, _, r]: Scalar[], x: string) {
-  return `spiral(${resolveInt(d)}, ${ensureFloat(r)}, ${x})`;
+function spiral([_0, _1, r]: Scalar[], x: string, d0: string) {
+  const d = `${d0} + 1`;
+  return {
+    y: `spiral(${d}, ${ensureFloat(r)}, ${x})`,
+    d,
+  };
 }
 
-function sphere([d, r]: Scalar[], x: string) {
-  return `sphere(${resolveInt(d)}, ${ensureFloat(r)}, ${x})`;
+function sphere([_, r]: Scalar[], x: string, d0: string) {
+  const d = `${d0} + 1`
+  return {
+    y: `sphere(${d}, ${ensureFloat(r)}, ${x})`,
+    d,
+  };
 }
 
-function lattice(args: Scalar[], x: string) {
-  const d = resolveInt(args[0]);
-  const l = ensureFloat(args[1]);
-
-  return `lattice(${d}, ${l}, ${x})`;
+function lattice([_, l]: Scalar[], x: string, d: string) {
+  return {
+    y: `lattice(${d}, ${ensureFloat(l)}, ${x})`,
+    d,
+  };
 }
 
-function cube([d, l]: Scalar[], x: string) {
-  return `cube(${resolveInt(d)}, ${ensureFloat(l)}, ${x})`;
+function cube([_, l]: Scalar[], x: string, d: string) {
+  return {
+    y: `cube(${d}, ${ensureFloat(l)}, ${x})`,
+    d,
+  };
 }
 
-function rotate([d, phi, d0, d1]: Scalar[], x: string) {
-  return `rotate(${resolveInt(d)}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)}, ${x})`;
+function rotate([_, phi, d0, d1]: Scalar[], x: string, d: string) {
+  return {
+    y: `rotate(${d}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)}, ${x})`,
+    d,
+  };
 }
 
-function stereo([from, to]: Scalar[], x: string) {
-  return `stereo(${resolveInt(from)}, ${resolveInt(to)}, ${x})`;
+function stereo([_, to]: Scalar[], x: string, from: string) {
+  const d = to;
+  return {
+    y: `stereo(${from}, ${resolveInt(to)}, ${x})`,
+    d,
+  }
 }
 
-function quaternion(args: Scalar[], x: string) {
+function quaternion(args: Scalar[], x: string, d: string) {
   let r, i, j, k;
   if (args.length == 2) {
     r = i = j = k = ensureFloat(args[1]);
@@ -89,5 +107,8 @@ function quaternion(args: Scalar[], x: string) {
     [r, i, j, k] = args.slice(1).map(ensureFloat);
   }
 
-  return `quaternion(${r}, ${i}, ${j}, ${k}, ${x})`;
+  return {
+    y: `quaternion(${r}, ${i}, ${j}, ${k}, ${x})`,
+    d,
+  };
 }

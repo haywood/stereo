@@ -32,6 +32,7 @@ varying vec3 p;
 varying float i;
 `;
 
+export const d0 = 'int(d0)';
 export const screenSize = Math.round(
   window.screen.width * window.screen.height
 );
