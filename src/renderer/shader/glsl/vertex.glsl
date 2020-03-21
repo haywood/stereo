@@ -84,8 +84,10 @@ float[D_MAX] rotate(int d, float phi, int d0, int d1, float[D_MAX] x) {
 }
 
 float[D_MAX] rotate(int d, float phi, int[D_MAX] d0s, int[D_MAX] d1s, float[D_MAX] x) {
-  for (int i0 = 0; i0 < D_MAX && d0s[i0] >= 0; i0++) {
-    for (int i1 = 0; i1 < D_MAX && d1s[i1] >= 0; i1++) {
+  for (int i0 = 0; i0 < d && d0s[i0] >= 0; i0++) {
+    for (int i1 = 0; i1 < d && d1s[i1] >= 0; i1++) {
+      if (d0s[i0] == d1s[i1]) continue;
+
       x = rotate(d, phi, d0s[i0], d1s[i1], x);
     }
   }

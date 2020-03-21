@@ -1,4 +1,4 @@
-import { Scalar, StepNode, StepType } from '../../inputs/pipe/ast';
+import { Scalar, StepNode, StepType, number } from '../../inputs/pipe/ast';
 import { D_MAX, ensureFloat, ensureInt } from './common';
 
 const {
@@ -86,13 +86,18 @@ function cube([l]: Scalar[], x: string, d: string) {
 
 function rotate(args: Scalar[], x: string, d: string) {
   const phi = ensureFloat(args[0]);
-  const d0s = vector('int', [args[1]], '-1');
-  const d1s = vector('int', [args[2]], '-1');
+  const d0s = ds(args[1]);
+  const d1s = ds(args[2]);
 
   return {
     y: `rotate(${d}, ${phi}, ${d0s}, ${d1s}, ${x})`,
     d
   };
+
+  function ds(arg) {
+    const tmp = arg ? [arg] : Array.from({length: D_MAX}).map((_, i) => number(i));
+    return vector('int', tmp, '-1');
+  }
 }
 
 function stereo([to]: Scalar[], x: string, from: string) {
@@ -105,10 +110,10 @@ function stereo([to]: Scalar[], x: string, from: string) {
 
 function quaternion(args: Scalar[], x: string, d: string) {
   let r, i, j, k;
-  if (args.length == 2) {
-    r = i = j = k = ensureFloat(args[1]);
+  if (args.length == 1) {
+    r = i = j = k = ensureFloat(args[0]);
   } else {
-    [r, i, j, k] = args.slice(1).map(ensureFloat);
+    [r, i, j, k] = args.map(ensureFloat);
   }
 
   return {
