@@ -2,10 +2,8 @@ import endent from 'endent';
 import screenfull from 'screenfull';
 
 import debug from '../debug';
-import { renderer } from '../renderer';
 import { ActionInput } from './action';
 import { Context, PipeInput } from './pipe';
-import { PipeNode, Scalar } from './pipe/ast';
 import { RangeInput } from './range';
 import { ToggleInput } from './toggle';
 
@@ -29,15 +27,15 @@ export const inputs = {
     { startState: Context.pipe, tabIndex: 1 }
   ),
 
-  h: new PipeInput<Scalar>('h', 'sin(phi * i / n)', {
+  h: new PipeInput('h', 'sin(phi * i / n)', {
     startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
-  s: new PipeInput<Scalar>('s', '1', {
+  s: new PipeInput('s', '1', {
     startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
-  v: new PipeInput<Scalar>('v', '1', {
+  v: new PipeInput('v', '1', {
     startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
