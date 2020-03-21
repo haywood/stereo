@@ -29,7 +29,7 @@ export function vertex(pipe: PipeNode): string {
 
       float[D_MAX] x = ${init(pipe.steps[0])}, y;
 
-      ${pipe.steps.map(s => `y = ${iter(s)};`).join(reset)}
+      ${pipe.steps.map(s => `y = ${iter(s, 'x')};`).join(reset)}
 
       vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
       gl_PointSize = -6. / mvPosition.z / log10(n);

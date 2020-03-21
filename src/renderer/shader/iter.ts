@@ -22,8 +22,8 @@ const {
   TORUS
 } = StepType;
 
-export function iter({ type, args }: StepNode): string {
-  type StepFn = (args: Scalar[]) => string;
+export function iter({ type, args }: StepNode, x: string): string {
+  type StepFn = (args: Scalar[], x: string) => string;
 
   const fns: Record<StepType, StepFn> = {
     [TORUS]: torus,
@@ -36,10 +36,10 @@ export function iter({ type, args }: StepNode): string {
     [QUATERNION]: quaternion
   };
 
-  return fns[type](args);
+  return fns[type](args, x);
 }
 
-function torus(args: Scalar[]) {
+function torus(args: Scalar[], x: string) {
   const d = resolveInt(args[0]);
   const rs = [];
 
@@ -53,37 +53,37 @@ function torus(args: Scalar[]) {
   }
 
   const r = `float[](${rs.join(', ')})`;
-  return `torus(${d}, ${r}, x)`;
+  return `torus(${d}, ${r}, ${x})`;
 }
 
-function spiral([d, _, r]: Scalar[]) {
-  return `spiral(${resolveInt(d)}, ${ensureFloat(r)}, x)`;
+function spiral([d, _, r]: Scalar[], x: string) {
+  return `spiral(${resolveInt(d)}, ${ensureFloat(r)}, ${x})`;
 }
 
-function sphere([d, r]: Scalar[]) {
-  return `sphere(${resolveInt(d)}, ${ensureFloat(r)}, x)`;
+function sphere([d, r]: Scalar[], x: string) {
+  return `sphere(${resolveInt(d)}, ${ensureFloat(r)}, ${x})`;
 }
 
-function lattice(args: Scalar[]) {
+function lattice(args: Scalar[], x: string) {
   const d = resolveInt(args[0]);
   const l = ensureFloat(args[1]);
 
-  return `lattice(${d}, ${l}, x)`;
+  return `lattice(${d}, ${l}, ${x})`;
 }
 
-function cube([d, l]: Scalar[]) {
-  return `cube(${resolveInt(d)}, ${ensureFloat(l)}, x)`;
+function cube([d, l]: Scalar[], x: string) {
+  return `cube(${resolveInt(d)}, ${ensureFloat(l)}, ${x})`;
 }
 
-function rotate([d, phi, d0, d1]: Scalar[]) {
-  return `rotate(${resolveInt(d)}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)}, x)`;
+function rotate([d, phi, d0, d1]: Scalar[], x: string) {
+  return `rotate(${resolveInt(d)}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)}, ${x})`;
 }
 
-function stereo([from, to]: Scalar[]) {
-  return `stereo(${resolveInt(from)}, ${resolveInt(to)}, x)`;
+function stereo([from, to]: Scalar[], x: string) {
+  return `stereo(${resolveInt(from)}, ${resolveInt(to)}, ${x})`;
 }
 
-function quaternion(args: Scalar[]) {
+function quaternion(args: Scalar[], x: string) {
   let r, i, j, k;
   if (args.length == 2) {
     r = i = j = k = ensureFloat(args[1]);
@@ -91,9 +91,5 @@ function quaternion(args: Scalar[]) {
     [r, i, j, k] = args.slice(1).map(ensureFloat);
   }
 
-  return `quaternion(${r}, ${i}, ${j}, ${k}, x)`;
-}
-
-function polar2cart(d: number, r: Scalar) {
-  return `polar2cart(${d}, ${ensureFloat(r)})`;
+  return `quaternion(${r}, ${i}, ${j}, ${k}, ${x})`;
 }
