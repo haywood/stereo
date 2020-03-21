@@ -3,38 +3,37 @@ export function findErrors(node: Node): ErrorNode[] {
     return [
       ...node.assignments.map(findErrors).flat(),
       ...node.steps.map(findErrors).flat(),
-      ...node.errors,
+      ...node.errors
     ];
   } else if (node instanceof AssignmentNode) {
-      return [...findErrors(node.name), ...findErrors(node.value)];
+    return [...findErrors(node.name), ...findErrors(node.value)];
   } else if (node instanceof StepNode) {
-      return node.args.map(findErrors).flat();
+    return node.args.map(findErrors).flat();
   } else if (node instanceof ArithNode) {
-      return node.operands.map(findErrors).flat();
+    return node.operands.map(findErrors).flat();
   } else if (node instanceof FnNode) {
-      return node.args.map(findErrors).flat();
+    return node.args.map(findErrors).flat();
   } else if (node instanceof PropertyNode) {
-    return [
-      ...findErrors(node.receiver),
-      ...findErrors(node.name),
-    ];
+    return [...findErrors(node.receiver), ...findErrors(node.name)];
   } else if (node instanceof ElementNode) {
-    return [
-      ...findErrors(node.receiver),
-      ...findErrors(node.index),
-    ];
+    return [...findErrors(node.receiver), ...findErrors(node.index)];
   } else if (node instanceof ParenNode) {
-      return findErrors(node.scalar);
+    return findErrors(node.scalar);
   } else if (node instanceof IdNode || node instanceof NumberNode) {
-      return [];
+    return [];
   } else {
-      return [node];
+    return [node];
   }
 }
 
 export type Node = PipeNode | Statement | Scalar | ErrorNode;
 
-export function pipe(assignments: AssignmentNode[], steps: StepNode[], errors: ErrorNode[], location?: Location): PipeNode {
+export function pipe(
+  assignments: AssignmentNode[],
+  steps: StepNode[],
+  errors: ErrorNode[],
+  location?: Location
+): PipeNode {
   return new PipeNode(assignments, steps, errors, location);
 }
 
@@ -50,7 +49,10 @@ export class PipeNode {
     readonly errors: ErrorNode[],
     readonly location?: Location
   ) {
-    this.variables = { d0: number(4) };
+    this.variables = {
+      d0: number(4),
+      n: arith(ArithOp.EXP, [number(10), id('d0')])
+    };
 
     for (const node of assignments) {
       this.variables[node.name.id] = node.value;
@@ -70,16 +72,13 @@ export class PipeNode {
   }
 
   get statements() {
-    return [
-      ...this.errors,
-      ...this.steps,
-      ...this.assignments,
-    ]
+    return [...this.errors, ...this.steps, ...this.assignments];
   }
 }
 
 export interface Variables {
-  d0: NumberNode;
+  d0: Scalar;
+  n: Scalar;
 
   [name: string]: Scalar;
 }
@@ -383,4 +382,3 @@ export const builtinIds = new Set<string>([
   'pitch',
   'tempo'
 ]);
-

@@ -3,7 +3,6 @@ import endent from 'endent';
 import {
   ArithNode,
   ArithOp,
-  BuiltinVariable,
   ElementNode,
   FnNode,
   PropertyNode,
@@ -70,10 +69,15 @@ export function header() {
 }
 
 export function variables(vs: Variables) {
-  return Object.entries(vs ?? {})
+  const { n, d0, ...rest } = vs ?? {};
+  return endent`
+  float d0 = ${ensureFloat(d0)};
+  float n = ${ensureFloat(n)};
+  ${Object.entries(rest)
     .map(([name, value]) => `float ${name} = ${ensureFloat(value)};`)
     .filter(s => !!s)
-    .join('\n');
+    .join('\n')}
+  `;
 }
 
 export function from(node: Scalar): string {
@@ -189,30 +193,6 @@ function fromElement({ receiver, index }: ElementNode) {
 
 function fromNumber(value: number): string {
   return value.toString();
-}
-
-function isNumber(node: Scalar): boolean {
-  switch (node.kind) {
-    case 'id':
-      return node.id == 't';
-    case 'number':
-    case 'fn': // so far all fns return floats
-    case 'arith':
-      return true;
-    default:
-      return false;
-  }
-}
-
-export function resolveInt(node: Scalar): number {
-  const value = resolve(node);
-  if (Number.isInteger(value)) {
-    return value;
-  } else {
-    throw new Error(
-      `expected an integer, but node resolved to ${value}:\n${pp(node)}`
-    );
-  }
 }
 
 function resolve(node: Scalar): number {

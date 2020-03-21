@@ -1,11 +1,8 @@
-import assert from 'assert';
-
 import {
   BufferAttribute,
   BufferGeometry,
   PerspectiveCamera,
   Points,
-  PointsMaterial,
   Scene,
   ShaderMaterial,
   WebGLRenderer
@@ -17,7 +14,7 @@ import { inputs } from '../inputs';
 import { PipeNode, Variables } from '../inputs/pipe/ast';
 import * as ast from '../inputs/pipe/ast';
 import { HSV, Scope } from '../types';
-import { defines, far, fov, near, resolveInt, screenSize } from './shader/common';
+import { defines, far, fov, near, screenSize } from './shader/common';
 import { fragment } from './shader/fragment';
 import { vertex } from './shader/vertex';
 
@@ -50,23 +47,15 @@ export class Renderer {
   }
 
   setPipe(pipe: PipeNode) {
-    const {
-      geometry,
-      material: { uniforms }
-    } = this;
+    const { geometry } = this;
 
     this.variables = pipe.variables;
 
-    if (this.variables.n == null) {
-      this.variables.n = ast.number(screenSize);
-    }
-    const n = resolveInt(this.variables.n);
-    const i = new Float32Array(n);
+    const i = new Float32Array(screenSize);
     i.forEach((_, k) => (i[k] = k));
     const vertexShader = vertex(pipe);
 
     geometry.setAttribute('position', new BufferAttribute(i, 1));
-    uniforms.n = { value: n };
 
     this.t0 = Date.now() / 1000;
     this.material.vertexShader = vertexShader;
@@ -123,17 +112,17 @@ export class Renderer {
 
   private keepAwake() {
     const interactions = ['click', 'mousemove'];
-    const options = {capture: true};
+    const options = { capture: true };
 
     this.video.srcObject = this.canvas.captureStream(1);
 
-    inputs.animate.stream.subscribe(({newValue, event}) => {
+    inputs.animate.stream.subscribe(({ newValue, event }) => {
       if (newValue) {
         this.video.play();
       } else {
         this.video.pause();
       }
-    })
+    });
 
     for (const type of interactions) {
       document.addEventListener(type, listener, options);
