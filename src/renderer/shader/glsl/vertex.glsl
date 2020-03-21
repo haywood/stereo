@@ -1,5 +1,8 @@
-void interval(int d, float a, float b) {
+#define vector float[D_MAX];
+
+float[D_MAX]  interval(int d, float a, float b) {
   float branching_factor = round(pow(n, 1. / float(d)));
+  float[D_MAX] x;
 
   for (int k = 0; k < d; k++) {
     float exp = float(d - k - 1);
@@ -7,21 +10,26 @@ void interval(int d, float a, float b) {
     float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
     x[k] = a + tmp * (b - a);
   }
+
+  return x;
 }
 
-void init_cube(int d, float l) {
+float[D_MAX] init_cube(int d, float l) {
   float n_face = round(n / float(d) / 2.);
   float branching_factor = round(pow(n_face, 1. / float(d)));
+  float[D_MAX] x;
 
   for (int k = 0; k < d; k++) {
     float exp = float(d - k - 1);
     float dividend = round(i / pow(branching_factor, exp));
     float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
-    y[k] = l * (tmp - 0.5);
+    x[k] = l * (tmp - 0.5);
   }
+
+  return x;
 }
 
-void polar2cart(int d, float r) {
+void polar2cart(int d, float r, float[D_MAX] x) {
   y[0] = r;
   for (int k = 1; k < d; k++) {
     y[k] = y[0] * sin(x[k - 1]);
@@ -29,23 +37,24 @@ void polar2cart(int d, float r) {
   }
 }
 
-void spiral(int d, float r) {
-  polar2cart(d, r * norm2(x));
+void spiral(int d, float r, float[D_MAX] x) {
+  polar2cart(d, r * norm2(x), x);
 }
 
-void sphere(int d, float r) {
-  polar2cart(d, r);
+void sphere(int d, float r, float[D_MAX] x) {
+  polar2cart(d, r, x);
 }
 
-void lattice(int d, float l) {
+void lattice(int d, float l, float[D_MAX] x) {
   for (int k = 0; k < d; k++) {
     y[k] = l * (x[k] - 0.5);
   }
 }
 
-void cube(int d, float l) {
+void cube(int d, float l, float[D_MAX] x) {
   float sign = i <= n / 2. ? 1. : -1.;
   float value = sign * l / 2.;
+  y = x;
 
   int axis = int(mod(i / float(d) / 2., float(d)));
   for (int k = 0; k < D_MAX; k++) {
@@ -56,7 +65,7 @@ void cube(int d, float l) {
   }
 }
 
-void rotate(int d, float phi, int d0, int d1) {
+void rotate(int d, float phi, int d0, int d1, float[D_MAX] x) {
   float r0 = cos(phi),
         r1 = sin(phi),
         x0 = x[d0],
@@ -68,23 +77,22 @@ void rotate(int d, float phi, int d0, int d1) {
   y = x;
 }
 
-void torus(int d, float[D_MAX] r) {
-  sphere(2, r[0]);
+void torus(int d, float[D_MAX] r, float[D_MAX] x) {
+  float[D_MAX] tmp = x;
+  sphere(2, r[0], x);
 
-  float[D_MAX] tmp;
-  tmp = x;
   x = y;
 
   for (int k = 1; k < d - 1; k++) {
     x[0] += r[k];
-    rotate(d, tmp[k], k - 1, k + 1);
+    rotate(d, tmp[k], k - 1, k + 1, x);
     x = y;
   }
 
   y = x;
 }
 
-void stereo(int from, int to) {
+void stereo(int from, int to, float[D_MAX] x) {
   if (from == to) {
     y = x;
   } else if (from > to) {
@@ -109,7 +117,7 @@ void stereo(int from, int to) {
   }
 }
 
-void quaternion(float r, float i, float j, float k) {
+void quaternion(float r, float i, float j, float k, float[D_MAX] x) {
   zero(y);
 
   // y += x * r

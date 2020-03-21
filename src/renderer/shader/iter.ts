@@ -53,34 +53,34 @@ function torus(args: Scalar[]) {
   }
 
   const r = `float[](${rs.join(', ')})`;
-  return `torus(${d}, ${r});`;
+  return `torus(${d}, ${r}, x);`;
 }
 
 function spiral([d, _, r]: Scalar[]) {
-  return `spiral(${resolveInt(d)}, ${ensureFloat(r)});`;
+  return `spiral(${resolveInt(d)}, ${ensureFloat(r)}, x);`;
 }
 
 function sphere([d, r]: Scalar[]) {
-  return `sphere(${resolveInt(d)}, ${ensureFloat(r)});`;
+  return `sphere(${resolveInt(d)}, ${ensureFloat(r)}, x);`;
 }
 
 function lattice(args: Scalar[]) {
   const d = resolveInt(args[0]);
   const l = ensureFloat(args[1]);
 
-  return `lattice(${d}, ${l});`;
+  return `lattice(${d}, ${l}, x);`;
 }
 
 function cube([d, l]: Scalar[]) {
-  return `cube(${resolveInt(d)}, ${ensureFloat(l)});`;
+  return `cube(${resolveInt(d)}, ${ensureFloat(l)}, x);`;
 }
 
 function rotate([d, phi, d0, d1]: Scalar[]) {
-  return `rotate(${resolveInt(d)}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)});`;
+  return `rotate(${resolveInt(d)}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)}, x);`;
 }
 
 function stereo([from, to]: Scalar[]) {
-  return `stereo(${resolveInt(from)}, ${resolveInt(to)});`;
+  return `stereo(${resolveInt(from)}, ${resolveInt(to)}, x);`;
 }
 
 function quaternion(args: Scalar[]) {
@@ -91,7 +91,7 @@ function quaternion(args: Scalar[]) {
     [r, i, j, k] = args.slice(1).map(ensureFloat);
   }
 
-  return `quaternion(${r}, ${i}, ${j}, ${k});`;
+  return `quaternion(${r}, ${i}, ${j}, ${k}, x);`;
 }
 
 function polar2cart(d: number, r: Scalar) {

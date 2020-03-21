@@ -18,7 +18,7 @@ export function vertex(pipe: PipeNode): string {
   return endent`
     ${header(pipe.variables)}
 
-    float[D_MAX] x, y;
+    float[D_MAX] y;
 
     float log10(float x) {
       return log(x) / ln10;
@@ -30,7 +30,7 @@ export function vertex(pipe: PipeNode): string {
       i = position[0];
       ${variables(pipe.variables)}
 
-      ${init(pipe.steps[0])}
+      float[D_MAX] x = ${init(pipe.steps[0])}
 
       ${pipe.steps.map(iter).join(reset)}
 
