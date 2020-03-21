@@ -75,9 +75,9 @@ void torus(int d, float[D_MAX] r) {
   tmp = x;
   x = y;
 
-  for (int k = 1; k < d; k++) {
+  for (int k = 1; k < d - 1; k++) {
     x[0] += r[k];
-    rotate(d, tmp[k + 1], k, k + 2);
+    rotate(d, tmp[k], k - 1, k + 1);
     x = y;
   }
 
