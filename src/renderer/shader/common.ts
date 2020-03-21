@@ -7,6 +7,7 @@ import {
   BuiltinVariable,
   FnNode,
   PropertyNode,
+  Variables,
   Scalar,
 } from '../../inputs/pipe/ast';
 
@@ -68,7 +69,7 @@ export function header(vs: Variables) {
   ${varyings}
 
   ${builtins.map((name) => {
-    if (vs) {
+    if (name != 'd0') {
       return `float ${name} = ${ensureFloat(vs[name])};`
     }
   }).join('\n')}
@@ -80,7 +81,7 @@ export function header(vs: Variables) {
 export function variables(vs: Variables) {
   return Object.entries(vs ?? {})
     .map(([name, value]) => {
-      if (!builtins.includes(name as BuiltinVariable)) {
+      if (name == 'd0' || !builtins.includes(name as BuiltinVariable)) {
         return `float ${name} = ${ensureFloat(value)};`;
       }
     })
