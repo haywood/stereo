@@ -192,43 +192,12 @@ function _stereo(from: number, to: number, pre: string) {
 function quaternion(args: Scalar[]) {
   let r, i, j, k;
   if (args.length == 2) {
-    r = i = j = k = args[1];
+    r = i = j = k = ensureFloat(args[1]);
   } else {
-    [r, i, j, k] = args.slice(1);
+    [r, i, j, k] = args.slice(1).map(ensureFloat);
   }
 
-  return endent`{ // quaternion(${args.join(', ')})
-    float r = ${ensureFloat(r)};
-    float i = ${ensureFloat(i)};
-    float j = ${ensureFloat(j)};
-    float k = ${ensureFloat(k)};
-
-    zero(y);
-
-    // y += x * r
-    y[Q_R] += x[Q_R] * r; // r * r = r
-    y[Q_I] += x[Q_I] * r; // i * r = i
-    y[Q_J] += x[Q_J] * r; // j * r = j
-    y[Q_K] += x[Q_K] * r; // k * r = k
-
-    // y += x * i
-    y[Q_R] += -x[Q_I] * i; // i * i = -1
-    y[Q_I] += x[Q_R] * i; // r * i = i
-    y[Q_J] += x[Q_K] * i; // k * i = j
-    y[Q_K] += -x[Q_J] * i; // j * i = -k
-
-    // y += x *j
-    y[Q_R] += -x[Q_J] * j; // j * j = -1
-    y[Q_I] += -x[Q_K] * j; // k * j = -i
-    y[Q_J] += x[Q_R] * j; // r * j = j
-    y[Q_K] += x[Q_I] * j; // i * j = k
-    
-    // y += x * k
-    y[Q_R] += -x[Q_K] * k; // k * k = -1
-    y[Q_I] += x[Q_J] * k; // j * k = i
-    y[Q_J] += -x[Q_I] * k; // i * k = -j
-    y[Q_K] += x[Q_R] * k; // r * k = k
-  } // quaternion`;
+  return `quaternion(${r}, ${i}, ${j}, ${k});`;
 }
 
 function polar2cart(d: number, r: Scalar) {
