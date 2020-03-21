@@ -54,7 +54,7 @@ function torus(args: Scalar[], x: string, d0: string) {
   return { y: `torus(${d}, ${r}, ${x})`, d };
 }
 
-function spiral([r]: Scalar[], x: string, d0: string) {
+function spiral([_, r]: Scalar[], x: string, d0: string) {
   const d = `${d0} + 1`;
   return {
     y: `spiral(${d}, ${ensureFloat(r)}, ${x})`,
