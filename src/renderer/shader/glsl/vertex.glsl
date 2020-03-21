@@ -30,6 +30,7 @@ float[D_MAX] init_cube(int d, float l) {
 }
 
 float[D_MAX] polar2cart(int d, float r, float[D_MAX] x) {
+  float[D_MAX] y;
   y[0] = r;
   for (int k = 1; k < d; k++) {
     y[k] = y[0] * sin(x[k - 1]);
@@ -49,26 +50,25 @@ float[D_MAX] sphere(int d, float r, float[D_MAX] x) {
 
 float[D_MAX] lattice(int d, float l, float[D_MAX] x) {
   for (int k = 0; k < d; k++) {
-    y[k] = l * (x[k] - 0.5);
+    x[k] = l * (x[k] - 0.5);
   }
 
-  return y;
+  return x;
 }
 
 float[D_MAX] cube(int d, float l, float[D_MAX] x) {
   float sign = i <= n / 2. ? 1. : -1.;
   float value = sign * l / 2.;
-  y = x;
 
   int axis = int(mod(i / float(d) / 2., float(d)));
   for (int k = 0; k < D_MAX; k++) {
     if (k == axis) {
-      y[k] = value;
+      x[k] = value;
       break;
     }
   }
 
-  return y;
+  return x;
 }
 
 float[D_MAX] rotate(int d, float phi, int d0, int d1, float[D_MAX] x) {
@@ -80,55 +80,45 @@ float[D_MAX] rotate(int d, float phi, int d0, int d1, float[D_MAX] x) {
   x[d0] = x0 * r0 - x1 * r1;
   x[d1] = x0 * r1 + x1 * r0;
 
-  y = x;
-  return y;
+  return x;
 }
 
 float[D_MAX] torus(int d, float[D_MAX] r, float[D_MAX] x) {
   float[D_MAX] tmp = x;
-  sphere(2, r[0], x);
-
-  x = y;
+  x = sphere(2, r[0], x);
 
   for (int k = 1; k < d - 1; k++) {
     x[0] += r[k];
-    rotate(d, tmp[k], k - 1, k + 1, x);
-    x = y;
+    x = rotate(d, tmp[k], k - 1, k + 1, x);
   }
 
-  y = x;
-  return y;
+  return x;
 }
 
 float[D_MAX] stereo(int from, int to, float[D_MAX] x) {
-  if (from == to) {
-    y = x;
-  } else if (from > to) {
+  if (from > to) {
     while (from-- > to) {
+      float x0 = x[0];
       for (int k = 0; k < from; k++) {
-        y[k] = x[k + 1] / (1. - x[0]);
+        x[k] = x[k + 1] / (1. - x0);
       }
-      x = y;
     }
   } else if (from < to) {
     while (from++ < to) {
       float n2 = norm2(x);
       float divisor = n2 + 1.;
-      y[0] = (n2 - 1.) / divisor;
-
       for (int k = 1; k < from; k++) {
-        y[k] = 2. * x[k - 1] / divisor;
+        x[k] = 2. * x[k - 1] / divisor;
       }
-
-      x = y;
+      x[0] = (n2 - 1.) / divisor;
     }
   }
 
-  return y;
+  return x;
 }
 
 float[D_MAX] quaternion(float r, float i, float j, float k, float[D_MAX] x) {
-  zero(y);
+  float[D_MAX] y;
 
   // y += x * r
   y[Q_R] += x[Q_R] * r; // r * r = r

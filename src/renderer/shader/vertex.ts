@@ -8,7 +8,6 @@ import { iter } from './iter';
 
 const reset = `
 x = y;
-zero(y);
 `;
 
 export function vertex(pipe: PipeNode): string {
@@ -17,8 +16,6 @@ export function vertex(pipe: PipeNode): string {
 
   return endent`
     ${header(pipe.variables)}
-
-    float[D_MAX] y;
 
     float log10(float x) {
       return log(x) / ln10;
@@ -30,9 +27,9 @@ export function vertex(pipe: PipeNode): string {
       i = position[0];
       ${variables(pipe.variables)}
 
-      float[D_MAX] x = ${init(pipe.steps[0])}
+      float[D_MAX] x = ${init(pipe.steps[0])}, y;
 
-      ${pipe.steps.map(iter).join(reset)}
+      ${pipe.steps.map(s => `y = ${iter(s)};`).join(reset)}
 
       vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
       gl_PointSize = -6. / mvPosition.z / log10(n);

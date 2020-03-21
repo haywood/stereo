@@ -57,9 +57,9 @@ function lattice_1(args: Scalar[]): string {
 }
 
 function interval(d: number, a: string, b: string): string {
-  return `interval(${d}, ${a}, ${b});`;
+  return `interval(${d}, ${a}, ${b})`;
 }
 
 function cube([d, l]: Scalar[]): string {
-  return `init_cube(${resolveInt(d)}, ${ensureFloat(l)});`;
+  return `init_cube(${resolveInt(d)}, ${ensureFloat(l)})`;
 }
