@@ -33,8 +33,6 @@ document.body.onmousemove = function evaluateCursorState() {
 inputs.pipe.stream.subscribe(({ newValue: pipe }) => {
   renderer.setPipe(pipe);
   debug('pipe', pipe);
-
-  document.body.classList.add('data');
   maybeSetCursorInactive();
 }, error);
 

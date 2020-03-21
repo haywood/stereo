@@ -5,16 +5,11 @@ $font-family: 'FiraCode Nerd Font', FiraCode, Roboto, Helvetica;
 body {
   background-color: black;
   color: white;
-  cursor: wait;
   font-family: $font-family;
   margin: auto;
   overflow: hidden;
 
-  &.data {
-    cursor: auto;
-  }
-
-  &.data.cursor-inactive {
+  &.cursor-inactive {
     cursor: none;
   }
 
