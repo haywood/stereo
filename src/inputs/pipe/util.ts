@@ -1,9 +1,6 @@
-import { Pos, StringStream } from 'codemirror';
-import cm from 'codemirror';
-import { isEqual } from 'lodash';
+import { StringStream } from 'codemirror';
 
 import * as ast from './ast';
-import { State } from './state';
 
 export function peek(pattern, stream: StringStream) {
   return stream.match(pattern, false);
