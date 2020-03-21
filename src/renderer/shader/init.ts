@@ -61,5 +61,5 @@ function interval(d: number, a: string, b: string): string {
 }
 
 function cube([d, l]: Scalar[]): string {
-  return `cube(${resolveInt(d)}, ${ensureFloat(l)});`;
+  return `init_cube(${resolveInt(d)}, ${ensureFloat(l)});`;
 }

@@ -9,7 +9,7 @@ void interval(int d, float a, float b) {
   }
 }
 
-void cube(int d, float l) {
+void init_cube(int d, float l) {
   float n_face = round(n / float(d) / 2.);
   float branching_factor = round(pow(n_face, 1. / float(d)));
 
@@ -26,6 +26,86 @@ void polar2cart(int d, float r) {
   for (int k = 1; k < d; k++) {
     y[k] = y[0] * sin(x[k - 1]);
     y[0] *= cos(x[k - 1]);
+  }
+}
+
+void spiral(int d, float r) {
+  polar2cart(d, r * norm2(x));
+}
+
+void sphere(int d, float r) {
+  polar2cart(d, r);
+}
+
+void lattice(int d, float l) {
+  for (int k = 0; k < d; k++) {
+    y[k] = l * (x[k] - 0.5);
+  }
+}
+
+void cube(int d, float l) {
+  float sign = i <= n / 2. ? 1. : -1.;
+  float value = sign * l / 2.;
+
+  int axis = int(mod(i / float(d) / 2., float(d)));
+  for (int k = 0; k < D_MAX; k++) {
+    if (k == axis) {
+      y[k] = value;
+      break;
+    }
+  }
+}
+
+void rotate(int d, float phi, int d0, int d1) {
+  float r0 = cos(phi),
+        r1 = sin(phi),
+        x0 = x[d0],
+        x1 = x[d1];
+
+  x[d0] = x0 * r0 - x1 * r1;
+  x[d1] = x0 * r1 + x1 * r0;
+
+  copy(x, y);
+}
+
+void torus(int d, float r[D_MAX]) {
+  sphere(2, r[0]);
+
+  float tmp[D_MAX];
+  copy(x, tmp);
+  copy(y, x);
+
+  for (int k = 1; k < d; k++) {
+    x[0] += r[k];
+    rotate(d, tmp[k + 1], k, k + 2);
+    copy(y, x);
+  }
+
+  copy(x, y);
+}
+
+void stereo(int from, int to) {
+  if (from == to) {
+    copy(x, y);
+  } else if (from > to) {
+    while (from-- > to) {
+      for (int k = 0; k < from; k++) {
+        y[k] = x[k + 1] / (1. - x[0]);
+      }
+      copy(y, x);
+    }
+  } else if (from < to) {
+    while (from++ < to) {
+      float n2 = norm2(x);
+      float divisor = n2 + 1.;
+      y[0] = (n2 - 1.) / divisor;
+
+      for (int k = 1; k < from; k++) {
+        y[k] = 2. * x[k - 1] / divisor;
+      }
+
+      copy(y, x);
+    }
   }
 }
 
