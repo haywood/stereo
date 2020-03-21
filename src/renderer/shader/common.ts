@@ -14,6 +14,9 @@ import {
   StepNode,
   Variables
 } from '../../inputs/pipe/ast';
+
+import common from './glsl/common.glsl';
+
 import { pp } from '../../pp';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
@@ -73,6 +76,8 @@ export function header(vs: Variables) {
       return `float ${name} = ${ensureFloat(vs[name])};`
     }
   }).join('\n')}
+
+  ${common}
   `;
 }
 

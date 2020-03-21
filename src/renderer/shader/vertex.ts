@@ -10,7 +10,6 @@ import {
   StepNode
 } from '../../inputs/pipe/ast';
 import { ensureFloat, header, variables } from './common';
-import util from './glsl/util.glsl';
 import vertexFns from './glsl/vertex.glsl';
 import { init } from './init';
 import { iter } from './iter';
@@ -36,8 +35,6 @@ export function vertex(pipe: PipeNode): string {
     float log10(float x) {
       return log(x) / ln10;
     }
-
-    ${util}
 
     ${vertexFns}
 

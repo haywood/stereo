@@ -3,10 +3,7 @@ import endent from 'endent';
 import { HSV } from '../../types';
 import { Variables } from '../../inputs/pipe/ast';
 import { header, ensureFloat, variables } from './common';
-import hsv2rgb from './glsl/hsv2rgb.glsl';
-import util from './glsl/util.glsl';
-
-const fragmentFunctions = [util, hsv2rgb];
+import fragmentFns from './glsl/fragment.glsl';
 
 export function fragment(hsv: HSV, vs: Variables): string {
   const h = ensureFloat(hsv.h);
@@ -16,7 +13,7 @@ export function fragment(hsv: HSV, vs: Variables): string {
   return endent`
     ${header(vs)}
 
-    ${fragmentFunctions.join('\n')}
+    ${fragmentFns}
 
     void main() {
       ${variables(vs)}
