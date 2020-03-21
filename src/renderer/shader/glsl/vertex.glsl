@@ -68,10 +68,10 @@ void rotate(int d, float phi, int d0, int d1) {
   copy(x, y);
 }
 
-void torus(int d, float r[D_MAX]) {
+void torus(int d, float[D_MAX] r) {
   sphere(2, r[0]);
 
-  float tmp[D_MAX];
+  float[D_MAX] tmp;
   copy(x, tmp);
   copy(y, x);
 

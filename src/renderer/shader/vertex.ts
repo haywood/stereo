@@ -9,7 +9,7 @@ import { iter } from './iter';
 const reset = `
 
 { // reset
-  copy(y, x);
+  x = y;
   zero(y);
 } // reset
 
@@ -22,7 +22,7 @@ export function vertex(pipe: PipeNode): string {
   return endent`
     ${header(pipe.variables)}
 
-    float x[D_MAX], y[D_MAX];
+    float[D_MAX] x, y;
 
     float log10(float x) {
       return log(x) / ln10;
