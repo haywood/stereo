@@ -11,7 +11,7 @@ export function fragment(hsv: HSV, vs: Variables): string {
   const v = ensureFloat(hsv.v);
 
   return endent`
-    ${header(vs)}
+    ${header()}
 
     ${fragmentFns}
 

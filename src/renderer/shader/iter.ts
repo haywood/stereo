@@ -6,7 +6,7 @@ import {
 
 import {
   ensureFloat,
-  resolveInt,
+  ensureInt,
 } from './common';
 
 const {
@@ -86,15 +86,15 @@ function cube([_, l]: Scalar[], x: string, d: string) {
 
 function rotate([_, phi, d0, d1]: Scalar[], x: string, d: string) {
   return {
-    y: `rotate(${d}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)}, ${x})`,
+    y: `rotate(${d}, ${ensureFloat(phi)}, ${ensureInt(d0)}, ${ensureInt(d1)}, ${x})`,
     d,
   };
 }
 
 function stereo([_, to]: Scalar[], x: string, from: string) {
-  const d = to;
+  const d = ensureInt(to);
   return {
-    y: `stereo(${from}, ${resolveInt(to)}, ${x})`,
+    y: `stereo(${from}, ${d}, ${x})`,
     d,
   }
 }

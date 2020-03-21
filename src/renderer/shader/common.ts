@@ -59,8 +59,7 @@ export const defines: { [name: string]: number } = {
   sqrt2: Math.SQRT2
 };
 
-const builtins = Object.values(BuiltinVariable);
-export function header(vs: Variables) {
+export function header() {
   return endent`
   ${uniforms}
 
@@ -101,6 +100,14 @@ export function ensureFloat(node: Scalar) {
     return from(node);
   } else {
     return `float(${from(node)})`;
+  }
+}
+
+export function ensureInt(node: Scalar) {
+  if (isFloat(node)) {
+    return `int(${from(node)})`;
+  } else {
+    return from(node);
   }
 }
 

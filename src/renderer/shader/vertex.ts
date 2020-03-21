@@ -19,7 +19,7 @@ export function vertex(pipe: PipeNode): string {
   );
 
   return endent`
-    ${header(pipe.variables)}
+    ${header()}
 
     float log10(float x) {
       return log(x) / ln10;
