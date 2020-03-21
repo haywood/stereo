@@ -1,25 +1,15 @@
-import endent from 'endent';
-
 import {
-  ArithNode,
-  FnNode,
-  IdNode,
-  NumberNode,
-  PipeNode,
   Scalar,
   StepNode,
   StepType
 } from '../../inputs/pipe/ast';
-import { ensureFloat, from, resolveInt } from './common';
+import { ensureFloat, resolveInt } from './common';
 
 const {
   CUBE,
   LATTICE,
-  QUATERNION,
-  ROTATE,
   SPHERE,
   SPIRAL,
-  STEREO,
   TORUS
 } = StepType;
 

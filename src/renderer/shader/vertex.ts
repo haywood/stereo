@@ -6,10 +6,6 @@ import vertexFns from './glsl/vertex.glsl';
 import { init } from './init';
 import { iter } from './iter';
 
-const reset = `
-x = y;
-`;
-
 export function vertex(pipe: PipeNode): string {
   const steps = pipe.steps;
   const x0 = init(steps[0], 'position[0]');

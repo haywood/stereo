@@ -1,5 +1,3 @@
-import endent from 'endent';
-
 import {
   Scalar,
   StepNode,
