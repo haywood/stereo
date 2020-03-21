@@ -32,7 +32,7 @@ function interval_0_2pi(i: string) {
   return interval(d0m1, '0.', '2. * pi', i);
 }
 
-function spiral(i: string, [_, tau]: Scalar[]) {
+function spiral(i: string, [tau]: Scalar[]) {
   return interval(d0m1, '0.', ensureFloat(tau), i);
 }
 
@@ -51,7 +51,7 @@ function interval(d: string, a: string, b: string, i: string) {
   };
 }
 
-function cube(i: string, [_, l]: Scalar[]) {
+function cube(i: string, [l]: Scalar[]) {
   return {
     y: `init_cube(${d0}, ${ensureFloat(l)}, ${i}, n)`,
     d: d0,

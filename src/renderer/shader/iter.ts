@@ -54,7 +54,7 @@ function torus(args: Scalar[], x: string, d0: string) {
   return {y: `torus(${d}, ${r}, ${x})`, d};
 }
 
-function spiral([_0, _1, r]: Scalar[], x: string, d0: string) {
+function spiral([r]: Scalar[], x: string, d0: string) {
   const d = `${d0} + 1`;
   return {
     y: `spiral(${d}, ${ensureFloat(r)}, ${x})`,
@@ -62,7 +62,7 @@ function spiral([_0, _1, r]: Scalar[], x: string, d0: string) {
   };
 }
 
-function sphere([_, r]: Scalar[], x: string, d0: string) {
+function sphere([r]: Scalar[], x: string, d0: string) {
   const d = `${d0} + 1`
   return {
     y: `sphere(${d}, ${ensureFloat(r)}, ${x})`,
@@ -70,28 +70,28 @@ function sphere([_, r]: Scalar[], x: string, d0: string) {
   };
 }
 
-function lattice([_, l]: Scalar[], x: string, d: string) {
+function lattice([l]: Scalar[], x: string, d: string) {
   return {
     y: `lattice(${d}, ${ensureFloat(l)}, ${x})`,
     d,
   };
 }
 
-function cube([_, l]: Scalar[], x: string, d: string) {
+function cube([l]: Scalar[], x: string, d: string) {
   return {
     y: `cube(${d}, ${ensureFloat(l)}, ${x}, n)`,
     d,
   };
 }
 
-function rotate([_, phi, d0, d1]: Scalar[], x: string, d: string) {
+function rotate([phi, d0, d1]: Scalar[], x: string, d: string) {
   return {
     y: `rotate(${d}, ${ensureFloat(phi)}, ${ensureInt(d0)}, ${ensureInt(d1)}, ${x})`,
     d,
   };
 }
 
-function stereo([_, to]: Scalar[], x: string, from: string) {
+function stereo([to]: Scalar[], x: string, from: string) {
   const d = ensureInt(to);
   return {
     y: `stereo(${from}, ${d}, ${x})`,

@@ -57,14 +57,6 @@ export class PipeNode {
     for (const node of assignments) {
       this.variables[node.name.id] = node.value;
     }
-
-    steps[0]?.args.unshift(this.variables.d0);
-
-    for (let i = 1; i < steps.length; i++) {
-      const rangeFn = rangeFns[steps[i].type];
-      const d0 = steps[i - 1].args[0] as NumberNode;
-      steps[i].args.unshift(number(d0.value));
-    }
   }
 
   toString() {
@@ -355,19 +347,6 @@ export interface Location {
   start: number;
   end: number;
 }
-
-type RangeFn = (domain: number) => number;
-
-const rangeFns: Record<StepType, RangeFn> = {
-  [StepType.CUBE]: domain => domain,
-  [StepType.LATTICE]: domain => domain,
-  [StepType.SPHERE]: domain => domain + 1,
-  [StepType.SPIRAL]: domain => domain + 1,
-  [StepType.TORUS]: domain => domain + 1,
-  [StepType.ROTATE]: domain => domain,
-  [StepType.STEREO]: domain => domain,
-  [StepType.QUATERNION]: domain => domain
-};
 
 export const builtinIds = new Set<string>([
   ...Object.values(BuiltinConstant),
