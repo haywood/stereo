@@ -35,7 +35,8 @@ export class Renderer {
     defines
   });
 
-  private variables: Variables;
+  private pipe: ast.PipeNode;
+  private hsv: HSV;
   private t0: number;
 
   constructor() {
@@ -44,34 +45,22 @@ export class Renderer {
     this.scene.add(new Points(this.geometry, this.material));
     this.keepAwake();
     this.setSize();
-  }
-
-  setPipe(pipe: PipeNode) {
-    const { geometry } = this;
-
-    this.variables = pipe.variables;
 
     const i = new Float32Array(screenSize);
     i.forEach((_, k) => (i[k] = k));
-    const vertexShader = vertex(pipe);
+    this.geometry.setAttribute('position', new BufferAttribute(i, 1));
 
-    geometry.setAttribute('position', new BufferAttribute(i, 1));
+    debug('renderer', this);
+  }
 
-    this.t0 = Date.now() / 1000;
-    this.material.vertexShader = vertexShader;
-    this.material.needsUpdate = true;
-
-    debug('vertexShader', vertexShader);
+  setPipe(pipe: PipeNode) {
+    this.pipe = pipe;
+    this.setShaders();
   }
 
   setHsv(hsv: HSV) {
-    const { material } = this;
-    const fragmentShader = fragment(hsv, this.variables);
-
-    material.fragmentShader = fragmentShader;
-    material.needsUpdate = true;
-
-    debug('fragmentShader', fragmentShader);
+    this.hsv = hsv;
+    this.setShaders();
   }
 
   setScope(scope: Scope) {
@@ -97,6 +86,19 @@ export class Renderer {
   renderPng(): Promise<Blob> {
     this.render(); // need to call render first, since three.js clears the draw buffers
     return new Promise(r => this.canvas.toBlob(r));
+  }
+
+  private setShaders() {
+    if (!this.pipe || !this.hsv) return;
+
+    const vertexShader = vertex(this.pipe);
+    const fragmentShader = fragment(this.hsv, this.pipe.variables);
+    const { material } = this;
+
+    material.vertexShader = vertexShader;
+    material.fragmentShader = fragmentShader;
+    material.needsUpdate = true;
+    this.t0 = Date.now() / 1000;
   }
 
   private render() {

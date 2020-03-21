@@ -4,10 +4,8 @@ import { audioStream } from './audio';
 import debug from './debug';
 import { error } from './error';
 import { inputs } from './inputs';
-import { Change } from './inputs/change';
 import { Overlay } from './overlay';
 import { renderer } from './renderer';
-import { HSV, Scope } from './types';
 
 const cursorInactiveTimeout = 1000;
 const overlay = new Overlay();
