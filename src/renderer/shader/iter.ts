@@ -232,13 +232,5 @@ function quaternion(args: Scalar[]) {
 }
 
 function polar2cart(d: number, r: Scalar) {
-  return endent`{ // polar2cart(${d}, ${r})
-    const int d = ${d};
-
-    y[0] = ${ensureFloat(r)};
-    for (int k = 1; k < d; k++) {
-      y[k] = y[0] * sin(x[k - 1]);
-      y[0] *= cos(x[k - 1]);
-    }
-  }`;
+  return `polar2cart(${d}, ${ensureFloat(r)});`;
 }
