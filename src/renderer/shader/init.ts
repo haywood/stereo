@@ -3,7 +3,7 @@ import {
   StepNode,
   StepType
 } from '../../inputs/pipe/ast';
-import { ensureFloat, resolveInt } from './common';
+import { ensureFloat } from './common';
 
 const {
   CUBE,
@@ -13,8 +13,11 @@ const {
   TORUS
 } = StepType;
 
+const d0 = 'int(d0)';
+const d0m1 = 'int(d0) - 1';
+
 export function init({ type, args }: StepNode, i: string): string {
-  type StepFn = (args: Scalar[], i: string) => string;
+  type StepFn = (i: string, args: Scalar[]) => string;
 
   const fns: Partial<Record<StepType, StepFn>> = {
     [SPHERE]: interval_0_2pi,
@@ -24,32 +27,29 @@ export function init({ type, args }: StepNode, i: string): string {
     [CUBE]: cube
   };
 
-  return (fns[type] ?? lattice_1)(args, i);
+  return (fns[type] ?? lattice_1)(i, args);
 }
 
-function interval_0_2pi(args: Scalar[], i: string) {
-  const d = resolveInt(args[0]) - 1;
-  return interval(d, '0.', '2. * pi', i);
+function interval_0_2pi(i: string) {
+  return interval(d0m1, '0.', '2. * pi', i);
 }
 
-function spiral([d, tau]: Scalar[], i: string): string {
-  return interval(resolveInt(d) - 1, '0.', ensureFloat(tau), i);
+function spiral(i: string, [_, tau]: Scalar[]): string {
+  return interval(d0m1, '0.', ensureFloat(tau), i);
 }
 
-function interval_0_1(args: Scalar[], i: string): string {
-  const d = resolveInt(args[0]);
-  return interval(d, '0.', '1.', i);
+function interval_0_1(i: string): string {
+  return interval(d0, '0.', '1.', i);
 }
 
-function lattice_1(args: Scalar[], i: string): string {
-  const d = resolveInt(args[0]);
-  return interval(d, '-0.5', '0.5', i);
+function lattice_1(i: string): string {
+  return interval(d0, '-0.5', '0.5', i);
 }
 
-function interval(d: number, a: string, b: string, i: string): string {
+function interval(d: string, a: string, b: string, i: string): string {
   return `interval(${d}, ${a}, ${b}, i)`;
 }
 
-function cube([d, l]: Scalar[], i: string): string {
-  return `init_cube(${resolveInt(d)}, ${ensureFloat(l)}, i)`;
+function cube(i: string, [d, l]: Scalar[]): string {
+  return `init_cube(${d0}, ${ensureFloat(l)}, i)`;
 }
