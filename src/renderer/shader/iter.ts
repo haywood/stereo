@@ -94,7 +94,7 @@ function rotate(args: Scalar[], x: string, d: string) {
     d
   };
 
-  function ds(arg) {
+  function ds(arg: Scalar) {
     const tmp = arg ? [arg] : Array.from({length: D_MAX}).map((_, i) => number(i));
     return vector('int', tmp, '-1');
   }

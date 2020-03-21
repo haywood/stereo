@@ -17,17 +17,20 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
-    phi = t + audio.power
+    d0 = 2 + mod(t / 10, 5)
     n = 1000000
-    r = 1/log(n)
-    spiral(phi, r)
+    phi = t / pi + pi * audio.power
+    r = 1 / log(n)
+
+    spiral(100 / r, r)
     Q(sin(phi))
     stereo(3)
+    R(phi)
     `,
     { startState: Context.pipe, tabIndex: 1 }
   ),
 
-  h: new PipeInput('h', 'sin(phi * i / n)', {
+  h: new PipeInput('h', 'abs(sin(phi * i / n))', {
     startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
@@ -35,7 +38,7 @@ export const inputs = {
     startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
-  v: new PipeInput('v', '1', {
+  v: new PipeInput('v', '(1 + abs(cos(phi))) / 2', {
     startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
   }),
 
