@@ -19,14 +19,16 @@ export const inputs = {
   pipe: new PipeInput(
     'pipe',
     endent`
-    phi = 2 * pi * log(t) / 10
-    omega = abs(cos(phi * i / n))
-    step = 2 * audio.power
-    r = 0.001
-    d0 = 3
+    x0 = (1.1 - abs(sin(t / 10))) + sin(pi * audio.power)
+    w = 2 * pi * i / n
+    phi = w * tan(x0)
+    omega = abs(cos(w * log(t)))
+    r = 0.1
+    d0 = 4
 
-    spiral(100 * pi, r)
-    Q(mix(sin(phi), audio.power, step))
+    spiral(phi, r)
+    Q(sin(phi))
+    stereo(3)
     `,
     { startState: Context.pipe, tabIndex: 1 }
   ),
