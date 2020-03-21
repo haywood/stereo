@@ -1,13 +1,5 @@
-import {
-  Scalar,
-  StepNode,
-  StepType,
-} from '../../inputs/pipe/ast';
-
-import {
-  ensureFloat,
-  ensureInt,
-} from './common';
+import { Scalar, StepNode, StepType } from '../../inputs/pipe/ast';
+import { D_MAX, ensureFloat, ensureInt } from './common';
 
 const {
   CUBE,
@@ -20,8 +12,16 @@ const {
   TORUS
 } = StepType;
 
-export function iter({ type, args }: StepNode, x: string, d0: string): {y: string, d: string} {
-  type StepFn = (args: Scalar[], x: string, d0: string) => {y: string, d: string};
+export function iter(
+  { type, args }: StepNode,
+  x: string,
+  d0: string
+): { y: string; d: string } {
+  type StepFn = (
+    args: Scalar[],
+    x: string,
+    d0: string
+  ) => { y: string; d: string };
 
   const fns: Record<StepType, StepFn> = {
     [TORUS]: torus,
@@ -51,43 +51,47 @@ function torus(args: Scalar[], x: string, d0: string) {
 
   const r = `float[](${rs.join(', ')})`;
   const d = `${d0} + 1`;
-  return {y: `torus(${d}, ${r}, ${x})`, d};
+  return { y: `torus(${d}, ${r}, ${x})`, d };
 }
 
 function spiral([r]: Scalar[], x: string, d0: string) {
   const d = `${d0} + 1`;
   return {
     y: `spiral(${d}, ${ensureFloat(r)}, ${x})`,
-    d,
+    d
   };
 }
 
 function sphere([r]: Scalar[], x: string, d0: string) {
-  const d = `${d0} + 1`
+  const d = `${d0} + 1`;
   return {
     y: `sphere(${d}, ${ensureFloat(r)}, ${x})`,
-    d,
+    d
   };
 }
 
 function lattice([l]: Scalar[], x: string, d: string) {
   return {
     y: `lattice(${d}, ${ensureFloat(l)}, ${x})`,
-    d,
+    d
   };
 }
 
 function cube([l]: Scalar[], x: string, d: string) {
   return {
     y: `cube(${d}, ${ensureFloat(l)}, ${x}, n)`,
-    d,
+    d
   };
 }
 
-function rotate([phi, d0, d1]: Scalar[], x: string, d: string) {
+function rotate(args: Scalar[], x: string, d: string) {
+  const phi = ensureFloat(args[0]);
+  const d0s = vector('int', [args[1]], '-1');
+  const d1s = vector('int', [args[2]], '-1');
+
   return {
-    y: `rotate(${d}, ${ensureFloat(phi)}, ${ensureInt(d0)}, ${ensureInt(d1)}, ${x})`,
-    d,
+    y: `rotate(${d}, ${phi}, ${d0s}, ${d1s}, ${x})`,
+    d
   };
 }
 
@@ -95,8 +99,8 @@ function stereo([to]: Scalar[], x: string, from: string) {
   const d = ensureInt(to);
   return {
     y: `stereo(${from}, ${d}, ${x})`,
-    d,
-  }
+    d
+  };
 }
 
 function quaternion(args: Scalar[], x: string, d: string) {
@@ -109,6 +113,16 @@ function quaternion(args: Scalar[], x: string, d: string) {
 
   return {
     y: `quaternion(${r}, ${i}, ${j}, ${k}, ${x})`,
-    d,
+    d
   };
+}
+
+function vector(type: 'float' | 'int', scalars: Scalar[], fill = type == 'float' ? '0.' : '0') {
+  const arr = scalars.map(type == 'float' ? ensureFloat : ensureInt);
+  const padding = Math.max(0, D_MAX - scalars.length);
+  for (let i = 0; i < padding; i++) {
+    arr.push(fill);
+  }
+
+  return `${type}[](${arr.join(', ')})`;
 }
