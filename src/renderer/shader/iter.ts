@@ -76,7 +76,7 @@ function cube([d, l]: Scalar[]) {
 }
 
 function rotate([d, phi, d0, d1]: Scalar[]) {
-  return `rotate(${resolveInt(d)}, ${phi}, ${resolveInt(d0)}, ${resolveInt(d1)});`;
+  return `rotate(${resolveInt(d)}, ${ensureFloat(phi)}, ${resolveInt(d0)}, ${resolveInt(d1)});`;
 }
 
 function stereo([from, to]: Scalar[]) {
