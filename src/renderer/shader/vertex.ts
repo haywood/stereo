@@ -7,12 +7,8 @@ import { init } from './init';
 import { iter } from './iter';
 
 const reset = `
-
-{ // reset
-  x = y;
-  zero(y);
-} // reset
-
+x = y;
+zero(y);
 `;
 
 export function vertex(pipe: PipeNode): string {
