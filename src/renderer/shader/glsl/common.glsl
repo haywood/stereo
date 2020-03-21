@@ -1,4 +1,3 @@
-#define copy(src, dst) for (int k = 0; k < D_MAX; k++) { dst[k] = src[k]; }
 #define zero(v) v = float[](0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 
 float round(float x) {

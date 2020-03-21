@@ -65,34 +65,34 @@ void rotate(int d, float phi, int d0, int d1) {
   x[d0] = x0 * r0 - x1 * r1;
   x[d1] = x0 * r1 + x1 * r0;
 
-  copy(x, y);
+  y = x;
 }
 
 void torus(int d, float[D_MAX] r) {
   sphere(2, r[0]);
 
   float[D_MAX] tmp;
-  copy(x, tmp);
-  copy(y, x);
+  tmp = x;
+  x = y;
 
   for (int k = 1; k < d; k++) {
     x[0] += r[k];
     rotate(d, tmp[k + 1], k, k + 2);
-    copy(y, x);
+    x = y;
   }
 
-  copy(x, y);
+  y = x;
 }
 
 void stereo(int from, int to) {
   if (from == to) {
-    copy(x, y);
+    y = x;
   } else if (from > to) {
     while (from-- > to) {
       for (int k = 0; k < from; k++) {
         y[k] = x[k + 1] / (1. - x[0]);
       }
-      copy(y, x);
+      x = y;
     }
   } else if (from < to) {
     while (from++ < to) {
@@ -104,7 +104,7 @@ void stereo(int from, int to) {
         y[k] = 2. * x[k - 1] / divisor;
       }
 
-      copy(y, x);
+      x = y;
     }
   }
 }
