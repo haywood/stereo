@@ -11,8 +11,12 @@ x = y;
 `;
 
 export function vertex(pipe: PipeNode): string {
-  const last = pipe.steps[pipe.steps.length - 1];
-  const d = last.type == 'stereo' ? last.args[1] : last.args[0];
+  const steps = pipe.steps;
+  const x0 = init(steps[0], 'position[0]');
+  const y = steps.reduce((x, s, i) => {
+    const ws = '\n' + '  '.repeat(1 + steps.length - i);
+    return endent`${iter(s, `${ws}${x}`)}`;
+  }, x0);
 
   return endent`
     ${header(pipe.variables)}
@@ -27,9 +31,7 @@ export function vertex(pipe: PipeNode): string {
       i = position[0];
       ${variables(pipe.variables)}
 
-      float[D_MAX] x = ${init(pipe.steps[0])}, y;
-
-      ${pipe.steps.map(s => `y = ${iter(s, 'x')};`).join(reset)}
+      float[D_MAX] y = ${y};
 
       vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
       gl_PointSize = -6. / mvPosition.z / log10(n);

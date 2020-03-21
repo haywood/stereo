@@ -1,6 +1,6 @@
 #define vector float[D_MAX];
 
-float[D_MAX]  interval(int d, float a, float b) {
+float[D_MAX]  interval(int d, float a, float b, float i) {
   float branching_factor = round(pow(n, 1. / float(d)));
   float[D_MAX] x;
 
@@ -14,7 +14,7 @@ float[D_MAX]  interval(int d, float a, float b) {
   return x;
 }
 
-float[D_MAX] init_cube(int d, float l) {
+float[D_MAX] init_cube(int d, float l, float i) {
   float n_face = round(n / float(d) / 2.);
   float branching_factor = round(pow(n_face, 1. / float(d)));
   float[D_MAX] x;

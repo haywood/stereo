@@ -83,6 +83,7 @@ export function variables(vs: Variables) {
         return `float ${name} = ${ensureFloat(value)};`;
       }
     })
+    .filter(s => !!s)
     .join('\n');
 }
 
