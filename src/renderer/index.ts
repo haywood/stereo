@@ -29,7 +29,7 @@ export class Renderer {
   private readonly scene = new Scene();
   private readonly renderer = new WebGLRenderer({
     canvas: this.canvas,
-    context: this.canvas.getContext('webgl')
+    context: this.canvas.getContext('webgl2')
   });
   private readonly material: ShaderMaterial = new ShaderMaterial({
     uniforms: {
