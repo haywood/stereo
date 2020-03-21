@@ -29,29 +29,33 @@ float[D_MAX] init_cube(int d, float l) {
   return x;
 }
 
-void polar2cart(int d, float r, float[D_MAX] x) {
+float[D_MAX] polar2cart(int d, float r, float[D_MAX] x) {
   y[0] = r;
   for (int k = 1; k < d; k++) {
     y[k] = y[0] * sin(x[k - 1]);
     y[0] *= cos(x[k - 1]);
   }
+
+  return y;
 }
 
-void spiral(int d, float r, float[D_MAX] x) {
-  polar2cart(d, r * norm2(x), x);
+float[D_MAX] spiral(int d, float r, float[D_MAX] x) {
+  return polar2cart(d, r * norm2(x), x);
 }
 
-void sphere(int d, float r, float[D_MAX] x) {
-  polar2cart(d, r, x);
+float[D_MAX] sphere(int d, float r, float[D_MAX] x) {
+  return polar2cart(d, r, x);
 }
 
-void lattice(int d, float l, float[D_MAX] x) {
+float[D_MAX] lattice(int d, float l, float[D_MAX] x) {
   for (int k = 0; k < d; k++) {
     y[k] = l * (x[k] - 0.5);
   }
+
+  return y;
 }
 
-void cube(int d, float l, float[D_MAX] x) {
+float[D_MAX] cube(int d, float l, float[D_MAX] x) {
   float sign = i <= n / 2. ? 1. : -1.;
   float value = sign * l / 2.;
   y = x;
@@ -63,9 +67,11 @@ void cube(int d, float l, float[D_MAX] x) {
       break;
     }
   }
+
+  return y;
 }
 
-void rotate(int d, float phi, int d0, int d1, float[D_MAX] x) {
+float[D_MAX] rotate(int d, float phi, int d0, int d1, float[D_MAX] x) {
   float r0 = cos(phi),
         r1 = sin(phi),
         x0 = x[d0],
@@ -75,9 +81,10 @@ void rotate(int d, float phi, int d0, int d1, float[D_MAX] x) {
   x[d1] = x0 * r1 + x1 * r0;
 
   y = x;
+  return y;
 }
 
-void torus(int d, float[D_MAX] r, float[D_MAX] x) {
+float[D_MAX] torus(int d, float[D_MAX] r, float[D_MAX] x) {
   float[D_MAX] tmp = x;
   sphere(2, r[0], x);
 
@@ -90,9 +97,10 @@ void torus(int d, float[D_MAX] r, float[D_MAX] x) {
   }
 
   y = x;
+  return y;
 }
 
-void stereo(int from, int to, float[D_MAX] x) {
+float[D_MAX] stereo(int from, int to, float[D_MAX] x) {
   if (from == to) {
     y = x;
   } else if (from > to) {
@@ -115,9 +123,11 @@ void stereo(int from, int to, float[D_MAX] x) {
       x = y;
     }
   }
+
+  return y;
 }
 
-void quaternion(float r, float i, float j, float k, float[D_MAX] x) {
+float[D_MAX] quaternion(float r, float i, float j, float k, float[D_MAX] x) {
   zero(y);
 
   // y += x * r
@@ -143,5 +153,7 @@ void quaternion(float r, float i, float j, float k, float[D_MAX] x) {
   y[Q_I] += x[Q_J] * k; // j * k = i
   y[Q_J] += -x[Q_I] * k; // i * k = -j
   y[Q_K] += x[Q_R] * k; // r * k = k
+
+  return y;
 }
 
