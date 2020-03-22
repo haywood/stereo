@@ -1,4 +1,5 @@
 #define zero(v) v = float[](0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+#define epsilon pow(2., -31.)
 
 float norm2(float[D_MAX] x) {
   float sum;
@@ -10,4 +11,12 @@ float norm2(float[D_MAX] x) {
 
 float norm(float[D_MAX] x) {
   return sqrt(norm2(x));
+}
+
+float amix(float no_audio, float with_audio) {
+  return mix(no_audio, with_audio, step(epsilon, audio.power));
+}
+
+float log10(float x) {
+  return log(x) / ln10;
 }

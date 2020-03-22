@@ -188,6 +188,7 @@ export function fn(name: FnName, args: Scalar[], location?: Location): FnNode {
 
 export enum FnName {
   ABS = 'abs',
+  AMIX = 'amix',
   ARC_COS = 'acos',
   ARC_SIN = 'asin',
   ARC_TAN = 'atan',
@@ -232,6 +233,7 @@ export class FnNode {
 export enum BuiltinConstant {
   AUDIO = 'audio',
   E = 'e',
+  EPSILON = 'epsilon',
   I = 'i',
   LN10 = 'ln10',
   LN2 = 'ln2',

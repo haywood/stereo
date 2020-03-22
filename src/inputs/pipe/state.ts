@@ -487,6 +487,7 @@ const NUMBER = re`/(${INT}(${MANT})?|${MANT})([eE]${INT})?/i`;
 function or(o: object): RegExp {
   return new RegExp(
     Object.values(o)
+      .sort((a, b) => b.length - a.length)
       .map(escape)
       .join('|'),
     'i'

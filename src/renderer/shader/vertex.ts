@@ -21,10 +21,6 @@ export function vertex(pipe: PipeNode): string {
   return endent`
     ${header()}
 
-    float log10(float x) {
-      return log(x) / ln10;
-    }
-
     ${vertexFns}
 
     void main() {
