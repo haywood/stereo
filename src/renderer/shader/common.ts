@@ -7,7 +7,10 @@ import {
   FnNode,
   PropertyNode,
   Scalar,
-  Variables
+  Variables,
+  arith,
+  id,
+  number
 } from '../../inputs/pipe/ast';
 import { pp } from '../../pp';
 import common from './glsl/common.glsl';
@@ -68,16 +71,21 @@ export function header() {
   `;
 }
 
-export function variables(vs: Variables) {
-  const { n, d0, ...rest } = vs ?? {};
-  return endent`
-  float d0 = ${ensureFloat(d0)};
-  float n = ${ensureFloat(n)};
-  ${Object.entries(rest)
+export function variables(variables: Variables) {
+  const vs = Object.entries(variables);
+
+  if (!('d0' in variables)) {
+    vs.unshift(['d0', number(4)]);
+  }
+
+  if (!('n' in variables)) {
+    vs.unshift(['n', number(screenSize)]);
+  }
+
+  return vs
     .map(([name, value]) => `float ${name} = ${ensureFloat(value)};`)
     .filter(s => !!s)
-    .join('\n')}
-  `;
+    .join('\n');
 }
 
 export function from(node: Scalar): string {

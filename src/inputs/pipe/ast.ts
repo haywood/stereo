@@ -49,10 +49,7 @@ export class PipeNode {
     readonly errors: ErrorNode[],
     readonly location?: Location
   ) {
-    this.variables = {
-      d0: number(4),
-      n: arith(ArithOp.EXP, [number(10), id('d0')])
-    };
+    this.variables = { };
 
     for (const node of assignments) {
       this.variables[node.name.id] = node.value;
@@ -68,12 +65,7 @@ export class PipeNode {
   }
 }
 
-export interface Variables {
-  d0: Scalar;
-  n: Scalar;
-
-  [name: string]: Scalar;
-}
+export type Variables = Record<string, Scalar>;
 
 export function assignment(
   name: IdNode,
