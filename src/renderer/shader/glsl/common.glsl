@@ -5,12 +5,12 @@ uniform float t;
 
 uniform struct Audio {
   float power;
-} audio_;
+} audio;
 
 varying float i;
 
 float power() {
-  return audio_.power;
+  return audio.power;
 }
 
 float norm2(float[D_MAX] x) {

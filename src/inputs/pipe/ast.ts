@@ -228,7 +228,6 @@ export class FnNode {
 }
 
 export enum BuiltinConstant {
-  AUDIO = 'audio',
   E = 'e',
   EPSILON = 'epsilon',
   I = 'i',
@@ -299,11 +298,4 @@ export const alwaysDefinedIds = new Set<string>([
   ...Object.values(BuiltinConstant),
   ...Object.values(FnName),
   ...Object.values(StepType),
-  // TODO this is not correct, but I'm going to get rid of properties when
-  // I redo audio anyway...
-  'power',
-  'hue',
-  'onset',
-  'pitch',
-  'tempo'
 ]);
