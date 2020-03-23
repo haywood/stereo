@@ -396,6 +396,7 @@ function onSelect(hint: Hint, el: HTMLElement) {
 
     panel.style.top = `${rect.top}px`;
     panel.style.left = `${rect.right}px`;
+    panel.style.width = `${window.innerWidth - rect.right - 16}px`;
 
     function findOrAdd() {
       let d = document.querySelector<HTMLElement>('.hint-description');
