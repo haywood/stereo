@@ -52,7 +52,7 @@ function interval(d: string, a: string, b: string, i: string) {
            ${d},
            ${a},
            ${b},
-           ${i},
+           i,
            n)`,
     d,
   };

@@ -87,21 +87,24 @@ function sphere([r]: Scalar[], x: string, d0: string) {
 
 function lattice([l]: Scalar[], x: string, d: string) {
   return {
-    y: endent`lattice(
-        ${d},
-        ${ensureFloat(l)},
-        ${x})`,
+    y: endent`
+        lattice(
+          ${d},
+          ${ensureFloat(l)},
+          ${x})`,
     d
   };
 }
 
 function cube([l]: Scalar[], x: string, d: string) {
   return {
-    y: endent`cube(
-        ${d},
-        ${ensureFloat(l)},
-        n,
-        ${x})`,
+    y: endent`
+        cube(
+          ${d},
+          ${ensureFloat(l)},
+          i,
+          n,
+          ${x})`,
     d
   };
 }
