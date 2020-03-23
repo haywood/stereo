@@ -101,9 +101,7 @@ export class Context<T> {
       );
     }
 
-    if (eoi(stream, this.src())) {
-      this.drain(stream);
-    }
+    this.drain(stream);
 
     return style;
   }
@@ -111,10 +109,15 @@ export class Context<T> {
   private drain(stream: StringStream) {
     let state;
 
-    while (this.stack.length) {
+    while (topDone.call(this)) {
       state = this.stack.pop();
       if (!state.location) state.location = loc(stream, this.src());
       this.parent.resolveChild(state, stream);
+    }
+
+    function topDone() {
+      const top = this.stack[this.stack.length - 1];
+      return top && this.expanded.has(top) && !top.repeatable; 
     }
   }
 
@@ -122,6 +125,8 @@ export class Context<T> {
     if (!this.expand(curr, stream)) {
       this.parent.resolveChild(curr, stream);
     }
+
+    this.drain(stream);
   }
 
   private expand(curr: st.NonTerminal, stream: StringStream) {

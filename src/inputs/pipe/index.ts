@@ -85,7 +85,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     // property access
     const errors = findErrors(ast);
     if (isEmpty(errors)) {
-      if (this.editor) this.text = this.editor.getValue();
+      this.text = this.editor.getValue();
 
       this.value = ast;
     } else {
@@ -96,7 +96,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
   private hint() {
     const ast = this.ctx().resolve();
 
-    this.editor?.showHint({
+    this.editor.showHint({
       hint: (editor: cm.Editor) => hint(editor, ast, ast.variables ?? inputs.pipe.value.variables),
         completeSingle: false
     });
@@ -104,7 +104,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
 
   private ctx() {
     // typings are wrong and don't document the second arg to getStateAfter
-    return (this.editor as any).getStateAfter(null, true);
+    return (this.editor as any).getStateAfter();
   }
 
   private defineMode() {
