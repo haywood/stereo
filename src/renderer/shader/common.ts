@@ -7,7 +7,6 @@ import {
   Scalar,
   Variables
 } from '../../inputs/pipe/ast';
-import { pp } from '../../pp';
 import glsl from './glsl/common.glsl';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
@@ -139,60 +138,6 @@ function fromId(id: string): string {
 
 function fromNumber(value: number): string {
   return value.toString();
-}
-
-function resolve(node: Scalar): number {
-  let value;
-  switch (node.kind) {
-    case 'arith':
-      value = resolveArith(node);
-      break;
-    case 'number':
-      value = node.value;
-      break;
-    case 'id':
-      value = resolveId(node.id);
-      break;
-    case 'paren':
-      value = resolve(node.scalar);
-      break;
-    case 'fn':
-      throw new Error(
-        `can't statically resolve node kind '${node.kind}' to a number`
-      );
-      break;
-  }
-
-  if (typeof value != 'number') {
-    throw new Error(endent`expected a number, but node resolved to ${value}:
-      ${pp(node)}`);
-  }
-
-  return value;
-}
-
-function resolveArith(node: ArithNode): number {
-  const { op, operands } = node;
-  const [a, b] = operands.map(resolve);
-
-  const ops: Record<ArithOp, () => number> = {
-    [ADD]: () => a + b,
-    [DIV]: () => a / b,
-    [EXP]: () => a ** b,
-    [EXP_CARET]: () => a ** b,
-    [MUL]: () => a * b,
-    [SUB]: () => b ?? a - b ?? -a
-  };
-
-  return ops[op]();
-}
-
-function resolveId(id: string): number {
-  if (id in defines) {
-    return defines[id];
-  } else {
-    throw new Error(`don't know how to resolve non-builtin ${id} to a number`);
-  }
 }
 
 function safe(name: string) {
