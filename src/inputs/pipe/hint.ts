@@ -440,6 +440,7 @@ const descriptions = {
   // Builtin Constants
   [ast.BuiltinConstant.AUDIO]: 'The current audio analysis data.',
   [ast.BuiltinConstant.E]: "Euler's number.",
+  [ast.BuiltinConstant.EPSILON]: "The smallest number that the system can represent. Useful as an alternative to 0 in step().",
   [ast.BuiltinConstant.I]: 'The index of the current point.',
   [ast.BuiltinConstant.LN10]: 'Natural logarithm of 10.',
   [ast.BuiltinConstant.LN2]: 'Natural logarithm of 2.',
