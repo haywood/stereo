@@ -47,9 +47,13 @@ export function header() {
 
 export function variables(variables: Variables) {
   return Object.entries(variables)
-    .map(([name, value]) => `float ${safe(name)} = ${ensureFloat(value)};`)
+    .map(([name, value]) => `float ${safeName(name)} = ${ensureFloat(value)};`)
     .filter(s => !!s)
     .join('\n');
+}
+
+export function safeName(name: string) {
+  return `_${name}`;
 }
 
 export function from(node: Scalar): string {
@@ -131,17 +135,9 @@ function fromFn(node: FnNode): string {
 }
 
 function fromId(id: string): string {
-  if (id in defines) {
-    return defines[id].toString();
-  } else {
-    return safe(id);
-  }
+  return safeName(id);
 }
 
 function fromNumber(value: number): string {
   return value.toString();
-}
-
-function safe(name: string) {
-  return `_${name}`;
 }
