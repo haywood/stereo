@@ -80,7 +80,7 @@ export class Context<T> {
   private applyTerminal(curr: st.Terminal, stream: StringStream) {
     const style = curr.apply(stream, this.src());
     if (style) {
-      this.parent.resolveChild(curr, stream);
+      this.parent().resolveChild(curr, stream);
     } else {
       this.stack.push(new st.RejectState(stream, this.src()));
     }
@@ -100,12 +100,9 @@ export class Context<T> {
   }
 
   private drain(stream: StringStream) {
-    let state;
-
     while (topDone.call(this)) {
-      state = this.stack.pop();
-      if (!state.location) state.location = loc(stream, this.src());
-      this.parent.resolveChild(state, stream);
+      const state = this.stack.pop()
+      this.parent().resolveChild(state, stream);
     }
 
     function topDone() {
@@ -116,7 +113,7 @@ export class Context<T> {
 
   private applyNonTerminal(curr: st.NonTerminal, stream: StringStream) {
     if (!this.expand(curr, stream)) {
-      this.parent.resolveChild(curr, stream);
+      this.parent().resolveChild(curr, stream);
     }
 
     this.drain(stream);
@@ -149,7 +146,7 @@ export class Context<T> {
     }
   }
 
-  private get parent(): st.NonTerminal {
+  private parent(): st.NonTerminal {
     const parent = this.parents[this.stack.length];
     if (parent == null) {
       return this.root;

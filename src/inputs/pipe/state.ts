@@ -9,7 +9,7 @@ import { loc, peek, pos } from './util';
 export abstract class State<T = any> {
   abstract resolve(): T | ast.ErrorNode;
 
-  location: ast.Location;
+  protected location: ast.Location;
 
   toString() {
     return `${this.constructor.name}`;
