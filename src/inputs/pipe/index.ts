@@ -95,7 +95,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
 
   private ctx() {
     // typings are wrong and don't document the second arg to getStateAfter
-    return (this.editor as any).getStateAfter();
+    return (this.editor as any).getStateAfter(null, true);
   }
 
   private defineMode() {
