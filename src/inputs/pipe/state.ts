@@ -469,8 +469,6 @@ export class RejectState extends Terminal<ast.ErrorNode> {
 // IDs must start with a letter
 // and cannot end with an underscore
 const ID = /[a-z]\w*[a-z0-9]*/i;
-const DEF = re`/(${ID})(\s*)(=)/i`;
-const PROPERTY = re`/\.${ID}/i`;
 const ARITH_OP = or(ast.ArithOp);
 const SCALAR_OP = re`/\.|(${ARITH_OP})/`;
 const FN_NAME = or(ast.FnName);
