@@ -44,11 +44,6 @@ export abstract class NonTerminal<T = any> extends State<T> {
   }
 
   protected onResolveChild(value: any) {}
-
-  reset() {
-    this.location = { start: 0, end: 0 };
-    this.values.length = 0;
-  }
 }
 
 export class PipeState extends NonTerminal<ast.PipeNode> {
