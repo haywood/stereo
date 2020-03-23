@@ -2,7 +2,6 @@ import { StringStream } from 'codemirror';
 
 import * as ast from './ast';
 import * as st from './state';
-import { loc } from './util';
 
 export class Context<T> {
   static pipe() {
