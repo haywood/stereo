@@ -1,3 +1,5 @@
+import * as cm from 'codemirror';
+
 export function findErrors(node: Node): ErrorNode[] {
   if (node instanceof PipeNode) {
     return [
@@ -338,8 +340,8 @@ export class ErrorNode {
 }
 
 export interface Location {
-  start: number;
-  end: number;
+  start: cm.Position;
+  end: cm.Position;
 }
 
 export const alwaysDefinedIds = new Set<string>([

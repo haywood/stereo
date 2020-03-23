@@ -9,7 +9,7 @@ import { loc, peek, pos } from './util';
 export abstract class State<T = any> {
   abstract resolve(): T | ast.ErrorNode;
 
-  protected location: ast.Location;
+  location: ast.Location;
 
   toString() {
     return `${this.constructor.name}`;
@@ -188,8 +188,8 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
         const a = this.buildAst(values.slice(0, pivot));
         const b = this.buildAst(values.slice(pivot + 1));
         return ast.arith(op, [a, b], {
-          start: Math.min(a.location?.start, b.location?.start),
-          end: Math.max(a.location?.end, b.location?.end)
+          start: a.location.start,
+          end: b.location.end,
         });
       }
     }

@@ -47,6 +47,7 @@ function hintStatement(node: ast.Statement, cursor, editor, variables) {
   const line = editor.getLine(cursor.line);
   const after = line.slice(cursor.ch);
 
+  console.debug({node, cursor});
   if (node instanceof ast.AssignmentNode) {
     return hintAssignment(node, cursor, editor, variables);
   } else if (node instanceof ast.StepNode) {
@@ -58,8 +59,8 @@ function hintStatement(node: ast.Statement, cursor, editor, variables) {
     const { start, end } = node.location;
     return hintEmptyStatement(
       node.src,
-      offset2pos(start, editor),
-      offset2pos(end, editor),
+      start,
+      end,
       editor,
       variables
     );
@@ -91,7 +92,7 @@ function hintAssignment(
   variables: ast.Variables,
 ) {
   const { name, value } = node;
-  const { line, ch } = offset2pos(name.location.start, editor);
+  const { line, ch } = name.location.start;
   if (includes(name, cursor, editor)) {
     for (const id in variables) {
       if (id == name.id) {
@@ -349,13 +350,11 @@ function variableHints(src: string, variables: ast.Variables): Hint[] {
 function addFnNames(
   list: Hint[],
   src: string,
-  { start, end }: ast.Location,
+  { start: from, end: to }: ast.Location,
   editor: cm.Editor
 ) {
   for (const name of Object.values(ast.FnName)) {
     if (name.startsWith(src)) {
-      const from = offset2pos(start, editor);
-      const to = offset2pos(end, editor);
       const text = `${name}()`;
       list.push({
         text,
@@ -377,35 +376,18 @@ function includes(
   if (!node.location) return false;
 
   const { start, end } = node.location;
-  const spos = offset2pos(start, editor);
-  const epos = offset2pos(end, editor);
 
-  if (cursor.line < spos.line || cursor.line > epos.line) {
+  if (cursor.line < start.line || cursor.line > end.line) {
     return false;
-  } else if (spos.line == epos.line) {
-    return spos.ch <= cursor.ch && cursor.ch <= epos.ch;
-  } else if (cursor.line == spos.line) {
-    return cursor.ch >= spos.ch;
-  } else if (cursor.line == epos.line) {
-    return cursor.ch <= epos.ch;
+  } else if (start.line == end.line) {
+    return start.ch <= cursor.ch && cursor.ch <= end.ch;
+  } else if (cursor.line == start.line) {
+    return cursor.ch >= start.ch;
+  } else if (cursor.line == end.line) {
+    return cursor.ch <= end.ch;
   } else {
     return true;
   }
-}
-
-/**
- * Whether the cursor is after the given offset.
- */
-function after(offset: number, cursor: cm.Position, editor: cm.Editor) {
-  const pos = offset2pos(offset, editor);
-  return pos.line <= cursor.line && pos.ch < cursor.ch;
-}
-
-function offset2pos(offset: number, editor: cm.Editor) {
-  const prefix = editor.getValue().slice(0, offset);
-  const line = prefix.match(/\n/g)?.length ?? 0;
-  const ch = offset - prefix.lastIndexOf('\n') - 1;
-  return cm.Pos(line, ch);
 }
 
 function onSelect(hint: Hint, el: HTMLElement) {

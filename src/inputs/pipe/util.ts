@@ -1,32 +1,21 @@
-import { StringStream } from 'codemirror';
+import * as cm from 'codemirror';
 
 import * as ast from './ast';
 
-export function peek(pattern: any, stream: StringStream) {
+export function peek(pattern: any, stream: cm.StringStream) {
   return stream.match(pattern, false);
 }
 
-export function loc(stream: StringStream, src: string): ast.Location {
+export function loc(stream: cm.StringStream, src: string): ast.Location {
   const start = pos(stream, src);
   const end = start;
   return { start, end };
 }
 
-export function pos(stream: StringStream, src: string): number {
-  let pos = 0;
-
-  src.split('\n').forEach((text, i) => {
-    if (i < line(stream)) {
-      pos += text.length + 1;
-    } else if (i == line(stream)) {
-      pos += stream.pos;
-      return;
-    }
-  });
-
-  return pos;
+export function pos(stream: cm.StringStream, src: string): cm.Position {
+  return cm.Pos(line(stream), stream.pos);
 }
 
-function line(stream: StringStream) {
-  return (stream as any).lineOracle?.line;
+function line(stream: cm.StringStream) {
+  return (stream as any).lineOracle.line;
 }
