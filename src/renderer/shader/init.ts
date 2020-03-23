@@ -14,7 +14,7 @@ const {
   TORUS
 } = StepType;
 
-const d0m1 = 'int(d0) - 1';
+const d0m1 = `${d0} - 1`;
 export function init({ type, args }: StepNode): {y: string, d: string} {
   type StepFn = (args: Scalar[]) => {y: string, d: string};
 

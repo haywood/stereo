@@ -11,7 +11,7 @@ import glsl from './glsl/common.glsl';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
 
-export const d0 = 'int(d0)';
+export const d0 = 'int(_d0)';
 export const screenSize = Math.round(
   window.screen.width * window.screen.height
 );
@@ -141,7 +141,7 @@ function fromNumber(value: number): string {
 }
 
 function safe(name: string) {
-  const converted = new Set(['i', 'n']);
+  const converted = new Set(['i', 'n', 'd0']);
   if (converted.has(name)) {
     return `_${name}`;
   } else {
