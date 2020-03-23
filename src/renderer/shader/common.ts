@@ -4,7 +4,6 @@ import {
   ArithNode,
   ArithOp,
   FnNode,
-  PropertyNode,
   Scalar,
   Variables
 } from '../../inputs/pipe/ast';
@@ -64,8 +63,6 @@ export function from(node: Scalar): string {
       return from(node.scalar);
     case 'id':
       return fromId(node.id);
-    case 'property':
-      return fromProperty(node);
   }
 }
 
@@ -87,11 +84,6 @@ export function ensureInt(node: Scalar) {
 
 export function isFloat(node: Scalar): boolean {
   switch (node.kind) {
-    case 'element':
-      return true; // I don't think there are any int arrays
-    case 'property':
-      // TODO currently works, but is pretty awkward and brittle
-      return fromProperty(node) != 'audio.onset';
     case 'id':
       if (node.id in defines) {
         const defined = defines[node.id];
@@ -145,14 +137,6 @@ function fromId(id: string): string {
   }
 }
 
-function fromProperty({ receiver, name }: PropertyNode) {
-  if (receiver instanceof PropertyNode) {
-    return `${fromProperty(receiver)}.${name.id}`;
-  } else {
-    return `${receiver.id}.${name.id}`;
-  }
-}
-
 function fromNumber(value: number): string {
   return value.toString();
 }
@@ -172,7 +156,6 @@ function resolve(node: Scalar): number {
     case 'paren':
       value = resolve(node.scalar);
       break;
-    case 'property':
     case 'fn':
       throw new Error(
         `can't statically resolve node kind '${node.kind}' to a number`

@@ -4,14 +4,14 @@
 uniform float t;
 
 uniform struct Audio {
-  float hue;
-  int onset;
-  float pitch;
   float power;
-  float tempo;
-} audio;
+} audio_;
 
 varying float i;
+
+float power() {
+  return audio_.power;
+}
 
 float norm2(float[D_MAX] x) {
   float sum;
@@ -26,7 +26,7 @@ float norm(float[D_MAX] x) {
 }
 
 float amix(float no_audio, float with_audio) {
-  return mix(no_audio, with_audio, step(epsilon, audio.power));
+  return mix(no_audio, with_audio, step(epsilon, power()));
 }
 
 float log10(float x) {

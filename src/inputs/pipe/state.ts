@@ -168,17 +168,6 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
   }
 
   private buildAst(values: any[]): ast.Scalar {
-    while (values.includes('.')) {
-      const pivot = values.indexOf('.');
-      const receiver = values[pivot - 1];
-      const member = values[pivot + 1];
-      const property = ast.property(receiver, member, {
-        start: receiver.location?.start,
-        end: member.location?.end
-      });
-      values.splice(pivot - 1, 3, property);
-    }
-
     const { EXP, EXP_CARET, MUL, DIV, ADD, SUB } = ast.ArithOp;
     const ops = [EXP, EXP_CARET, MUL, DIV, ADD, SUB];
     for (const op of ops) {

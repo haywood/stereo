@@ -15,8 +15,6 @@ export function findErrors(node: Node): ErrorNode[] {
     return node.operands.map(findErrors).flat();
   } else if (node instanceof FnNode) {
     return node.args.map(findErrors).flat();
-  } else if (node instanceof PropertyNode) {
-    return [...findErrors(node.receiver), ...findErrors(node.name)];
   } else if (node instanceof ParenNode) {
     return findErrors(node.scalar);
   } else if (node instanceof IdNode || node instanceof NumberNode) {
@@ -126,7 +124,6 @@ export type Scalar =
   | ArithNode
   | NumberNode
   | FnNode
-  | PropertyNode
   | IdNode
   | ParenNode
   | ErrorNode;
@@ -206,6 +203,7 @@ export enum FnName {
   MOD = 'mod',
   NORM = 'norm',
   NORM2 = 'norm2',
+  POWER = 'power',
   RADIANS = 'radians',
   SIGN = 'sign',
   SIN = 'sin',
@@ -275,28 +273,6 @@ export class ParenNode {
 
   toString() {
     return `(${this.scalar})`;
-  }
-}
-
-export function property(
-  receiver: IdNode | PropertyNode,
-  name: IdNode,
-  location?: Location
-) {
-  return new PropertyNode(receiver, name, location);
-}
-
-export class PropertyNode {
-  readonly kind = 'property';
-
-  constructor(
-    readonly receiver: IdNode | PropertyNode,
-    readonly name: IdNode,
-    readonly location?: Location
-  ) {}
-
-  toString() {
-    return `${this.receiver}.${this.name}`;
   }
 }
 

@@ -19,7 +19,7 @@ export const inputs = {
     endent`
     n = 1000000
     d0 = 2 + mod(t, 8)
-    phi = amix(t / 2, pi * audio.power)
+    phi = amix(t / 2, pi * power())
     phin = phi * i / n
 
     r = sin(phi) / log(n)
@@ -35,11 +35,11 @@ export const inputs = {
     startState: () => Context.scalar(inputs.pipe.value.variables)
   }),
 
-  s: new PipeInput('s', 'amix(1, 1 - audio.power / 2)', {
+  s: new PipeInput('s', 'amix(1, 1 - power() / 2)', {
     startState: () => Context.scalar(inputs.pipe.value.variables)
   }),
 
-  v: new PipeInput('v', 'amix(1, 4 * audio.power)', {
+  v: new PipeInput('v', 'amix(1, 4 * power())', {
     startState: () => Context.scalar(inputs.pipe.value.variables)
   }),
 

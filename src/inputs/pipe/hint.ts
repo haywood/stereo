@@ -226,8 +226,6 @@ function hintFnLike(
   return list;
 }
 
-function hintProperty(node, cursor, editor, variables, ancestors) {}
-
 function hintId(
   node: ast.IdNode,
   cursor: cm.Position,

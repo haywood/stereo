@@ -72,8 +72,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     if (isEqual(ast, this.value)) return;
 
     // TODO also check for semantic errors
-    // e.g. wrong number of function args, redefining a constant, invalid
-    // property access
+    // e.g. wrong number of function args, redefining a constant
     const errors = findErrors(ast);
     if (isEmpty(errors)) {
       this.text = this.editor.getValue();
