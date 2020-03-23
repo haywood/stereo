@@ -46,7 +46,7 @@ export function header() {
 
 export function variables(variables: Variables) {
   return Object.entries(variables)
-    .map(([name, value]) => `float ${name} = ${ensureFloat(value)};`)
+    .map(([name, value]) => `float ${safe(name)} = ${ensureFloat(value)};`)
     .filter(s => !!s)
     .join('\n');
 }
@@ -133,7 +133,7 @@ function fromId(id: string): string {
   if (id in defines) {
     return defines[id].toString();
   } else {
-    return id;
+    return safe(id);
   }
 }
 
@@ -192,5 +192,14 @@ function resolveId(id: string): number {
     return defines[id];
   } else {
     throw new Error(`don't know how to resolve non-builtin ${id} to a number`);
+  }
+}
+
+function safe(name: string) {
+  const converted = new Set(['i']);
+  if (converted.has(name)) {
+    return `_${name}`;
+  } else {
+    return name;
   }
 }

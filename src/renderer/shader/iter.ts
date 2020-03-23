@@ -102,7 +102,7 @@ function cube([l]: Scalar[], x: string, d: string) {
         cube(
           ${d},
           ${ensureFloat(l)},
-          i,
+          _i,
           n,
           ${x})`,
     d

@@ -23,7 +23,7 @@ export function vertex(pipe: PipeNode): string {
     ${vertexFns}
 
     void main() {
-      i = position[0];
+      _i = position[0];
       ${variables(pipe.variables)}
 
       float[D_MAX] y =

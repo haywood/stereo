@@ -52,7 +52,7 @@ function interval(d: string, a: string, b: string) {
            ${d},
            ${a},
            ${b},
-           i,
+           _i,
            n)`,
     d,
   };
@@ -60,7 +60,7 @@ function interval(d: string, a: string, b: string) {
 
 function cube([l]: Scalar[]) {
   return {
-    y: `init_cube(${d0}, ${ensureFloat(l)}, i, n)`,
+    y: `init_cube(${d0}, ${ensureFloat(l)}, _i, n)`,
     d: d0,
   };
 }

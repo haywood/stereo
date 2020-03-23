@@ -7,7 +7,7 @@ uniform struct Audio {
   float power;
 } audio;
 
-varying float i;
+varying float _i;
 
 float power() {
   return audio.power;
