@@ -55,9 +55,16 @@ export const inputs = {
     disabled: !audioWorkletAvailable
   }),
 
-  save: new ActionInput('save')
+  save: new ActionInput('save'),
+
+  reset: new ActionInput('reset'),
 };
 
 export type Inputs = typeof inputs;
+
+inputs.reset.stream.subscribe(() => {
+  window.location.hash = '';
+  window.location.reload();
+});
 
 debug('inputs', inputs);

@@ -57,18 +57,29 @@
     }
   }
 
-  #header {
+  #header, #footer {
     display: flex;
     flex-flow: row;
     justify-content: center;
 
+    i.material-icons,
+    .icon {
+      cursor: pointer;
+      font-size: 2em;
+      height: 1em;
+      margin: 0 8px;
+      width: 1em;
+    }
+
+    .disabled {
+      display: none;
+    }
+  }
+
+  #header {
     h1 {
       flex: auto;
       margin: 0;
-    }
-
-    #view_code i.material-icons {
-      font-size: 1em;
     }
   }
 
@@ -80,8 +91,6 @@
     flex-grow: 1;
     justify-content: flex-start;
     overflow: auto;
-    right: 0;
-    top: 0;
 
     span,
     i {
@@ -120,28 +129,6 @@
 
     .CodeMirror {
       height: auto;
-    }
-  }
-
-  #footer {
-    bottom: 0;
-    box-sizing: border-box;
-    display: flex;
-    flex-flow: row;
-    justify-content: center;
-    width: 100%;
-
-    i.material-icons,
-    .icon {
-      cursor: pointer;
-      font-size: 2em;
-      height: 1em;
-      margin: 0 8px;
-      width: 1em;
-    }
-
-    .disabled {
-      display: none;
     }
   }
 

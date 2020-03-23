@@ -57,7 +57,6 @@ associated note.
 ## Misc
 
 - publish on push
-- add a reset button
 - Update wiki with more info
   - section on thanks
     - feature ideas
