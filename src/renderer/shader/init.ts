@@ -53,14 +53,14 @@ function interval(d: string, a: string, b: string) {
            ${a},
            ${b},
            _i,
-           n)`,
+           _n)`,
     d,
   };
 }
 
 function cube([l]: Scalar[]) {
   return {
-    y: `init_cube(${d0}, ${ensureFloat(l)}, _i, n)`,
+    y: `init_cube(${d0}, ${ensureFloat(l)}, _i, _n)`,
     d: d0,
   };
 }

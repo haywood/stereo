@@ -141,7 +141,7 @@ function fromNumber(value: number): string {
 }
 
 function safe(name: string) {
-  const converted = new Set(['i']);
+  const converted = new Set(['i', 'n']);
   if (converted.has(name)) {
     return `_${name}`;
   } else {
