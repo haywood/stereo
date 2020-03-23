@@ -31,14 +31,14 @@ export const defines: { [name: string]: number } = {
   Q_J: 2,
   Q_K: 3,
   near: near,
-  ['_' + BC.E]: Math.E,
-  ['_' + BC.LN10]: Math.LN10,
-  ['_' + BC.LN2]: Math.LN2,
-  ['_' + BC.LOG10E]: Math.LOG10E,
-  ['_' + BC.LOG2E]: Math.LOG2E,
-  ['_' + BC.PI]: Math.PI,
-  ['_' + BC.SQRT1_2]: Math.SQRT1_2,
-  ['_' + BC.SQRT2]: Math.SQRT2
+  [safeName(BC.E)]: Math.E,
+  [safeName(BC.LN10)]: Math.LN10,
+  [safeName(BC.LN2)]: Math.LN2,
+  [safeName(BC.LOG10E)]: Math.LOG10E,
+  [safeName(BC.LOG2E)]: Math.LOG2E,
+  [safeName(BC.PI)]: Math.PI,
+  [safeName(BC.SQRT1_2)]: Math.SQRT1_2,
+  [safeName(BC.SQRT2)]: Math.SQRT2
 };
 
 export function header() {

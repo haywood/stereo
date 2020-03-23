@@ -16,7 +16,7 @@ import { inputs } from '../inputs';
 import { PipeNode, Variables } from '../inputs/pipe/ast';
 import * as ast from '../inputs/pipe/ast';
 import { HSV, Scope } from '../types';
-import { defines, far, fov, near, screenSize } from './shader/common';
+import { defines, far, fov, near, screenSize, safeName } from './shader/common';
 import { fragment } from './shader/fragment';
 import { vertex } from './shader/vertex';
 
@@ -148,7 +148,7 @@ class Renderer {
         material: { uniforms },
         t0
       } = this;
-      uniforms['_' + BC.TIME] = { value: Date.now() / 1000 - t0 };
+      uniforms[safeName(BC.TIME)] = { value: Date.now() / 1000 - t0 };
       this.renderer.render(this.scene, this.camera);
     }
   }
