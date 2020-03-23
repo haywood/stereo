@@ -337,7 +337,7 @@ export class ElementState extends NonTerminal<ast.ElementNode> {
 export class Terminal<T = any> extends State<T> {
   static atom(assignedNames: Set<string>) {
     return new Terminal('atom', ID, ast.id, text => {
-      return assignedNames.has(text) || ast.builtinIds.has(text);
+      return assignedNames.has(text) || ast.alwaysDefinedIds.has(text);
     });
   }
 

@@ -72,17 +72,7 @@ export function header() {
 }
 
 export function variables(variables: Variables) {
-  const vs = Object.entries(variables);
-
-  if (!('d0' in variables)) {
-    vs.unshift(['d0', number(4)]);
-  }
-
-  if (!('n' in variables)) {
-    vs.unshift(['n', number(screenSize)]);
-  }
-
-  return vs
+  return Object.entries(variables)
     .map(([name, value]) => `float ${name} = ${ensureFloat(value)};`)
     .filter(s => !!s)
     .join('\n');

@@ -342,9 +342,8 @@ export interface Location {
   end: number;
 }
 
-export const builtinIds = new Set<string>([
+export const alwaysDefinedIds = new Set<string>([
   ...Object.values(BuiltinConstant),
-  ...Object.values(BuiltinVariable),
   ...Object.values(FnName),
   ...Object.values(StepType),
   // TODO this is not correct, but I'm going to get rid of properties when

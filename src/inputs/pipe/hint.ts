@@ -99,7 +99,7 @@ function hintAssignment(
       }
     }
 
-    for (const id of ast.builtinIds) {
+    for (const id of ast.alwaysDefinedIds) {
       if (id == name.id) {
         return [];
       }
@@ -203,7 +203,7 @@ function hintFnLike(
   const isLparen = /\(\s*$/.test(before);
   const isComma = /,\s*$/.test(before);
   const needsTerm = isLparen || isComma;
-  const knownArgs = descriptions[name]?.args?.length ?? Infinity;
+  const knownArgs = descriptions[name]?.args?.length ?? 1;
   let list;
 
   if (idx >= 0) {
@@ -244,7 +244,7 @@ function hintId(
     }
   }
 
-  for (const id of ast.builtinIds) {
+  for (const id of ast.alwaysDefinedIds) {
     if (id == node.id) {
       return list;
     }
@@ -332,7 +332,7 @@ function variableHints(src: string, variables: ast.Variables): Hint[] {
     });
 
   for (const name in variables) {
-    if (ast.builtinIds.has(name)) continue;
+    if (ast.alwaysDefinedIds.has(name)) continue;
 
     if (name.startsWith(src)) {
       list.push({
