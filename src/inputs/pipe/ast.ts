@@ -1,29 +1,5 @@
 import * as cm from 'codemirror';
 
-export function findErrors(node: Node): ErrorNode[] {
-  if (node instanceof PipeNode) {
-    return [
-      ...node.assignments.map(findErrors).flat(),
-      ...node.steps.map(findErrors).flat(),
-      ...node.errors
-    ];
-  } else if (node instanceof AssignmentNode) {
-    return [...findErrors(node.name), ...findErrors(node.value)];
-  } else if (node instanceof StepNode) {
-    return node.args.map(findErrors).flat();
-  } else if (node instanceof ArithNode) {
-    return node.operands.map(findErrors).flat();
-  } else if (node instanceof FnNode) {
-    return node.args.map(findErrors).flat();
-  } else if (node instanceof ParenNode) {
-    return findErrors(node.scalar);
-  } else if (node instanceof IdNode || node instanceof NumberNode) {
-    return [];
-  } else {
-    return [node];
-  }
-}
-
 export type Node = PipeNode | Statement | Scalar | ErrorNode;
 
 export function pipe(

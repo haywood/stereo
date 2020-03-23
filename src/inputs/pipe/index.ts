@@ -14,11 +14,10 @@ import { Change } from '../change';
 import { Input } from '../input';
 import {
   PipeNode,
-  findErrors
 } from './ast';
 import { Context } from './context';
 import { hint } from './hint';
-import { lint } from './lint';
+import { lint, findErrors } from './lint';
 
 export { Context } from './context';
 
