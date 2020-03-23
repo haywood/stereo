@@ -1,6 +1,20 @@
 #define zero(v) v = float[](0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 #define epsilon pow(2., -31.)
 
+uniform float t;
+
+uniform struct Audio {
+  float hue;
+  int onset;
+  float pitch;
+  float power;
+  float tempo;
+} audio;
+
+varying vec3 p;
+
+varying float i;
+
 float norm2(float[D_MAX] x) {
   float sum;
   for (int k = 0; k < D_MAX; k++) {

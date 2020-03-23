@@ -7,31 +7,12 @@ import {
   FnNode,
   PropertyNode,
   Scalar,
-  Variables,
-  arith,
-  id,
-  number
+  Variables
 } from '../../inputs/pipe/ast';
 import { pp } from '../../pp';
-import common from './glsl/common.glsl';
+import glsl from './glsl/common.glsl';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
-
-const uniforms = `
-uniform float t;
-uniform struct Audio {
-  float hue;
-  int onset;
-  float pitch;
-  float power;
-  float tempo;
-} audio;
-`;
-
-const varyings = endent`
-varying vec3 p;
-varying float i;
-`;
 
 export const d0 = 'int(d0)';
 export const screenSize = Math.round(
@@ -62,13 +43,7 @@ export const defines: { [name: string]: number } = {
 };
 
 export function header() {
-  return endent`
-  ${uniforms}
-
-  ${varyings}
-
-  ${common}
-  `;
+  return glsl;
 }
 
 export function variables(variables: Variables) {
