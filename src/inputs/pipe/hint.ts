@@ -3,8 +3,13 @@ import * as cm from 'codemirror';
 import * as ast from './ast';
 
 type Hint = cm.Hint & {
-  description?: any;
+  description?: Description;
 };
+
+interface Description {
+  summary: string;
+  args?: { name: string; description: string; required?: boolean };
+}
 
 export function hint(
   editor: cm.Editor,
@@ -47,7 +52,7 @@ function hintStatement(node: ast.Statement, cursor, editor, variables) {
   const line = editor.getLine(cursor.line);
   const after = line.slice(cursor.ch);
 
-  console.debug({node, cursor});
+  console.debug({ node, cursor });
   if (node instanceof ast.AssignmentNode) {
     return hintAssignment(node, cursor, editor, variables);
   } else if (node instanceof ast.StepNode) {
@@ -57,13 +62,7 @@ function hintStatement(node: ast.Statement, cursor, editor, variables) {
     return hintId(ast.id('', node.location), cursor, editor, variables, []);
   } else if (!after.trim()) {
     const { start, end } = node.location;
-    return hintEmptyStatement(
-      node.message,
-      start,
-      end,
-      editor,
-      variables
-    );
+    return hintEmptyStatement(node.message, start, end, editor, variables);
   }
 }
 
@@ -72,7 +71,7 @@ function hintEmptyStatement(
   from: cm.Position,
   to: cm.Position,
   editor: cm.Editor,
-  variables: ast.Variables,
+  variables: ast.Variables
 ) {
   const list = [];
 
@@ -89,7 +88,7 @@ function hintAssignment(
   node: ast.AssignmentNode,
   cursor: cm.Position,
   editor: cm.Editor,
-  variables: ast.Variables,
+  variables: ast.Variables
 ) {
   const { name, value } = node;
   const { line, ch } = name.location.start;
@@ -436,10 +435,11 @@ function renderDescription(descr) {
   return span;
 }
 
-const descriptions = {
+export const descriptions = {
   // Builtin Constants
   [ast.BuiltinConstant.E]: "Euler's number.",
-  [ast.BuiltinConstant.EPSILON]: "The smallest number that the system can represent. Useful as an alternative to 0 in step().",
+  [ast.BuiltinConstant.EPSILON]:
+    'The smallest number that the system can represent. Useful as an alternative to 0 in step().',
   [ast.BuiltinConstant.I]: 'The index of the current point.',
   [ast.BuiltinConstant.LN10]: 'Natural logarithm of 10.',
   [ast.BuiltinConstant.LN2]: 'Natural logarithm of 2.',
@@ -471,9 +471,21 @@ const descriptions = {
     summary: 'Right multiples each point by the given quaternion.',
     args: [
       { name: 'r', description: 'the real part of the quaternion.' },
-      { name: 'i', description: 'the i part of the quaternion.' },
-      { name: 'j', description: 'the j part of the quaternion.' },
-      { name: 'k', description: 'the k part of the quaternion.' }
+      {
+        name: 'i',
+        description: 'the i part of the quaternion.',
+        required: false
+      },
+      {
+        name: 'j',
+        description: 'the j part of the quaternion.',
+        required: false
+      },
+      {
+        name: 'k',
+        description: 'the k part of the quaternion.',
+        required: false
+      }
     ]
   },
 
@@ -490,7 +502,8 @@ const descriptions = {
       },
       {
         name: 'd1',
-        description: 'the zero-indexed second axis of the plane of rotation.'
+        description: 'the zero-indexed second axis of the plane of rotation.',
+        required: false
       }
     ]
   },

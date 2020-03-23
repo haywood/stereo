@@ -1,5 +1,7 @@
-import * as ast from './ast';
 import cm from 'codemirror';
+
+import * as ast from './ast';
+import { descriptions } from './hint';
 
 export function lint(_0, _1, editor: cm.Editor) {
   const value: ast.Node = editor.getStateAfter().resolve();
@@ -30,7 +32,7 @@ export function findErrors(node: ast.Node): ast.ErrorNode[] {
   } else if (node instanceof ast.AssignmentNode) {
     return [...findErrors(node.name), ...findErrors(node.value)];
   } else if (node instanceof ast.StepNode) {
-    return node.args.map(findErrors).flat();
+    return findErrorsInStep(node);
   } else if (node instanceof ast.ArithNode) {
     return node.operands.map(findErrors).flat();
   } else if (node instanceof ast.FnNode) {
@@ -44,3 +46,22 @@ export function findErrors(node: ast.Node): ast.ErrorNode[] {
   }
 }
 
+function findErrorsInStep(node: ast.StepNode) {
+  const errors = node.args.map(findErrors).flat();
+  const type = node.type;
+  const expected = (descriptions[type]?.args ?? []).filter(
+    a => a.required != false
+  ).length;
+  const found = node.args.length;
+
+  if (expected != null && expected != found) {
+    errors.push(
+      ast.error(
+        `wrong number of arguments to ${type}. expected ${expected}, but found ${found}`,
+        node.location
+      )
+    );
+  }
+
+  return errors;
+}
