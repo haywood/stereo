@@ -1,7 +1,7 @@
 #define zero(v) v = float[](0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 #define epsilon pow(2., -31.)
 
-uniform float t;
+uniform float _t;
 
 uniform struct Audio {
   float power;
@@ -30,5 +30,5 @@ float amix(float no_audio, float with_audio) {
 }
 
 float log10(float x) {
-  return log(x) / ln10;
+  return log(x) / _ln10;
 }

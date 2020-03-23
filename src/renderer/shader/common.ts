@@ -5,11 +5,13 @@ import {
   ArithOp,
   FnNode,
   Scalar,
+  BuiltinConstant,
   Variables
 } from '../../inputs/pipe/ast';
 import glsl from './glsl/common.glsl';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
+const BC = BuiltinConstant;
 
 export const d0 = 'int(_d0)';
 export const screenSize = Math.round(
@@ -29,14 +31,14 @@ export const defines: { [name: string]: number } = {
   Q_J: 2,
   Q_K: 3,
   near: near,
-  e: Math.E,
-  ln10: Math.LN10,
-  ln2: Math.LN2,
-  log10e: Math.LOG10E,
-  log2e: Math.LOG2E,
-  pi: Math.PI,
-  sqrt1_2: Math.SQRT1_2,
-  sqrt2: Math.SQRT2
+  ['_' + BC.E]: Math.E,
+  ['_' + BC.LN10]: Math.LN10,
+  ['_' + BC.LN2]: Math.LN2,
+  ['_' + BC.LOG10E]: Math.LOG10E,
+  ['_' + BC.LOG2E]: Math.LOG2E,
+  ['_' + BC.PI]: Math.PI,
+  ['_' + BC.SQRT1_2]: Math.SQRT1_2,
+  ['_' + BC.SQRT2]: Math.SQRT2
 };
 
 export function header() {
@@ -141,7 +143,7 @@ function fromNumber(value: number): string {
 }
 
 function safe(name: string) {
-  const converted = new Set(['i', 'n', 'd0']);
+  const converted = new Set(['i', 'n', 'd0', ...Object.values(BC)]);
   if (converted.has(name)) {
     return `_${name}`;
   } else {

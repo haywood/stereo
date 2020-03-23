@@ -20,6 +20,8 @@ import { defines, far, fov, near, screenSize } from './shader/common';
 import { fragment } from './shader/fragment';
 import { vertex } from './shader/vertex';
 
+const BC = ast.BuiltinConstant;
+
 export function start() {
   new Renderer();
 }
@@ -146,7 +148,7 @@ class Renderer {
         material: { uniforms },
         t0
       } = this;
-      uniforms.t = { value: Date.now() / 1000 - t0 };
+      uniforms['_' + BC.TIME] = { value: Date.now() / 1000 - t0 };
       this.renderer.render(this.scene, this.camera);
     }
   }
