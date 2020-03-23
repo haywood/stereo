@@ -18,6 +18,8 @@ export function lint(_0, _1, editor: cm.Editor) {
   return lints;
 }
 
+// TODO also check for semantic errors
+// e.g. wrong number of function args
 export function findErrors(node: ast.Node): ast.ErrorNode[] {
   if (node instanceof ast.PipeNode) {
     return [

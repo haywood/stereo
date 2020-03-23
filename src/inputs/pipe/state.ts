@@ -65,7 +65,7 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
           new RejectState(
             stream,
             'Assignments cannot take place after steps have begun.',
-            /.+/,
+            /.+/
           )
         ];
       }
@@ -177,7 +177,7 @@ export class ScalarState extends NonTerminal<ast.Scalar> {
         const b = this.buildAst(values.slice(pivot + 1));
         return ast.arith(op, [a, b], {
           start: a.location.start,
-          end: b.location.end,
+          end: b.location.end
         });
       }
     }
@@ -300,7 +300,7 @@ export class Terminal<T = any> extends State<T> {
     return new Terminal('atom', ID, ast.id, text => {
       const isValid = assignedNames.has(text) || ast.alwaysDefinedIds.has(text);
       const reason = isValid ? '' : `name '${text}' is undefined`;
-      return {isValid, reason};
+      return { isValid, reason };
     });
   }
 
@@ -356,7 +356,7 @@ export class Terminal<T = any> extends State<T> {
     private readonly _style: string,
     private readonly pattern,
     private readonly factory: (s: string, location: ast.Location) => T,
-    private readonly valid = (s: string) => ({ isValid: true, reason: ''})
+    private readonly valid = (s: string) => ({ isValid: true, reason: '' })
   ) {
     super();
   }
@@ -379,7 +379,7 @@ export class Terminal<T = any> extends State<T> {
   }
 
   resolve() {
-    const {isValid, reason} = this.valid(this.text);
+    const { isValid, reason } = this.valid(this.text);
     if (isValid) {
       return this.factory(this.text, this.location);
     } else {
@@ -388,8 +388,12 @@ export class Terminal<T = any> extends State<T> {
   }
 }
 
+const constants = new Set<string>(Object.values(ast.BuiltinConstant));
+
 class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
   private isReassignment = false;
+  private isConstant = false;
+
   constructor(private readonly assignedNames: Set<string>) {
     super('variable def', ID, ast.id);
   }
@@ -399,6 +403,9 @@ class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
     if (this.assignedNames.has(this.text)) {
       this.isReassignment = true;
       return 'error';
+    } else if (constants.has(this.text)) {
+      this.isConstant = true;
+      return 'error';
     } else {
       return style;
     }
@@ -407,6 +414,11 @@ class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
   resolve() {
     if (this.isReassignment) {
       return ast.error(`name '${this.text}' is already defined`, this.location);
+    } else if (this.isConstant) {
+      return ast.error(
+        `name '${this.text}' is a constant and cannot be redfined`,
+        this.location
+      );
     } else {
       return super.resolve();
     }
@@ -419,7 +431,7 @@ export class RejectState extends Terminal<ast.ErrorNode> {
   constructor(
     stream: StringStream,
     private readonly reason?: string,
-    pattern?: RegExp,
+    pattern?: RegExp
   ) {
     super('error', pattern ?? /[^\s]*/, (s, l) =>
       ast.error(this.reason ?? `unexpected token: '${s}'`, l)
