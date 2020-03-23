@@ -17,8 +17,6 @@ export function findErrors(node: Node): ErrorNode[] {
     return node.args.map(findErrors).flat();
   } else if (node instanceof PropertyNode) {
     return [...findErrors(node.receiver), ...findErrors(node.name)];
-  } else if (node instanceof ElementNode) {
-    return [...findErrors(node.receiver), ...findErrors(node.index)];
   } else if (node instanceof ParenNode) {
     return findErrors(node.scalar);
   } else if (node instanceof IdNode || node instanceof NumberNode) {
@@ -131,7 +129,6 @@ export type Scalar =
   | PropertyNode
   | IdNode
   | ParenNode
-  | ElementNode
   | ErrorNode;
 
 export function arith(
@@ -300,28 +297,6 @@ export class PropertyNode {
 
   toString() {
     return `${this.receiver}.${this.name}`;
-  }
-}
-
-export function element(
-  receiver: IdNode | ElementNode,
-  index: Scalar,
-  location?: Location
-) {
-  return new ElementNode(receiver, index, location);
-}
-
-export class ElementNode {
-  readonly kind = 'element';
-
-  constructor(
-    readonly receiver: IdNode | ElementNode,
-    readonly index: Scalar,
-    readonly location?: Location
-  ) {}
-
-  toString() {
-    return `${this.receiver}[${this.index}]`;
   }
 }
 

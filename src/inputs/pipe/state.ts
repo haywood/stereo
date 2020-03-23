@@ -218,8 +218,6 @@ class TermState extends NonTerminal<ast.Scalar> {
       return [Terminal.number()];
     } else if (peek(/\w+\s*\(/, stream)) {
       return [new FnState(this.assignedNames)];
-    } else if (peek(/\w+\s*\[/, stream)) {
-      return [new ElementState(this.assignedNames)];
     } else if (peek(/\w/, stream)) {
       return [Terminal.atom(this.assignedNames)];
     } else {
@@ -305,26 +303,6 @@ class ArgListState extends NonTerminal<ast.Scalar[]> {
 
     const last = this.values[this.values.length - 1];
     return last == ',';
-  }
-}
-
-export class ElementState extends NonTerminal<ast.ElementNode> {
-  constructor(private readonly assignedNames: Set<string>) {
-    super();
-  }
-
-  _successors(stream: StringStream) {
-    return [
-      Terminal.atom(this.assignedNames),
-      Terminal.lbrack(),
-      new ScalarState(this.assignedNames),
-      Terminal.rbrack()
-    ];
-  }
-
-  resolve() {
-    const [id, index] = this.values;
-    return ast.element(id, index, this.location);
   }
 }
 

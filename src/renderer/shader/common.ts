@@ -3,7 +3,6 @@ import endent from 'endent';
 import {
   ArithNode,
   ArithOp,
-  ElementNode,
   FnNode,
   PropertyNode,
   Scalar,
@@ -67,8 +66,6 @@ export function from(node: Scalar): string {
       return fromId(node.id);
     case 'property':
       return fromProperty(node);
-    case 'element':
-      return fromElement(node);
   }
 }
 
@@ -153,14 +150,6 @@ function fromProperty({ receiver, name }: PropertyNode) {
     return `${fromProperty(receiver)}.${name.id}`;
   } else {
     return `${receiver.id}.${name.id}`;
-  }
-}
-
-function fromElement({ receiver, index }: ElementNode) {
-  if (receiver instanceof ElementNode) {
-    return `${fromElement(receiver)}.${resolve(index)}`;
-  } else {
-    return `${receiver.id}[${resolve(index)}]`;
   }
 }
 

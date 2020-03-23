@@ -147,8 +147,6 @@ function hintScalar(
       return hintId(node, cursor, editor, variables, ancestors);
     case 'paren':
       return hintParen(node, cursor, editor, variables, ancestors);
-    case 'element':
-      return hintElement(node, cursor, editor, variables, ancestors);
     case 'error':
       return hintError(node, cursor, editor, variables, ancestors);
   }
@@ -259,8 +257,6 @@ function hintId(
 }
 
 function hintParen(node, cursor, editor, variables, ancestors) {}
-
-function hintElement(node, cursor, editor, variables, ancestors) {}
 
 function hintError(
   node: ast.ErrorNode,

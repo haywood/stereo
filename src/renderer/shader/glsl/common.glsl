@@ -11,8 +11,6 @@ uniform struct Audio {
   float tempo;
 } audio;
 
-varying vec3 p;
-
 varying float i;
 
 float norm2(float[D_MAX] x) {
