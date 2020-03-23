@@ -28,7 +28,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
 
   successors(stream: StringStream, src: string): State[] {
     if (!this.location) {
-      this.location = loc(stream, src);
+      this.location = loc(stream);
     }
 
     return this._successors(stream, src) ?? [];
@@ -395,12 +395,12 @@ export class Terminal<T = any> extends State<T> {
 
   apply(stream: StringStream, src: string): string {
     if (!this.location) {
-      this.location = loc(stream, src);
+      this.location = loc(stream);
     }
 
     if (stream.match(this.pattern)) {
       this.text = stream.current();
-      this.location.end = pos(stream, src);
+      this.location.end = pos(stream);
 
       if (this.valid(this.text)) {
         return this._style;
@@ -458,7 +458,7 @@ export class RejectState extends Terminal<ast.ErrorNode> {
     );
 
     this.context = stream.string.slice(stream.pos);
-    this.location = loc(stream, src);
+    this.location = loc(stream);
   }
 
   toString() {
