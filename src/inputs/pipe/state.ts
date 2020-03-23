@@ -64,8 +64,8 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
         return [
           new RejectState(
             stream,
+            'Assignments cannot take place after steps have begun.',
             /.+/,
-            'Assignments cannot take place after steps have begun.'
           )
         ];
       }
@@ -298,7 +298,9 @@ class ArgListState extends NonTerminal<ast.Scalar[]> {
 export class Terminal<T = any> extends State<T> {
   static atom(assignedNames: Set<string>) {
     return new Terminal('atom', ID, ast.id, text => {
-      return assignedNames.has(text) || ast.alwaysDefinedIds.has(text);
+      const isValid = assignedNames.has(text) || ast.alwaysDefinedIds.has(text);
+      const reason = isValid ? '' : `name '${text}' is undefined`;
+      return {isValid, reason};
     });
   }
 
@@ -354,7 +356,7 @@ export class Terminal<T = any> extends State<T> {
     private readonly _style: string,
     private readonly pattern,
     private readonly factory: (s: string, location: ast.Location) => T,
-    private readonly valid = (s: string) => true
+    private readonly valid = (s: string) => ({ isValid: true, reason: ''})
   ) {
     super();
   }
@@ -368,7 +370,7 @@ export class Terminal<T = any> extends State<T> {
       this.text = stream.current();
       this.location.end = pos(stream);
 
-      if (this.valid(this.text)) {
+      if (this.valid(this.text).isValid) {
         return this._style;
       } else {
         return 'error';
@@ -377,10 +379,11 @@ export class Terminal<T = any> extends State<T> {
   }
 
   resolve() {
-    if (this.valid(this.text)) {
+    const {isValid, reason} = this.valid(this.text);
+    if (isValid) {
       return this.factory(this.text, this.location);
     } else {
-      return ast.error(this.text, this.location);
+      return ast.error(reason, this.location);
     }
   }
 }
@@ -415,11 +418,11 @@ export class RejectState extends Terminal<ast.ErrorNode> {
 
   constructor(
     stream: StringStream,
+    private readonly reason?: string,
     pattern?: RegExp,
-    private readonly reason?: string
   ) {
     super('error', pattern ?? /[^\s]*/, (s, l) =>
-      ast.error(this.reason ?? s, l)
+      ast.error(this.reason ?? `unexpected token: '${s}'`, l)
     );
 
     this.context = stream.string.slice(stream.pos);

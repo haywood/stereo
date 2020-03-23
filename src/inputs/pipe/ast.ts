@@ -282,10 +282,10 @@ export function error(src: string, location?: Location): ErrorNode {
 export class ErrorNode {
   readonly kind = 'error';
 
-  constructor(readonly src: string, readonly location?: Location) {}
+  constructor(readonly message: string, readonly location?: Location) {}
 
   toString() {
-    return `<error>(${this.src})`;
+    return `<error>(${this.message})`;
   }
 }
 

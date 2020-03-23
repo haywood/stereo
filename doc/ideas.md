@@ -5,8 +5,6 @@
 - show description panel for the current argument when
   filling in step args
 
-- display explanations of errors somewhere in the editor
-
 - pop-up descriptions when mousing over tokens
   e.g.
     - show the description for Q when someone mouses over the Q

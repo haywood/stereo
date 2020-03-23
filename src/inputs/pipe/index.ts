@@ -1,4 +1,6 @@
 import 'codemirror/addon/mode/simple';
+import 'codemirror/addon/lint/lint';
+import 'codemirror/addon/lint/lint.css';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/lib/codemirror.css';
@@ -16,6 +18,7 @@ import {
 } from './ast';
 import { Context } from './context';
 import { hint } from './hint';
+import { lint } from './lint';
 
 export { Context } from './context';
 
@@ -56,8 +59,12 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       mode: this.id,
       readOnly: this.disabled ? 'nocursor' : false,
       value: this.initialText,
-      tabindex: this.tabIndex
+      tabindex: this.tabIndex,
+      gutters: ["CodeMirror-lint-markers"],
+      lint: true
     });
+
+    cm.registerHelper('lint', this.id, lint);
 
     this.editor.on('change', () => this.maybeUpdateValue());
 

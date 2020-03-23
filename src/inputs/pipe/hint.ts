@@ -58,7 +58,7 @@ function hintStatement(node: ast.Statement, cursor, editor, variables) {
   } else if (!after.trim()) {
     const { start, end } = node.location;
     return hintEmptyStatement(
-      node.src,
+      node.message,
       start,
       end,
       editor,
@@ -267,7 +267,7 @@ function hintError(
   const ctor = parent.constructor;
   if ([ast.ArithNode, ast.StepNode, ast.FnNode].includes(ctor)) {
     return hintId(
-      ast.id(node.src, node.location),
+      ast.id(node.message, node.location),
       cursor,
       editor,
       variables,
