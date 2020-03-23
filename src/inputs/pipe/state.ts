@@ -24,14 +24,14 @@ export abstract class NonTerminal<T = any> extends State<T> {
   protected readonly values = [];
   readonly repeatable: boolean = false;
 
-  protected abstract _successors(stream: StringStream, src: string): State[];
+  protected abstract _successors(stream: StringStream): State[];
 
-  successors(stream: StringStream, src: string): State[] {
+  successors(stream: StringStream): State[] {
     if (!this.location) {
       this.location = loc(stream);
     }
 
-    return this._successors(stream, src) ?? [];
+    return this._successors(stream) ?? [];
   }
 
   resolveChild(child: State, stream: StringStream) {
@@ -56,7 +56,7 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
     return new Set(this.assignments.map(a => a.name.id));
   }
 
-  _successors(stream: StringStream, src: string) {
+  _successors(stream: StringStream) {
     if (peek(/\w+\s*=/, stream)) {
       if (isEmpty(this.steps)) {
         return [new AssignmentState(this.assignmentSet)];
@@ -64,7 +64,6 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
         return [
           new RejectState(
             stream,
-            src,
             /.+/,
             'Assignments cannot take place after steps have begun.'
           )
@@ -212,7 +211,7 @@ class TermState extends NonTerminal<ast.Scalar> {
     super();
   }
 
-  _successors(stream: StringStream, src: string) {
+  _successors(stream: StringStream) {
     if (peek('(', stream)) {
       return [new ParenState(this.assignedNames)];
     } else if (peek(/\d/, stream)) {
@@ -224,7 +223,7 @@ class TermState extends NonTerminal<ast.Scalar> {
     } else if (peek(/\w/, stream)) {
       return [Terminal.atom(this.assignedNames)];
     } else {
-      return [new RejectState(stream, src)];
+      return [new RejectState(stream)];
     }
   }
 
@@ -393,7 +392,7 @@ export class Terminal<T = any> extends State<T> {
     super();
   }
 
-  apply(stream: StringStream, src: string): string {
+  apply(stream: StringStream): string {
     if (!this.location) {
       this.location = loc(stream);
     }
@@ -425,8 +424,8 @@ class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
     super('variable def', ID, ast.id);
   }
 
-  apply(stream: StringStream, src: string) {
-    const style = super.apply(stream, src);
+  apply(stream: StringStream) {
+    const style = super.apply(stream);
     if (this.assignedNames.has(this.text)) {
       this.isReassignment = true;
       return 'error';
@@ -449,7 +448,6 @@ export class RejectState extends Terminal<ast.ErrorNode> {
 
   constructor(
     stream: StringStream,
-    src: string,
     pattern?: RegExp,
     private readonly reason?: string
   ) {

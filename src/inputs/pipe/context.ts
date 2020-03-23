@@ -70,7 +70,7 @@ export class Context<T> {
       } else if (curr instanceof st.NonTerminal) {
         this.applyNonTerminal(curr, stream);
       } else if (!this.expand(this.root, stream)) {
-        this.stack.push(new st.RejectState(stream, this.src()));
+        this.stack.push(new st.RejectState(stream));
       }
     } catch (err) {
       console.error(err, {ctx: this.clone(), curr: curr.clone()});
@@ -78,11 +78,11 @@ export class Context<T> {
   }
 
   private applyTerminal(curr: st.Terminal, stream: StringStream) {
-    const style = curr.apply(stream, this.src());
+    const style = curr.apply(stream);
     if (style) {
       this.parent().resolveChild(curr, stream);
     } else {
-      this.stack.push(new st.RejectState(stream, this.src()));
+      this.stack.push(new st.RejectState(stream));
     }
 
     if (curr instanceof st.RejectState) {
@@ -122,7 +122,7 @@ export class Context<T> {
   private expand(curr: st.NonTerminal, stream: StringStream) {
     if (this.expanded.has(curr) && !curr.repeatable) return false;
 
-    const successors = curr.successors(stream, this.src());
+    const successors = curr.successors(stream);
     this.expanded.add(curr);
 
     if (stream.current()) {
