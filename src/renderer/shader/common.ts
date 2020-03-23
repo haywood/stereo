@@ -143,10 +143,5 @@ function fromNumber(value: number): string {
 }
 
 function safe(name: string) {
-  const converted = new Set(['i', 'n', 'd0', ...Object.values(BC)]);
-  if (converted.has(name)) {
-    return `_${name}`;
-  } else {
-    return name;
-  }
+  return `_${name}`;
 }
