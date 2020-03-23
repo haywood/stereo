@@ -32,15 +32,15 @@ export const inputs = {
   ),
 
   h: new PipeInput('h', 'abs(sin(phin))', {
-    startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
+    startState: () => Context.scalar(inputs.pipe.value.variables)
   }),
 
   s: new PipeInput('s', 'amix(1, 1 - audio.power / 2)', {
-    startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
+    startState: () => Context.scalar(inputs.pipe.value.variables)
   }),
 
   v: new PipeInput('v', 'amix(1, 4 * audio.power)', {
-    startState: (src) => Context.scalar(src, inputs.pipe.value.variables)
+    startState: () => Context.scalar(inputs.pipe.value.variables)
   }),
 
   animate: new ToggleInput('animate', '1'),

@@ -5,25 +5,21 @@ import * as st from './state';
 import { loc } from './util';
 
 export class Context<T> {
-  static pipe(src: () => string) {
-    return Context.start(new st.PipeState(), src);
+  static pipe() {
+    return Context.start(new st.PipeState());
   }
 
-  static scalar(src: () => string, variables?: ast.Variables) {
+  static scalar(variables?: ast.Variables) {
     const assignmentSet = new Set(Object.keys(variables));
-    return Context.start(new st.ScalarState(assignmentSet), src);
+    return Context.start(new st.ScalarState(assignmentSet));
   }
 
-  static start<T>(
-    root: st.NonTerminal<T>,
-    src: () => string,
-  ): Context<T> {
-    return new Context(root, src);
+  static start<T>( root: st.NonTerminal<T>): Context<T> {
+    return new Context(root);
   }
 
   constructor(
     private readonly root: st.NonTerminal<T>,
-    private readonly src: () => string,
     private readonly stack: st.State[] = [],
     private readonly parents: number[] = [],
     private readonly expanded: Set<st.NonTerminal> = new Set()
@@ -50,13 +46,12 @@ export class Context<T> {
       const clone = state.clone();
       stack.push(clone);
       if (state instanceof st.NonTerminal && this.expanded.has(state)) {
-        expanded.add(clone);
+        expanded.add(clone as st.NonTerminal);
       }
     }
 
     return new Context(
       this.root.clone(),
-      this.src,
       stack,
       this.parents.slice(),
       expanded

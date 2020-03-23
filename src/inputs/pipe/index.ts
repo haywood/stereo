@@ -28,7 +28,7 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     readonly id: string,
     defaultText: string,
     private readonly options: {
-      startState: (src: () => string) => Context<T>;
+      startState: () => Context<T>;
       tabIndex?: number;
     }
   ) {
