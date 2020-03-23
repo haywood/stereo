@@ -2,7 +2,7 @@ import { StringStream } from 'codemirror';
 
 import * as ast from './ast';
 
-export function peek(pattern, stream: StringStream) {
+export function peek(pattern: any, stream: StringStream) {
   return stream.match(pattern, false);
 }
 
@@ -25,10 +25,6 @@ export function pos(stream: StringStream, src: string): number {
   });
 
   return pos;
-}
-
-export function eoi(stream: StringStream, src: string) {
-  return pos(stream, src) == src.length;
 }
 
 function line(stream: StringStream) {

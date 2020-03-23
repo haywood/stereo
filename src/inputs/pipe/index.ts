@@ -3,24 +3,15 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/lib/codemirror.css';
 
-import cm, { Editor } from 'codemirror';
+import cm from 'codemirror';
 import { isEmpty, isEqual } from 'lodash';
-import { re } from 're-template-tag';
 import { ReplaySubject } from 'rxjs';
-import { escape } from 'xregexp';
 
 import { inputs } from '..';
 import { Change } from '../change';
 import { Input } from '../input';
-import { Options } from '../options';
-import { eoi } from './util';
 import {
-  ArithOp,
-  BuiltinConstant,
-  BuiltinVariable,
-  FnName,
   PipeNode,
-  StepType,
   findErrors
 } from './ast';
 import { Context } from './context';

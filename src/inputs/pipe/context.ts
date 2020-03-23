@@ -1,15 +1,8 @@
 import { StringStream } from 'codemirror';
-import cm from 'codemirror';
-import endent from 'endent';
-import { cloneDeep, isEmpty } from 'lodash';
 
-import debug from '../../debug';
-import { pp } from '../../pp';
 import * as ast from './ast';
 import * as st from './state';
-import { eoi, loc, pos } from './util';
-
-type Then<T> = (ctx: Context<T>) => void;
+import { loc } from './util';
 
 export class Context<T> {
   static pipe(src: () => string) {
