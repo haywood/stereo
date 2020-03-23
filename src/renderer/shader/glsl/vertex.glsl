@@ -56,7 +56,7 @@ float[D_MAX] lattice(int d, float l, float[D_MAX] x) {
   return x;
 }
 
-float[D_MAX] cube(int d, float l, float[D_MAX] x, float n) {
+float[D_MAX] cube(int d, float l, float n, float[D_MAX] x) {
   float sign = i <= n / 2. ? 1. : -1.;
   float value = sign * l / 2.;
 

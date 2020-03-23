@@ -1,3 +1,4 @@
+import endent from 'endent';
 import { Scalar, StepNode, StepType, number } from '../../inputs/pipe/ast';
 import { D_MAX, ensureFloat, ensureInt } from './common';
 
@@ -51,13 +52,24 @@ function torus(args: Scalar[], x: string, d0: string) {
 
   const r = `float[](${rs.join(', ')})`;
   const d = `${d0} + 1`;
-  return { y: `torus(${d}, ${r}, ${x})`, d };
+  return {
+    y: endent`
+        torus(
+          ${d},
+          ${r},
+          ${x})`,
+    d
+  };
 }
 
 function spiral([_, r]: Scalar[], x: string, d0: string) {
   const d = `${d0} + 1`;
   return {
-    y: `spiral(${d}, ${ensureFloat(r)}, ${x})`,
+    y: endent`
+        spiral(
+          ${d},
+          ${ensureFloat(r)},
+          ${x})`,
     d
   };
 }
@@ -65,21 +77,31 @@ function spiral([_, r]: Scalar[], x: string, d0: string) {
 function sphere([r]: Scalar[], x: string, d0: string) {
   const d = `${d0} + 1`;
   return {
-    y: `sphere(${d}, ${ensureFloat(r)}, ${x})`,
+    y: endent`
+        sphere(${d},
+               ${ensureFloat(r)},
+               ${x})`,
     d
   };
 }
 
 function lattice([l]: Scalar[], x: string, d: string) {
   return {
-    y: `lattice(${d}, ${ensureFloat(l)}, ${x})`,
+    y: endent`lattice(
+        ${d},
+        ${ensureFloat(l)},
+        ${x})`,
     d
   };
 }
 
 function cube([l]: Scalar[], x: string, d: string) {
   return {
-    y: `cube(${d}, ${ensureFloat(l)}, ${x}, n)`,
+    y: endent`cube(
+        ${d},
+        ${ensureFloat(l)},
+        n,
+        ${x})`,
     d
   };
 }
@@ -90,7 +112,13 @@ function rotate(args: Scalar[], x: string, d: string) {
   const d1s = ds(args[2]);
 
   return {
-    y: `rotate(${d}, ${phi}, ${d0s}, ${d1s}, ${x})`,
+    y: endent`
+        rotate(
+          ${d},
+          ${phi},
+          ${d0s},
+          ${d1s},
+          ${x})`,
     d
   };
 
@@ -103,13 +131,17 @@ function rotate(args: Scalar[], x: string, d: string) {
 function stereo([to]: Scalar[], x: string, from: string) {
   const d = ensureInt(to);
   return {
-    y: `stereo(${from}, ${d}, ${x})`,
+    y: endent`
+        stereo(
+          ${from},
+          ${d},
+          ${x})`,
     d
   };
 }
 
 function quaternion(args: Scalar[], x: string, d: string) {
-  let r, i, j, k;
+  let r: string, i: string, j: string, k: string;
   if (args.length == 1) {
     r = i = j = k = ensureFloat(args[0]);
   } else {
@@ -117,7 +149,13 @@ function quaternion(args: Scalar[], x: string, d: string) {
   }
 
   return {
-    y: `quaternion(${r}, ${i}, ${j}, ${k}, ${x})`,
+    y: endent`
+        quaternion(
+          ${r},
+          ${i},
+          ${j},
+          ${k},
+          ${x})`,
     d
   };
 }

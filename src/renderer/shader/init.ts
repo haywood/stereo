@@ -1,3 +1,4 @@
+import endent from 'endent';
 import {
   Scalar,
   StepNode,
@@ -46,7 +47,13 @@ function lattice_1(i: string) {
 
 function interval(d: string, a: string, b: string, i: string) {
   return {
-    y: `interval(${d}, ${a}, ${b}, ${i}, n)`,
+    y: endent`
+       interval(
+           ${d},
+           ${a},
+           ${b},
+           ${i},
+           n)`,
     d,
   };
 }
