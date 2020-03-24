@@ -40,7 +40,10 @@ export abstract class NonTerminal<T = any> extends State<T> {
       this.values.push(value);
       this.onResolveChild(value);
     }
-    this.location.end = child.location.end;
+
+    if (child.location) {
+      this.location.end = child.location.end;
+    }
   }
 
   protected onResolveChild(value: any) {}

@@ -3,8 +3,7 @@ import cm from 'codemirror';
 import * as ast from './ast';
 import { descriptions } from './hint';
 
-export function lint(_0, _1, editor: cm.Editor) {
-  const value: ast.Node = editor.getStateAfter().resolve();
+export function lint(value: ast.Node) {
   const errors = findErrors(value);
   const lints = [];
 

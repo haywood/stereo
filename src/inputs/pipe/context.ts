@@ -25,6 +25,7 @@ export class Context<T> {
   ) {}
 
   resolve() {
+    this.drain(true);
     return this.root.resolve();
   }
 
@@ -93,15 +94,15 @@ export class Context<T> {
     return style;
   }
 
-  private drain() {
-    while (topDone.call(this)) {
+  private drain(force?: boolean) {
+    while (shouldDrain.call(this)) {
       const state = this.stack.pop()
       this.parent().resolveChild(state);
     }
 
-    function topDone() {
+    function shouldDrain() {
       const top = this.stack[this.stack.length - 1];
-      return top && this.expanded.has(top) && !top.repeatable; 
+      return top && (force || this.expanded.has(top) && !top.repeatable); 
     }
   }
 

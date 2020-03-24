@@ -9,15 +9,13 @@ import cm from 'codemirror';
 import { isEmpty, isEqual } from 'lodash';
 import { ReplaySubject } from 'rxjs';
 
-import { inputs } from '..';
 import { Change } from '../change';
 import { Input } from '../input';
-import {
-  PipeNode,
-} from './ast';
+import { PipeNode } from './ast';
 import { Context } from './context';
 import { hint } from './hint';
-import { lint, findErrors } from './lint';
+import { findErrors, lint } from './lint';
+import { inputs } from '..';
 
 export { Context } from './context';
 
@@ -59,21 +57,22 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
       readOnly: this.disabled ? 'nocursor' : false,
       value: this.initialText,
       tabindex: this.tabIndex,
-      gutters: ["CodeMirror-lint-markers"],
+      gutters: ['CodeMirror-lint-markers'],
       lint: true
     });
 
-    cm.registerHelper('lint', this.id, lint);
+    cm.registerHelper('lint', this.id, () => this.lint());
 
     this.editor.on('change', () => this.maybeUpdateValue());
 
     this.editor.on('cursorActivity', () => this.hint());
 
     this.maybeUpdateValue();
+    this.lint();
   };
 
   private maybeUpdateValue() {
-    const ast = this.ctx().resolve();
+    const ast = this.resolve();
 
     if (isEqual(ast, this.value)) return;
 
@@ -87,26 +86,29 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     }
   }
 
+  private lint() {
+    return lint(this.resolve());
+  }
+
   private hint() {
-    const ast = this.ctx().resolve();
+    const ast = this.resolve();
 
     this.editor.showHint({
-      hint: (editor: cm.Editor) => hint(editor, ast, ast.variables ?? inputs.pipe.value.variables),
-        completeSingle: false
+      hint: (editor: cm.Editor) =>
+        hint(editor, ast, ast.variables ?? inputs.pipe.value?.variables ?? {}),
+      completeSingle: false
     });
   }
 
-  private ctx() {
+  private resolve() {
     // typings are wrong and don't document the second arg to getStateAfter
-    return (this.editor as any).getStateAfter(null, true);
+    return (this.editor as any).getStateAfter(null, true).resolve();
   }
 
   private defineMode() {
-    const startState = () => this.options.startState(() => this.editor?.getValue() ?? this.text);
-
     cm.defineMode(this.id, () => {
       return {
-        startState,
+        startState: this.options.startState,
         copyState: (ctx: Context<T>) => ctx.clone(),
         token: (stream, ctx: Context<T>) => ctx.token(stream)
       };
