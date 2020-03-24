@@ -58,6 +58,7 @@ function findErrorsInStep(node: ast.StepNode) {
     errors.push(
       ast.error(
         `wrong number of arguments to ${type}. expected ${expected}, but found ${found}`,
+        node.toString(),
         node.location
       )
     );

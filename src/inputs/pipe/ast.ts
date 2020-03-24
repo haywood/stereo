@@ -23,7 +23,7 @@ export class PipeNode {
     readonly errors: ErrorNode[],
     readonly location?: Location
   ) {
-    this.variables = { };
+    this.variables = {};
 
     for (const node of assignments) {
       this.variables[node.name.id] = node.value;
@@ -251,14 +251,22 @@ export class ParenNode {
   }
 }
 
-export function error(src: string, location?: Location): ErrorNode {
-  return new ErrorNode(src, location);
+export function error(
+  message: string,
+  src: string,
+  location?: Location
+): ErrorNode {
+  return new ErrorNode(message, src, location);
 }
 
 export class ErrorNode {
   readonly kind = 'error';
 
-  constructor(readonly message: string, readonly location?: Location) {}
+  constructor(
+    readonly message: string,
+    readonly src: string,
+    readonly location?: Location
+  ) {}
 
   toString() {
     return `<error>(${this.message})`;
@@ -273,5 +281,5 @@ export interface Location {
 export const alwaysDefinedIds = new Set<string>([
   ...Object.values(BuiltinConstant),
   ...Object.values(FnName),
-  ...Object.values(StepType),
+  ...Object.values(StepType)
 ]);

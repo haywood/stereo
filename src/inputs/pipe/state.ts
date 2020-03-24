@@ -383,7 +383,7 @@ export class Terminal<T = any> extends State<T> {
     if (isValid) {
       return this.factory(this.text, this.location);
     } else {
-      return ast.error(reason, this.location);
+      return ast.error(reason, this.text, this.location);
     }
   }
 }
@@ -413,10 +413,11 @@ class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
 
   resolve() {
     if (this.isReassignment) {
-      return ast.error(`name '${this.text}' is already defined`, this.location);
+      return ast.error(`name '${this.text}' is already defined`, this.text, this.location);
     } else if (this.isConstant) {
       return ast.error(
         `name '${this.text}' is a constant and cannot be redfined`,
+        this.text,
         this.location
       );
     } else {
@@ -434,7 +435,7 @@ export class RejectState extends Terminal<ast.ErrorNode> {
     pattern?: RegExp
   ) {
     super('error', pattern ?? /[^\s]*/, (s, l) =>
-      ast.error(this.reason ?? `unexpected token: '${s}'`, l)
+      ast.error(this.reason ?? `unexpected token: '${s}'`, s, l)
     );
 
     this.context = stream.string.slice(stream.pos);

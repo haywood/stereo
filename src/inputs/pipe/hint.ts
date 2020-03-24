@@ -43,8 +43,6 @@ function hintPipe(node: ast.PipeNode, cursor, editor, variables) {
   const statement = node.statements.find(s => includes(s, cursor, editor));
   if (statement) {
     return hintStatement(statement, cursor, editor, variables);
-  } else {
-    return hintEmptyStatement('', cursor, cursor, editor, variables);
   }
 }
 
@@ -52,7 +50,6 @@ function hintStatement(node: ast.Statement, cursor, editor, variables) {
   const line = editor.getLine(cursor.line);
   const after = line.slice(cursor.ch);
 
-  console.debug({ node, cursor });
   if (node instanceof ast.AssignmentNode) {
     return hintAssignment(node, cursor, editor, variables);
   } else if (node instanceof ast.StepNode) {
@@ -232,6 +229,7 @@ function hintId(
   variables: ast.Variables,
   ancestors: ast.Node[]
 ) {
+  console.debug({ node, cursor });
   const list = [];
 
   for (const id in variables) {
@@ -264,9 +262,9 @@ function hintError(
 ) {
   const parent = ancestors.pop();
   const ctor = parent.constructor;
-  if ([ast.ArithNode, ast.StepNode, ast.FnNode].includes(ctor)) {
+  if ([ast.ArithNode, ast.StepNode, ast.FnNode, ast.ParenNode].includes(ctor)) {
     return hintId(
-      ast.id(node.message, node.location),
+      ast.id(node.src, node.location),
       cursor,
       editor,
       variables,
@@ -395,8 +393,8 @@ function onSelect(hint: Hint, el: HTMLElement) {
     }
 
     panel.style.top = `${rect.top}px`;
-    panel.style.left = `${rect.right}px`;
-    panel.style.width = `${window.innerWidth - rect.right - 16}px`;
+    panel.style.right = `${window.innerWidth - rect.left}px`;
+    //panel.style.width = `${window.innerWidth - rect.right - 16}px`;
 
     function findOrAdd() {
       let d = document.querySelector<HTMLElement>('.hint-description');
@@ -456,6 +454,19 @@ export const descriptions = {
 
   // Fn Names
   [ast.FnName.ABS]: 'The absolute value funciton.',
+  [ast.FnName.AMIX]: {
+    summary: 'Returns one value when audio is enabled and another when it is disabled.',
+    args: [
+      {
+        name: 'no_audio',
+        description: 'The value to return when audio is *disabled*.'
+      },
+      {
+        name: 'with_audio',
+        description: 'The value to return when audio is *enabled*.'
+      }
+    ]
+  },
 
   // Step Types
   [ast.StepType.CUBE]: {
