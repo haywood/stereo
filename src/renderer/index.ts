@@ -45,7 +45,7 @@ class Renderer {
 
   private pipe: ast.PipeNode;
   private hsv: HSV;
-  private t0: number;
+  private t0 = Date.now() / 1000;
 
   constructor() {
     this.renderer.setAnimationLoop(() => this.render());
@@ -139,7 +139,6 @@ class Renderer {
     material.vertexShader = vertexShader;
     material.fragmentShader = fragmentShader;
     material.needsUpdate = true;
-    this.t0 = Date.now() / 1000;
   }
 
   private render() {
