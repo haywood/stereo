@@ -4,13 +4,14 @@
 uniform float _t;
 
 uniform struct Audio {
+  bool enabled;
   float power;
 } audio;
 
 varying float _i;
 
 float power() {
-  return audio.power;
+  return audio.enabled ? audio.power : 0.;
 }
 
 float norm2(float[D_MAX] x) {
@@ -26,7 +27,7 @@ float norm(float[D_MAX] x) {
 }
 
 float amix(float no_audio, float with_audio) {
-  return mix(no_audio, with_audio, step(epsilon, power()));
+  return audio.enabled ? with_audio : no_audio;
 }
 
 float log10(float x) {

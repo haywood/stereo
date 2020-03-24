@@ -1,17 +1,7 @@
 import assert from 'assert';
-import CircularBuffer from 'circular-buffer';
-import { argmax, mean, median, sum } from '../reducable';
-import { binCount, quantumSize } from './constants';
+import { binCount } from './constants';
 import { Note } from './note';
-import { Spectrum } from './spectrum';
 import { Audio } from './types';
-
-const onsetWindowSecs = 1;
-const onsetWindowSize = Math.round(
-  (onsetWindowSecs * sampleRate) / quantumSize
-);
-const bpmMax = 200;
-const tempoModulus = ((onsetWindowSize / onsetWindowSecs) * bpmMax) / 60;
 
 class Processor extends AudioWorkletProcessor {
   static get parameterDescriptors() {
@@ -21,18 +11,7 @@ class Processor extends AudioWorkletProcessor {
     ];
   }
 
-  private readonly notes = new Array<Note>(binCount);
-  // track 1 seconds worth of onsets to determine tempo
-  private readonly impulses = new CircularBuffer<number>(onsetWindowSize);
-  private readonly onsets = new CircularBuffer<0 | 1>(onsetWindowSize);
-
-  constructor(options) {
-    super(options);
-
-    for (let i = 0; i < binCount; i++) {
-      this.notes[i] = new Note();
-    }
-  }
+  private readonly notes = Array.from({length: binCount}).map(() => new Note());
 
   process(
     inputs: Float32Array[][],
@@ -58,34 +37,11 @@ class Processor extends AudioWorkletProcessor {
 
     const power =
       analyses.reduce((sum, { power }) => sum + power, 0) / binCount;
-    const loudest = argmax(analyses, a => a.power);
-    const pitch = Spectrum.pitch(loudest);
-    const onset = this.onset(analyses.map(a => a.dpower));
-    this.onsets.push(onset);
-    const beatCount = this.onsets.toarray().reduce((sum, o) => sum + o, 0);
-    const tempo = Math.min(1, beatCount / tempoModulus);
 
-    this.port.postMessage({
-      hue: Spectrum.hue(loudest),
-      onset,
-      pitch,
-      power,
-      tempo
-    } as Audio);
+    this.port.postMessage({ enabled: true, power } as Audio);
 
     return true;
   }
-
-  onset = (dpowers: number[]): 0 | 1 => {
-    const impulse = sum(dpowers);
-    const impulses = this.impulses.toarray();
-    this.impulses.push(impulse);
-
-    const impmedian = median(impulses);
-    const impmean = mean(impulses);
-
-    return impulse > 0.5 * impmedian + 0.5 * impmean ? 1 : 0;
-  };
 }
 
 registerProcessor('power', Processor);
