@@ -34,7 +34,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
     return this._successors(stream) ?? [];
   }
 
-  resolveChild(child: State, stream: StringStream) {
+  resolveChild(child: State) {
     const value = child.resolve();
     if (value) {
       this.values.push(value);

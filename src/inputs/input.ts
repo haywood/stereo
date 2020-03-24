@@ -52,9 +52,14 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   }
 
   setup = (el: E) => {
-    this.el = el;
-    if (this.disabled) this.el.classList.add('disabled');
-    this._setup();
+    // Wrap in try/catch so that invalid data doesn't break the whole page.
+    try {
+      this.el = el;
+      if (this.disabled) this.el.classList.add('disabled');
+      this._setup();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   protected abstract _setup(): void;

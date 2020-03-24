@@ -74,10 +74,12 @@ export class Context<T> {
   private applyTerminal(curr: st.Terminal, stream: StringStream) {
     const style = curr.apply(stream);
     if (style) {
-      this.parent().resolveChild(curr, stream);
+      this.parent().resolveChild(curr);
     } else {
       this.stack.push(new st.RejectState(stream));
     }
+
+    this.drain();
 
     if (curr instanceof st.RejectState) {
       console.warn(
@@ -88,15 +90,13 @@ export class Context<T> {
       );
     }
 
-    this.drain(stream);
-
     return style;
   }
 
-  private drain(stream: StringStream) {
+  private drain() {
     while (topDone.call(this)) {
       const state = this.stack.pop()
-      this.parent().resolveChild(state, stream);
+      this.parent().resolveChild(state);
     }
 
     function topDone() {
@@ -107,10 +107,10 @@ export class Context<T> {
 
   private applyNonTerminal(curr: st.NonTerminal, stream: StringStream) {
     if (!this.expand(curr, stream)) {
-      this.parent().resolveChild(curr, stream);
+      this.parent().resolveChild(curr);
     }
 
-    this.drain(stream);
+    this.drain();
   }
 
   private expand(curr: st.NonTerminal, stream: StringStream) {
