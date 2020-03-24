@@ -48,19 +48,20 @@ export function findErrors(node: ast.Node): ast.ErrorNode[] {
 function findErrorsInStep(node: ast.StepNode) {
   const errors = node.args.map(findErrors).flat();
   const type = node.type;
-  const expected = (descriptions[type]?.args ?? []).filter(
-    a => a.required != false
-  ).length;
+  const argDescriptions = descriptions[type]?.args ?? [];
+  const max = argDescriptions.length;
+  const min = argDescriptions.filter(a => a.required != false).length;
   const found = node.args.length;
+  let message;
 
-  if (expected != null && expected != found) {
-    errors.push(
-      ast.error(
-        `wrong number of arguments to ${type}. expected ${expected}, but found ${found}`,
-        node.toString(),
-        node.location
-      )
-    );
+  if (min != null && (min > found || found > max)) {
+    if (min == max) {
+      message = `wrong number of arguments to ${type}. expected ${min}, but found ${found}`;
+    } else {
+      message = `wrong number of arguments to ${type}. expected between ${min} and ${max}, but found ${found}`;
+    }
+
+    errors.push(ast.error(message, node.toString(), node.location));
   }
 
   return errors;
