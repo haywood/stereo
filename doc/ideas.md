@@ -8,7 +8,7 @@
 - pop-up descriptions when mousing over tokens
   e.g.
     - show the description for Q when someone mouses over the Q
-    - show where a variable assignment was made when mousing over it
+    - show where a variable assignment was made when mousing over a use
 
 ## Redo color
 
