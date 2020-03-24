@@ -41,7 +41,7 @@ float[D_MAX] polar2cart(int d, float r, float[D_MAX] x) {
 }
 
 float[D_MAX] spiral(int d, float r, float[D_MAX] x) {
-  return polar2cart(d, r * norm(x), x);
+  return polar2cart(d, r + r * norm(x), x);
 }
 
 float[D_MAX] sphere(int d, float r, float[D_MAX] x) {
