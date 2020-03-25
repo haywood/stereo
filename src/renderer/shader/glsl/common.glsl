@@ -1,5 +1,4 @@
 #define zero(v) v = float[](0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-#define epsilon pow(2., -31.)
 
 uniform float _t;
 

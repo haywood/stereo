@@ -205,7 +205,6 @@ export class FnNode {
 
 export enum BuiltinConstant {
   E = 'e',
-  EPSILON = 'epsilon',
   I = 'i',
   LN10 = 'ln10',
   LN2 = 'ln2',
