@@ -17,6 +17,9 @@ export function fragment(hsv: HSV, vs: Variables): string {
 
     void main() {
       ${variables(vs)}
+
+      if (_i > _n) return;
+
       float h = ${h} * 360.;
       float s = ${s};
       float v = ${v};

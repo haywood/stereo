@@ -26,6 +26,8 @@ export function vertex(pipe: PipeNode): string {
       _i = position[0];
       ${variables(pipe.variables)}
 
+      if (_i > _n) return;
+
       float[D_MAX] y =
         ${y};
 
