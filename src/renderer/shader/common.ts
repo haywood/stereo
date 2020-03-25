@@ -25,11 +25,6 @@ export const D_MAX = 10;
 
 export const defines: { [name: string]: number } = {
   D_MAX,
-  // array indices for quaternion multiplication
-  Q_R: 0,
-  Q_I: 1,
-  Q_J: 2,
-  Q_K: 3,
   near: near,
   [safeName(BC.E)]: Math.E,
   [safeName(BC.LN10)]: Math.LN10,

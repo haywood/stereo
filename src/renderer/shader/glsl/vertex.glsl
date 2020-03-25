@@ -129,31 +129,35 @@ float[D_MAX] stereo(int from, int to, float[D_MAX] x) {
 }
 
 float[D_MAX] quaternion(float r, float i, float j, float k, float[D_MAX] x) {
+  const int R = 0;
+  const int I = 1;
+  const int J = 2;
+  const int K = 3;
   float[D_MAX] y;
 
   // y += x * r
-  y[Q_R] += x[Q_R] * r; // r * r = r
-  y[Q_I] += x[Q_I] * r; // i * r = i
-  y[Q_J] += x[Q_J] * r; // j * r = j
-  y[Q_K] += x[Q_K] * r; // k * r = k
+  y[R] += x[R] * r; // r * r = r
+  y[I] += x[I] * r; // i * r = i
+  y[J] += x[J] * r; // j * r = j
+  y[K] += x[K] * r; // k * r = k
 
   // y += x * i
-  y[Q_R] += -x[Q_I] * i; // i * i = -1
-  y[Q_I] += x[Q_R] * i; // r * i = i
-  y[Q_J] += x[Q_K] * i; // k * i = j
-  y[Q_K] += -x[Q_J] * i; // j * i = -k
+  y[R] += -x[I] * i; // i * i = -1
+  y[I] +=  x[R] * i; // r * i = i
+  y[J] +=  x[K] * i; // k * i = j
+  y[K] += -x[J] * i; // j * i = -k
 
   // y += x *j
-  y[Q_R] += -x[Q_J] * j; // j * j = -1
-  y[Q_I] += -x[Q_K] * j; // k * j = -i
-  y[Q_J] += x[Q_R] * j; // r * j = j
-  y[Q_K] += x[Q_I] * j; // i * j = k
+  y[R] += -x[J] * j; // j * j = -1
+  y[I] += -x[K] * j; // k * j = -i
+  y[J] +=  x[R] * j; // r * j = j
+  y[K] +=  x[I] * j; // i * j = k
   
   // y += x * k
-  y[Q_R] += -x[Q_K] * k; // k * k = -1
-  y[Q_I] += x[Q_J] * k; // j * k = i
-  y[Q_J] += -x[Q_I] * k; // i * k = -j
-  y[Q_K] += x[Q_R] * k; // r * k = k
+  y[R] += -x[K] * k; // k * k = -1
+  y[I] +=  x[J] * k; // j * k = i
+  y[J] += -x[I] * k; // i * k = -j
+  y[K] +=  x[R] * k; // r * k = k
 
   return y;
 }
