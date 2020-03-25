@@ -30,7 +30,7 @@ export function init({ type, args }: StepNode): {y: string, d: string} {
 }
 
 function interval_0_2pi() {
-  return interval(d0m1, '0.', '2. * pi');
+  return interval(d0m1, '0.', '2. * _pi');
 }
 
 function spiral([tau]: Scalar[]) {
