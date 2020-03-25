@@ -18,12 +18,13 @@ export const inputs = {
     'pipe',
     endent`
     n = 1000000
-    d0 = 2 + mod(t, 8)
-    phi = amix(t / 2, pi * power())
+    tscale = t / pi / 10
+    d0 = 2 + mod(tscale, 8)
+    phi = amix(tscale, pi * power())
     phin = phi * i / n
 
-    r = sin(phi) / log(n)
-    tau = 10 / r
+    r = sin(phi) / log(n) 
+    tau = 100 / sin(phi)
 
     spiral(tau, r)
     R(phi, 0)
