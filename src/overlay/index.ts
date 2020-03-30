@@ -28,7 +28,7 @@ export class Overlay {
   }
 
   private setupCursorManagement() {
-    cursorManager.onActive(this.show)
+    cursorManager.onActive(this.show);
     cursorManager.onInActive(this.maybeHide);
   }
 
@@ -50,21 +50,23 @@ export class Overlay {
   private setupInputs() {
     for (const name in inputs) {
       const input = inputs[name];
-      const el = this.querySelector<HTMLTextAreaElement>(`#${input.id}`);
+      const el = this.domElement.querySelector(`#${input.id}`);
       assert(el, `Did not find element for input #${input.id}`);
       input.setup(el);
     }
 
     if (screenfull.isEnabled) {
+      screenfull.on('change', () => {
+        inputs.fullscreen.value = screenfull.isFullscreen;
+      });
+
       inputs.fullscreen.stream.subscribe(({ newValue }) => {
-        if (newValue) screenfull.request();
+        if (newValue == screenfull.isFullscreen) return;
+        else if (newValue) screenfull.request();
         else if (screenfull.element) screenfull.exit();
       });
     }
   }
-
-  private querySelector = <E extends Element = HTMLElement>(selector: string) =>
-    this.domElement.querySelector<E>(selector);
 
   private setupKeyboardShortcuts() {
     document.onkeydown = (event: KeyboardEvent) => {
