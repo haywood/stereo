@@ -2,7 +2,9 @@ import assert from 'assert';
 
 import * as sf from 'screenfull';
 
+import debug from '../debug';
 import { inputs } from '../inputs';
+import { cursorManager } from './cursor_manager';
 
 // The types for this library are kinda fucked up
 const screenfull = sf as sf.Screenfull;
@@ -14,6 +16,7 @@ export class Overlay {
   constructor() {
     this.setupInputs();
     this.setupKeyboardShortcuts();
+    this.setupCursorManagement();
 
     const ids = Object.values(inputs).map(i => `#${i.id}`);
     this.domElement
@@ -25,25 +28,31 @@ export class Overlay {
       });
   }
 
+  private setupCursorManagement() {
+    cursorManager.onActive(this.show)
+    cursorManager.onInActive(this.maybeHide);
+  }
+
   private inputs() {
     return this.querySelector<HTMLElement>('#inputs');
   }
 
-  show() {
+  private readonly show = () => {
     this.domElement.style.opacity = '1';
   };
 
-  maybeHide = () => {
+  private readonly maybeHide = () => {
     if (this.hasAttention()) return;
     this.domElement.style.opacity = '0';
   };
 
-  private hasAttention = () =>
-    this.hasHover || this.contains(document.activeElement);
+  private hasAttention() {
+    return this.hasHover || this.contains(document.activeElement);
+  }
 
   private contains = (node: Node) => this.domElement.contains(node);
 
-  private setupInputs = () => {
+  private setupInputs() {
     for (const input of Object.values(inputs)) {
       const el = this.querySelector<HTMLTextAreaElement>(`#${input.id}`);
       assert(el, `Did not find element for input #${input.id}`);
@@ -56,12 +65,12 @@ export class Overlay {
         else if (screenfull.element) screenfull.exit();
       });
     }
-  };
+  }
 
-  querySelector = <E extends Element = HTMLElement>(selector: string) =>
+  private querySelector = <E extends Element = HTMLElement>(selector: string) =>
     this.domElement.querySelector<E>(selector);
 
-  private setupKeyboardShortcuts = () => {
+  private setupKeyboardShortcuts() {
     document.onkeydown = (event: KeyboardEvent) => {
       if (event.repeat) return;
       if (this.domElement.contains(event.target as Node)) return;
@@ -79,5 +88,5 @@ export class Overlay {
           break;
       }
     };
-  };
+  }
 }

@@ -11,7 +11,6 @@ import {
 } from 'three';
 
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
-import debug from '../debug';
 import { inputs } from '../inputs';
 import { PipeNode, Variables } from '../inputs/pipe/ast';
 import * as ast from '../inputs/pipe/ast';
@@ -22,11 +21,7 @@ import { vertex } from './shader/vertex';
 
 const BC = ast.BuiltinConstant;
 
-export function start() {
-  new Renderer();
-}
-
-class Renderer {
+export class Renderer {
   readonly canvas = document.querySelector('canvas');
   private readonly video = document.querySelector('video');
   private readonly geometry = new BufferGeometry();
@@ -90,8 +85,6 @@ class Renderer {
     });
 
     window.onresize = () => this.setSize();
-
-    debug('renderer', this);
   }
 
   private setPipe(pipe: PipeNode) {
@@ -179,3 +172,4 @@ class Renderer {
     }
   }
 }
+
