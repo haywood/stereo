@@ -6,8 +6,6 @@ import { ActionInput } from './action';
 import { Context, PipeInput } from './pipe';
 import { ToggleInput } from './toggle';
 
-const audioWorkletAvailable =
-  window.AudioContext && !!new AudioContext().audioWorklet;
 
 export const inputs = {
   pipe: new PipeInput(
@@ -42,7 +40,10 @@ export const inputs = {
 
   animate: new ToggleInput('animate', true),
 
-  mic: new ToggleInput('mic', false, { disabled: !audioWorkletAvailable }),
+  mic: new ToggleInput('mic', false, {
+    disabled: !window.AudioContext || !('audioWorklet' in AudioContext.prototype),
+    persistent: true
+  }),
 
   fullscreen: new ToggleInput('fullscreen', false, {
     disabled: !screenfull.isEnabled
@@ -50,7 +51,7 @@ export const inputs = {
 
   save: new ActionInput('save'),
 
-  reset: new ActionInput('reset'),
+  reset: new ActionInput('reset')
 };
 
 export type Inputs = typeof inputs;

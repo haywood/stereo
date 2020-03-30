@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 
-import { error } from '../error';
+import debug from '../debug';
 import { inputs } from '../inputs';
 import { AUDIO_PLACEHOLDER, binCount } from './constants';
 import { Spectrum } from './spectrum';
@@ -14,6 +14,8 @@ export class AudioGraph {
     return new AudioGraph(ctx, source, subject);
   };
 
+  private ts = Date.now();
+
   constructor(
     private readonly ctx: AudioContext,
     source: AudioNode,
@@ -24,16 +26,25 @@ export class AudioGraph {
       channelCountMode: 'explicit',
       channelCount: 1
     });
+
     power.port.onmessage = msg => {
+      let latency = 0;
+
       if (inputs.mic.value) {
         subject.next(msg.data as Audio);
+
+        const ts = Date.now();
+        latency = ts - this.ts;
+        this.ts = ts;
       } else {
         subject.next(AUDIO_PLACEHOLDER);
       }
+
+      debug('audio_latency', latency);
     };
 
     power.onprocessorerror = err => {
-      error(err);
+      console.error(err);
       // processor dies after an error, so close the graph
       inputs.mic.value = false;
     };

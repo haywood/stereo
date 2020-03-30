@@ -1,14 +1,30 @@
 import { Input } from './input';
+import { persistenceManager } from './persistence_manager';
 
 export class ToggleInput extends Input<boolean> {
   constructor(
     readonly id: string,
-    value: boolean,
-    { disabled } = {disabled: false}
+    defaultValue: boolean,
+    { disabled, persistent = false } = {disabled: false}
   ) {
     super(id, { disabled });
 
-    this.value = value;
+    if (disabled) return;
+
+    if (persistent) {
+      const text = persistenceManager.get(this.id, defaultValue ? ' 1' : '0');
+      this.value = Boolean(parseInt(text));
+
+      persistenceManager.manage(this.id, this.stream, () => {
+        if (this.value == defaultValue) {
+          return '';
+        } else {
+          return this.value ? '1' : '0';
+        }
+      });
+    } else {
+      this.value = defaultValue;
+    }
   }
 
   protected _setup = () => {

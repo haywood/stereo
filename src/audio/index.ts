@@ -11,8 +11,13 @@ let graph: AudioGraph;
 
 inputs.mic.stream.subscribe(async ({ newValue, event }) => {
   if (newValue) {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    graph = await AudioGraph.create(stream, subject);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      graph = await AudioGraph.create(stream, subject);
+    } catch (e) {
+      console.error(e);
+      inputs.mic.value = false;
+    }
   } else {
     if (graph) await graph.close();
     subject.next(AUDIO_PLACEHOLDER);
