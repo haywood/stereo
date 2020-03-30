@@ -4,12 +4,8 @@ import screenfull from 'screenfull';
 import debug from '../debug';
 import { ActionInput } from './action';
 import { Context, PipeInput } from './pipe';
-import { RangeInput } from './range';
 import { ToggleInput } from './toggle';
 
-const minDbs = parseInt(
-  document.querySelector<HTMLInputElement>('#allowed_db_range_input input').min
-);
 const audioWorkletAvailable =
   window.AudioContext && !!new AudioContext().audioWorklet;
 
@@ -50,10 +46,6 @@ export const inputs = {
 
   fullscreen: new ToggleInput('fullscreen', '0', {
     disabled: !screenfull.isEnabled
-  }),
-
-  allowedDbs: new RangeInput('allowed_db_range', `${minDbs / 2}, -30`, {
-    disabled: !audioWorkletAvailable
   }),
 
   save: new ActionInput('save'),

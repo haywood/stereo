@@ -13,12 +13,12 @@ const NO_AUDIO: Analysis = {
 const { round, abs, log2, min, max } = Math;
 
 const memory = round(sampleRate / quantumSize / 200); // enough for ~5ms of audio
+const dbMin = -130;
+const dbMax = 0;
 
 export class Note {
   private readonly window = new Float32Array(memory * quantumSize);
   private analysis = NO_AUDIO;
-  dbMin = -Infinity;
-  dbMax = 0;
 
   analyze(quantum: Float32Array): Analysis {
     if (quantum.length === 0) {
@@ -57,11 +57,7 @@ export class Note {
   }
 
   private threshold(dbs: number) {
-    if (this.dbMax === this.dbMin) {
-      return dbs === this.dbMax ? 0 : -Infinity;
-    }
-
-    dbs = min(this.dbMax, max(this.dbMin, dbs));
-    return (dbs - this.dbMax) / (dbs - this.dbMin);
+    dbs = min(dbMax, max(dbMin, dbs));
+    return (dbs - dbMax) / (dbs - dbMin);
   }
 }
