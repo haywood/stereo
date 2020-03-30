@@ -40,11 +40,11 @@ export const inputs = {
     startState: () => Context.scalar(inputs.pipe.value?.variables ?? {})
   }),
 
-  animate: new ToggleInput('animate', '1'),
+  animate: new ToggleInput('animate', true),
 
-  mic: new ToggleInput('mic', '0', { disabled: !audioWorkletAvailable }),
+  mic: new ToggleInput('mic', false, { disabled: !audioWorkletAvailable }),
 
-  fullscreen: new ToggleInput('fullscreen', '0', {
+  fullscreen: new ToggleInput('fullscreen', false, {
     disabled: !screenfull.isEnabled
   }),
 

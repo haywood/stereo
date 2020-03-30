@@ -7,10 +7,9 @@ import 'codemirror/lib/codemirror.css';
 
 import cm from 'codemirror';
 import { isEmpty, isEqual } from 'lodash';
-import { ReplaySubject } from 'rxjs';
 
-import { Change } from '../change';
 import { Input } from '../input';
+import { persistenceManager } from '../persistence_manager';
 import { PipeNode } from './ast';
 import { Context } from './context';
 import { hint } from './hint';
@@ -26,36 +25,31 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
 
   constructor(
     readonly id: string,
-    defaultText: string,
+    private readonly defaultText: string,
     private readonly options: {
       startState: () => Context<T>;
       tabIndex?: number;
     }
   ) {
-    super(id, defaultText, {
-      persistent: true,
-      parse: () => null,
-      stringify: () => this.text
-    });
+    super(id);
 
-    this.text = defaultText;
+    this.text = persistenceManager.get(this.id, defaultText);
     this.tabIndex = options.tabIndex;
-  }
 
-  protected newSubject() {
-    return new ReplaySubject<Change<T>>();
+    persistenceManager.manage(this.id, this.stream, () =>
+      this.text == this.defaultText ? '' : this.text
+    );
   }
 
   protected _setup = () => {
     const div = this.el.querySelector<HTMLElement>('div[contenteditable]');
-    this.text = this.initialText;
     this.defineMode();
 
     this.editor = cm(div, {
       lineNumbers: this.id == 'pipe',
       mode: this.id,
       readOnly: this.disabled ? 'nocursor' : false,
-      value: this.initialText,
+      value: this.text,
       tabindex: this.tabIndex,
       gutters: ['CodeMirror-lint-markers'],
       lint: true

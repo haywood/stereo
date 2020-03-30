@@ -1,10 +1,8 @@
-import { Subject } from 'rxjs';
-import { Change } from './change';
 import { Input } from './input';
 
 export class ActionInput extends Input<void> {
   constructor(id: string) {
-    super(id, '', { parse: () => {} });
+    super(id, { parse: () => {} });
   }
 
   protected _setup = () => {
@@ -14,8 +12,4 @@ export class ActionInput extends Input<void> {
       };
     }
   };
-
-  protected newSubject() {
-    return new Subject<Change<void>>();
-  }
 }

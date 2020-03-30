@@ -1,60 +1,30 @@
-import { BehaviorSubject, Subject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 import { Change } from './change';
-import { hash, persistenceEnabled } from './constants';
 import { Options } from './options';
 
 export abstract class Input<T, E extends HTMLElement = HTMLElement> {
   readonly disabled: boolean;
 
-  protected readonly parse: (s: string) => T;
-  protected readonly stringify: (t: T) => string;
-  protected el?: E;
-  protected readonly initialText: string;
+  private _el: E;
 
-  private readonly subject: Subject<Change<T>>;
-  private readonly persistent: boolean;
+  private readonly subject = new ReplaySubject<Change<T>>();
   private _value: T;
 
   constructor(
     readonly id: string,
-    private readonly defaultText: string,
-    {
-      persistent = false,
-      disabled = false,
-      parse = () => {
-        throw new Error('parse unsupported');
-      },
-      stringify = () => {
-        throw new Error('stringify unsupported');
-      }
-    }: Options<T> = {}
+    { disabled }: Options<T> = {disabled: false}
   ) {
-    this.persistent = persistent;
     this.disabled = disabled;
-    this.parse = parse;
-    this.stringify = stringify;
-
-    if (!persistenceEnabled) {
-      this.persistent = false;
-    }
-    let text = defaultText;
-    if (this.persistent && hash.has(this.id)) {
-      text = hash.get(this.id);
-    }
-
-    this.initialText = text;
-    this._value = this.parse(text);
-    this.subject = this.newSubject();
   }
 
-  protected newSubject(): Subject<Change<T>> {
-    return new BehaviorSubject<Change<T>>({ newValue: this._value });
+  protected get el() {
+    return this._el;
   }
 
   setup = (el: E) => {
     // Wrap in try/catch so that invalid data doesn't break the whole page.
     try {
-      this.el = el;
+      this._el = el;
       if (this.disabled) this.el.classList.add('disabled');
       this._setup();
     } catch (e) {
@@ -76,18 +46,5 @@ export abstract class Input<T, E extends HTMLElement = HTMLElement> {
     const oldValue = this.value;
     this._value = newValue;
     this.subject.next({ newValue, oldValue, event: window.event });
-    this.updateHash();
   }
-
-  private updateHash = () => {
-    if (!this.persistent) return;
-
-    const text = this.stringify(this.value);
-    if (text == this.defaultText) {
-      hash.delete(this.id);
-    } else {
-      hash.set(this.id, text);
-    }
-    document.location.hash = btoa(hash.toString());
-  };
 }
