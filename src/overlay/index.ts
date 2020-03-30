@@ -3,6 +3,7 @@ import assert from 'assert';
 import sf from 'screenfull';
 
 import { inputs } from '../inputs';
+import {shortcuts} from './shortcuts';
 import { cursorManager } from './cursor_manager';
 
 // The types for this library are kinda fucked up
@@ -14,7 +15,7 @@ export class Overlay {
 
   constructor() {
     this.setupInputs();
-    this.setupKeyboardShortcuts();
+    this.setupShortcuts();
     this.setupCursorManagement();
 
     const ids = Object.values(inputs).map(i => `#${i.id}`);
@@ -26,26 +27,6 @@ export class Overlay {
         el.onfocus = () => this.show();
       });
   }
-
-  private setupCursorManagement() {
-    cursorManager.onActive(this.show);
-    cursorManager.onInActive(this.maybeHide);
-  }
-
-  private readonly show = () => {
-    this.domElement.style.opacity = '1';
-  };
-
-  private readonly maybeHide = () => {
-    if (this.hasAttention()) return;
-    this.domElement.style.opacity = '0';
-  };
-
-  private hasAttention() {
-    return this.hasHover || this.contains(document.activeElement);
-  }
-
-  private contains = (node: Node) => this.domElement.contains(node);
 
   private setupInputs() {
     for (const name in inputs) {
@@ -68,23 +49,33 @@ export class Overlay {
     }
   }
 
-  private setupKeyboardShortcuts() {
+  private setupShortcuts() {
     document.onkeydown = (event: KeyboardEvent) => {
       if (event.repeat) return;
       if (this.domElement.contains(event.target as Node)) return;
 
-      switch (event.key) {
-        case ' ':
-          inputs.animate.value = !inputs.animate.value;
-          break;
-        case 'm':
-        case 'M':
-          inputs.mic.value = !inputs.mic.value;
-          break;
-        case 'Enter':
-          inputs.fullscreen.value = !inputs.fullscreen.value;
-          break;
-      }
+      const shortcut = shortcuts[event.key];
+      if (shortcut) shortcut();
     };
   }
+
+  private setupCursorManagement() {
+    cursorManager.onActive(this.show);
+    cursorManager.onInActive(this.maybeHide);
+  }
+
+  private readonly show = () => {
+    this.domElement.style.opacity = '1';
+  };
+
+  private readonly maybeHide = () => {
+    if (this.hasAttention()) return;
+    this.domElement.style.opacity = '0';
+  };
+
+  private hasAttention() {
+    return this.hasHover || this.contains(document.activeElement);
+  }
+
+  private contains = (node: Node) => this.domElement.contains(node);
 }
