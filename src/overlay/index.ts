@@ -1,8 +1,7 @@
 import assert from 'assert';
 
-import * as sf from 'screenfull';
+import sf from 'screenfull';
 
-import debug from '../debug';
 import { inputs } from '../inputs';
 import { cursorManager } from './cursor_manager';
 
@@ -33,10 +32,6 @@ export class Overlay {
     cursorManager.onInActive(this.maybeHide);
   }
 
-  private inputs() {
-    return this.querySelector<HTMLElement>('#inputs');
-  }
-
   private readonly show = () => {
     this.domElement.style.opacity = '1';
   };
@@ -53,7 +48,8 @@ export class Overlay {
   private contains = (node: Node) => this.domElement.contains(node);
 
   private setupInputs() {
-    for (const input of Object.values(inputs)) {
+    for (const name in inputs) {
+      const input = inputs[name];
       const el = this.querySelector<HTMLTextAreaElement>(`#${input.id}`);
       assert(el, `Did not find element for input #${input.id}`);
       input.setup(el);
