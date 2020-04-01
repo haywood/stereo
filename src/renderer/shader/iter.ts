@@ -38,25 +38,14 @@ export function iter(
   return fns[type](args, x, d0);
 }
 
-function torus(args: Scalar[], x: string, d0: string) {
-  const rs = [];
-
-  for (let i = 1; i < args.length; i++) {
-    rs.push(ensureFloat(args[i]));
-  }
-
-  const padding = 10 - rs.length;
-  for (let i = 0; i < padding; i++) {
-    rs.push('0.');
-  }
-
-  const r = `float[](${rs.join(', ')})`;
+function torus([r0, r]: Scalar[], x: string, d0: string) {
   const d = `${d0} + 1`;
   return {
     y: endent`
         torus(
           ${d},
-          ${r},
+          ${ensureFloat(r0)},
+          ${ensureFloat(r)},
           ${x})`,
     d
   };

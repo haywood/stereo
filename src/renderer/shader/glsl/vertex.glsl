@@ -79,12 +79,12 @@ float[D_MAX] rotate(int d, float phi, int[D_MAX] d0s, int[D_MAX] d1s, float[D_MA
   return x;
 }
 
-float[D_MAX] torus(int d, float[D_MAX] r, float[D_MAX] x) {
+float[D_MAX] torus(int d, float r0, float r, float[D_MAX] x) {
   float[D_MAX] tmp = x;
-  x = sphere(2, r[0], x);
+  x = sphere(2, r0, x);
 
   for (int k = 1; k < d - 1; k++) {
-    x[0] += r[k];
+    x[0] += r0 * pow(r, float(k));
     x = rotate(d, tmp[k], k - 1, k + 1, x);
   }
 

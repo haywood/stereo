@@ -453,7 +453,8 @@ export const descriptions = {
   // Fn Names
   [ast.FnName.ABS]: 'The absolute value funciton.',
   [ast.FnName.AMIX]: {
-    summary: 'Returns one value when audio is enabled and another when it is disabled.',
+    summary:
+      'Returns one value when audio is enabled and another when it is disabled.',
     args: [
       {
         name: 'no_audio',
@@ -554,9 +555,13 @@ export const descriptions = {
     summary: 'Map the points onto a torus.',
     args: [
       {
-        name: '...r',
+        name: 'r0',
+        description: 'the radius of the first cross section.'
+      },
+      {
+        name: 'r',
         description:
-          'the radii of the cross-sections. In total, there should be one radius for each dimension.'
+          "the ratio between a cross-section's size and that of the preceding one."
       }
     ]
   }
