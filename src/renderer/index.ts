@@ -49,10 +49,6 @@ export class Renderer {
     this.keepAwake();
     this.setSize();
 
-    const i = new Float32Array(screenSize);
-    i.forEach((_, k) => (i[k] = k));
-    this.geometry.setAttribute('position', new BufferAttribute(i, 1));
-
     inputs.pipe.stream.subscribe(({ newValue: pipe }) => {
       this.setPipe(pipe);
     });
@@ -115,7 +111,10 @@ export class Renderer {
   private setSize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const aspect = width / height;
+    const i = new Float32Array(window.devicePixelRatio * width * height);
+
+    i.forEach((_, k) => (i[k] = k));
+    this.geometry.setAttribute('position', new BufferAttribute(i, 1));
 
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
