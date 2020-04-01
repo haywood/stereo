@@ -59,8 +59,11 @@ function interval(d: string, a: string, b: string) {
 }
 
 function cube([l]: Scalar[]) {
+  const halfl = `${ensureFloat(l)} / 2.`;
+  const faceSize = `round(_n / float(${d0}) / 2.`;
+
   return {
-    y: `init_cube(${d0}, ${ensureFloat(l)}, _i, _n)`,
+    y: `interval(${d0}, -${halfl}, ${halfl}, _i, ${faceSize}))`,
     d: d0,
   };
 }

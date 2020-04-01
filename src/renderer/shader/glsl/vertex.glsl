@@ -14,21 +14,6 @@ float[D_MAX]  interval(int d, float a, float b, float i, float n) {
   return x;
 }
 
-float[D_MAX] init_cube(int d, float l, float i, float n) {
-  float n_face = round(n / float(d) / 2.);
-  float branching_factor = floor(pow(n_face, 1. / float(d)));
-  float[D_MAX] x;
-
-  for (int k = 0; k < d; k++) {
-    float exp = float(d - k - 1);
-    float dividend = floor(i / pow(branching_factor, exp));
-    float tmp = mod(dividend, branching_factor) / (branching_factor - 1.);
-    x[k] = l * (tmp - 0.5);
-  }
-
-  return x;
-}
-
 float[D_MAX] polar2cart(int d, float r, float[D_MAX] x) {
   float[D_MAX] y;
   y[0] = r;
