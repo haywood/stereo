@@ -1,7 +1,7 @@
 #define zero(v) v = float[](0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 
 uniform float _t;
-
+uniform float dpr;
 uniform struct Audio {
   bool enabled;
   float power;

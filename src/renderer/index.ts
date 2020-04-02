@@ -34,6 +34,7 @@ export class Renderer {
   private readonly material: ShaderMaterial = new ShaderMaterial({
     uniforms: {
       audio: { value: AUDIO_PLACEHOLDER }
+      dpr: { value: window.devicePixelRatio },
     },
     defines
   });
