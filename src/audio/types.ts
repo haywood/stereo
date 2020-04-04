@@ -1,4 +1,7 @@
 export type Audio = {
   enabled: boolean;
-  power: number;
+  low: number;
+  mid: number;
+  high: number;
+  full: number;
 };

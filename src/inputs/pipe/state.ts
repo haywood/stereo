@@ -208,7 +208,7 @@ class TermState extends NonTerminal<ast.Scalar> {
       return [new ParenState(this.assignedNames)];
     } else if (peek(/\d/, stream)) {
       return [Terminal.number()];
-    } else if (peek(/\w+\s*\(/, stream)) {
+    } else if (peek(re`/(${FN_NAME})\s*\(/`, stream)) {
       return [new FnState(this.assignedNames)];
     } else if (peek(/\w/, stream)) {
       return [Terminal.atom(this.assignedNames)];

@@ -179,7 +179,6 @@ export enum FnName {
   MOD = 'mod',
   NORM = 'norm',
   NORM2 = 'norm2',
-  POWER = 'power',
   RADIANS = 'radians',
   SIGN = 'sign',
   SIN = 'sin',
@@ -217,9 +216,24 @@ export enum BuiltinConstant {
   TIME = 't'
 }
 
+export namespace BuiltinConstant {
+  export const values = Object.values(BuiltinConstant);
+}
+
 export enum BuiltinVariable {
   D0 = 'd0',
   N = 'n'
+}
+
+export enum BandName {
+  LOW = 'low',
+  MID = 'mid',
+  HIGH = 'high',
+  FULL = 'full',
+}
+
+export namespace BandName {
+  export const values = Object.values(BandName);
 }
 
 export function id(id: string, location?: Location): IdNode {
@@ -277,8 +291,13 @@ export interface Location {
   end: cm.Position;
 }
 
+export const constants = [
+  ...BuiltinConstant.values,
+  ...BandName.values,
+];
+
 export const alwaysDefinedIds = new Set<string>([
-  ...Object.values(BuiltinConstant),
+  ...constants,
   ...Object.values(FnName),
-  ...Object.values(StepType)
+  ...Object.values(StepType),
 ]);

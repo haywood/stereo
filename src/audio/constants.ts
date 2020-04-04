@@ -1,11 +1,15 @@
 import { Audio } from './types';
+import { Band } from './band';
 
 /**
  * This defines the placeholder used for power and chroma when audio is not enabled.
  */
 export const AUDIO_PLACEHOLDER: Audio = {
   enabled: false,
-  power: NaN,
+  low: 0,
+  mid: 0,
+  high: 0,
+  full: 0,
 };
 
 export const chromaCount = 12;

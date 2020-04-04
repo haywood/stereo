@@ -4,14 +4,13 @@ uniform float _t;
 uniform float dpr;
 uniform struct Audio {
   bool enabled;
-  float power;
+  float low;
+  float mid;
+  float high;
+  float full;
 } audio;
 
 varying float _i;
-
-float power() {
-  return audio.enabled ? audio.power : 0.;
-}
 
 float norm2(float[D_MAX] x) {
   float sum;

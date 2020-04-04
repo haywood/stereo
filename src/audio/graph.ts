@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import debug from '../debug';
 import { inputs } from '../inputs';
 import { AUDIO_PLACEHOLDER, binCount } from './constants';
-import { Spectrum } from './spectrum';
+import { Band } from './band';
 import { Audio } from './types';
 
 export class AudioGraph {
@@ -51,15 +51,10 @@ export class AudioGraph {
 
     power.connect(ctx.destination);
 
-    for (let k = 0; k < binCount; k++) {
-      const f = Spectrum.f(k);
-      const filter = new BiquadFilterNode(ctx, {
-        type: 'bandpass',
-        frequency: f,
-        Q: f / 2
-      });
+    Band.spectrum.forEach((band, k) => {
+      const filter = band.filter(ctx);
       source.connect(filter).connect(power, 0, k);
-    }
+    });
   }
 
   close = () => this.ctx.close();

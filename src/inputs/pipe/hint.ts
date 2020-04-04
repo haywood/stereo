@@ -1,5 +1,6 @@
 import * as cm from 'codemirror';
 
+import { Band } from '../../audio/band';
 import * as ast from './ast';
 
 type Hint = cm.Hint & {
@@ -299,7 +300,7 @@ function stepTypeHints(
 }
 
 function addConstants(list: Hint[], src: string) {
-  for (const name of Object.values(ast.BuiltinConstant)) {
+  for (const name of ast.constants) {
     if (name.startsWith(src)) {
       list.push({
         text: name,
@@ -564,5 +565,18 @@ export const descriptions = {
           "the ratio between a cross-section's size and that of the preceding one."
       }
     ]
-  }
+  },
+
+  // Audio variables
+  [ast.BandName
+    .LOW]: `Average power of the audio frequencies between ${Band.low.lo}Hz and ${Band.low.hi}Hz.`,
+
+  [ast.BandName
+    .MID]: `Average power of the audio frequencies between ${Band.mid.lo}Hz and ${Band.mid.hi}Hz.`,
+
+  [ast.BandName
+    .HIGH]: `Average power of the audio frequencies between ${Band.high.lo}Hz and ${Band.high.hi}Hz.`,
+
+  [ast.BandName
+    .FULL]: `Average power of the audio frequencies between ${Band.low.lo}Hz and ${Band.high.hi}Hz.`
 };

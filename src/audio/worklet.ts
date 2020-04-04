@@ -1,10 +1,11 @@
 import assert from 'assert';
-import { binCount } from './constants';
-import { Note } from './note';
+
+import { mean } from '../reducable';
+import { Band } from './band';
 import { Audio } from './types';
 
 class Processor extends AudioWorkletProcessor {
-  private readonly notes = Array.from({length: binCount}).map(() => new Note());
+  private readonly history = new Array<Float32Array>(Band.spectrum.length);
 
   process(inputs: Float32Array[][]) {
     inputs.forEach((channels, i) => {
@@ -16,12 +17,14 @@ class Processor extends AudioWorkletProcessor {
     });
 
     const quanta = inputs.map(channels => channels[0]);
-    const analyses = this.notes.map((n, k) => n.analyze(quanta[k]));
+    const spectrogram = Band.spectrum.map((b, k) =>
+      b.power(new Float32Array([...quanta[k], ...(this.history[k] ?? [])]))
+    );
+    quanta.forEach((q, k) => (this.history[k] = quanta[k]));
+    const [low, mid, high] = spectrogram;
+    const full = mean(spectrogram);
 
-    const power =
-      analyses.reduce((sum, { power }) => sum + power, 0) / binCount;
-
-    this.port.postMessage({ enabled: true, power } as Audio);
+    this.port.postMessage({ enabled: true, low, mid, high, full } as Audio);
 
     return true;
   }

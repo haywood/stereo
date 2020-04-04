@@ -6,42 +6,52 @@ import { ActionInput } from './action';
 import { Context, PipeInput } from './pipe';
 import { ToggleInput } from './toggle';
 
+const pipe = endent`
+hphi = amix(t / 10, high)
+mphi = amix(t / 10, mid)
+lphi = amix(t / 10, low)
+n = 1000000
+r = hphi / 1000
+tau = 10 * pi / r
+d0 = 3
+
+spiral(tau, r)
+R(mphi, 0)
+Q(amix(sin(lphi), lphi))
+`;
+
+const hue = endent`
+abs(sin(2 * pi * hphi * i / n))
+`;
+
+const saturation = endent`
+1 - high / 10
+`;
+
+const value = endent`
+amix(1, mix(1, lphi, 0.5))
+`;
 
 export const inputs = {
-  pipe: new PipeInput(
-    'pipe',
-    endent`
-    n = 1000000
-    tscale = t / pi / 10
-    d0 = 2 + mod(tscale, 8)
-    phi = amix(tscale, pi * power())
-    phin = phi * i / n
+  pipe: new PipeInput('pipe', pipe, { startState: Context.pipe, tabIndex: 1 }),
 
-    r = sin(phi) / log(n) 
-    tau = 100 / sin(phi)
-
-    spiral(tau, r)
-    R(phi, 0)
-    `,
-    { startState: Context.pipe, tabIndex: 1 }
-  ),
-
-  h: new PipeInput('h', 'abs(sin(phin))', {
+  h: new PipeInput('h', hue, {
     startState: () => Context.scalar(inputs.pipe.value?.variables ?? {})
   }),
 
-  s: new PipeInput('s', 'amix(1, 1 - power() / 2)', {
+  s: new PipeInput('s', saturation, {
     startState: () => Context.scalar(inputs.pipe.value?.variables ?? {})
   }),
 
-  v: new PipeInput('v', 'amix(1, 4 * power())', {
+  v: new PipeInput('v', value, {
     startState: () => Context.scalar(inputs.pipe.value?.variables ?? {})
   }),
 
   animate: new ToggleInput('animate', true),
 
   mic: new ToggleInput('mic', false, {
-    disabled: !window.AudioContext || !('audioWorklet' in AudioContext.prototype),
+    disabled:
+      !window.AudioContext || !('audioWorklet' in AudioContext.prototype),
     persistent: true
   }),
 

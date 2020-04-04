@@ -1,11 +1,15 @@
 import endent from 'endent';
 
+import { Band } from '../../audio/band';
 import {
   ArithNode,
   ArithOp,
+  BuiltinConstant,
+  AudioFnName,
+  IdNode,
   FnNode,
   Scalar,
-  BuiltinConstant,
+  BandName,
   Variables
 } from '../../inputs/pipe/ast';
 import glsl from './glsl/common.glsl';
@@ -25,6 +29,7 @@ export const D_MAX = 10;
 
 export const defines: { [name: string]: number } = {
   D_MAX,
+  BAND_COUNT: Band.spectrum.length,
   near: near,
   [safeName(BC.E)]: Math.E,
   [safeName(BC.LN10)]: Math.LN10,
@@ -130,7 +135,11 @@ function fromFn(node: FnNode): string {
 }
 
 function fromId(id: string): string {
-  return safeName(id);
+  if (BandName.values.includes(id)) {
+    return `audio.${id}`;
+  } else {
+    return safeName(id);
+  }
 }
 
 function fromNumber(value: number): string {
