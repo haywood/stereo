@@ -33,7 +33,7 @@ export function vertex(pipe: PipeNode): string {
 
       vec4 mvPosition = modelViewMatrix * vec4(y[0], y[1], y[2], 1.);
 
-      gl_PointSize = log(dpr * 100. / -mvPosition.z / log10(_n));
+      gl_PointSize = log(dpr * 25. / -mvPosition.z / log10(_n));
       gl_Position = projectionMatrix * mvPosition;
     }`;
 }
