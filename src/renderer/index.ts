@@ -44,7 +44,6 @@ export class Renderer {
   private t0 = Date.now() / 1000;
 
   constructor() {
-    this.renderer.setAnimationLoop(() => this.render());
     this.camera.position.z = 2;
     this.scene.add(new Points(this.geometry, this.material));
     this.keepAwake();
@@ -69,8 +68,10 @@ export class Renderer {
     });
 
     inputs.save.stream.subscribe(async () => {
-      const blob = await this.renderPng();
-      const url = URL.createObjectURL(blob);
+      // need to call render first, since three.js clears the draw buffers
+      this.render();
+      const blob = new Promise(r => this.canvas.toBlob(r, 'image/jpeg'));
+      const url = URL.createObjectURL(await blob);
       try {
         const a = document.createElement('a');
         a.download = `stereo${document.location.hash}`;
@@ -78,6 +79,14 @@ export class Renderer {
         a.click();
       } finally {
         URL.revokeObjectURL(url);
+      }
+    });
+
+    inputs.animate.stream.subscribe(({newValue}) => {
+      if (newValue) {
+        this.renderer.setAnimationLoop(this.animate);
+      } else {
+        this.renderer.setAnimationLoop(null);
       }
     });
 
@@ -102,11 +111,6 @@ export class Renderer {
     Object.entries(scope).forEach(([name, value]) => {
       uniforms[name] = { value };
     });
-  }
-
-  private renderPng(): Promise<Blob> {
-    this.render(); // need to call render first, since three.js clears the draw buffers
-    return new Promise(r => this.canvas.toBlob(r));
   }
 
   private setSize() {
@@ -134,15 +138,17 @@ export class Renderer {
     material.needsUpdate = true;
   }
 
+  private readonly animate = () => {
+    const {
+      material: { uniforms },
+      t0
+    } = this;
+    uniforms[safeName(BC.TIME)] = { value: Date.now() / 1000 - t0 };
+    this.render();
+  }
+
   private render() {
-    if (inputs.animate.value) {
-      const {
-        material: { uniforms },
-        t0
-      } = this;
-      uniforms[safeName(BC.TIME)] = { value: Date.now() / 1000 - t0 };
-      this.renderer.render(this.scene, this.camera);
-    }
+    this.renderer.render(this.scene, this.camera);
   }
 
   private keepAwake() {
