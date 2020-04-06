@@ -147,3 +147,34 @@ float[D_MAX] quaternion(float r, float i, float j, float k, float[D_MAX] x) {
   return y;
 }
 
+vec4 hsv(float h, float s, float v) {
+  h = clamp(h, 0., 1.);
+  s = clamp(s, 0., 1.);
+  v = clamp(v, 0., 1.);
+
+  float hprime = 6. * h;
+  float c = v * s;
+  float x = c * (1. - abs(mod(hprime, 2.) - 1.));
+  float m = v - c;
+  vec3 rgb;
+
+  if (hprime <= 1.) {
+    rgb = vec3(c, x, 0.);
+  } else if (hprime <= 2.) {
+    rgb = vec3(x, c, 0.);
+  } else if (hprime <= 3.) {
+    rgb = vec3(0., c, x);
+  } else if (hprime <= 4.) {
+    rgb = vec3(0., x, c);
+  } else if (hprime <= 5.) {
+    rgb = vec3(x, 0., c);
+  } else {
+    rgb = vec3(c, 0., x);
+  }
+
+  rgb.x += m;
+  rgb.y += m;
+  rgb.z += m;
+
+  return vec4(rgb, 1.);
+}

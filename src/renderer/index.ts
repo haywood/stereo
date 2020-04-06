@@ -1,5 +1,4 @@
-import { combineLatest } from 'rxjs';
-import { audioStream } from '../audio';
+import endent from 'endent';
 import {
   BufferAttribute,
   BufferGeometry,
@@ -10,13 +9,13 @@ import {
   WebGLRenderer
 } from 'three';
 
+import { audioStream } from '../audio';
 import { AUDIO_PLACEHOLDER } from '../audio/constants';
 import { inputs } from '../inputs';
-import { PipeNode, Variables } from '../inputs/pipe/ast';
+import { PipeNode } from '../inputs/pipe/ast';
 import * as ast from '../inputs/pipe/ast';
-import { HSV, Scope } from '../types';
-import { defines, far, fov, near, screenSize, safeName } from './shader/common';
-import { fragment } from './shader/fragment';
+import { Scope } from '../types';
+import { defines, far, fov, near, safeName } from './shader/common';
 import { vertex } from './shader/vertex';
 
 const BC = ast.BuiltinConstant;
@@ -33,14 +32,20 @@ export class Renderer {
   });
   private readonly material: ShaderMaterial = new ShaderMaterial({
     uniforms: {
-      audio: { value: AUDIO_PLACEHOLDER }
-      dpr: { value: window.devicePixelRatio },
+      audio: { value: AUDIO_PLACEHOLDER },
+      dpr: { value: window.devicePixelRatio }
     },
+    fragmentShader: endent`
+    varying vec4 color;
+
+    void main() {
+      gl_FragColor = color;
+    }
+    `,
     defines
   });
 
   private pipe: ast.PipeNode;
-  private hsv: HSV;
   private t0 = Date.now() / 1000;
 
   constructor() {
@@ -52,16 +57,6 @@ export class Renderer {
     inputs.pipe.stream.subscribe(({ newValue: pipe }) => {
       this.setPipe(pipe);
     });
-
-    combineLatest(inputs.h.stream, inputs.s.stream, inputs.v.stream).subscribe(
-      () => {
-        this.setHsv({
-          h: inputs.h.value,
-          s: inputs.s.value,
-          v: inputs.v.value
-        });
-      }
-    );
 
     audioStream.subscribe(audio => {
       this.setScope({ audio });
@@ -82,7 +77,7 @@ export class Renderer {
       }
     });
 
-    inputs.animate.stream.subscribe(({newValue}) => {
+    inputs.animate.stream.subscribe(({ newValue }) => {
       if (newValue) {
         this.renderer.setAnimationLoop(this.animate);
       } else {
@@ -95,12 +90,11 @@ export class Renderer {
 
   private setPipe(pipe: PipeNode) {
     this.pipe = pipe;
-    this.setShaders();
-  }
+    const vertexShader = vertex(this.pipe);
+    const { material } = this;
 
-  private setHsv(hsv: HSV) {
-    this.hsv = hsv;
-    this.setShaders();
+    material.vertexShader = vertexShader;
+    material.needsUpdate = true;
   }
 
   private setScope(scope: Scope) {
@@ -126,18 +120,6 @@ export class Renderer {
     this.camera.updateProjectionMatrix();
   }
 
-  private setShaders() {
-    if (!this.pipe || !this.hsv) return;
-
-    const vertexShader = vertex(this.pipe);
-    const fragmentShader = fragment(this.hsv, this.pipe.variables);
-    const { material } = this;
-
-    material.vertexShader = vertexShader;
-    material.fragmentShader = fragmentShader;
-    material.needsUpdate = true;
-  }
-
   private readonly animate = () => {
     const {
       material: { uniforms },
@@ -145,7 +127,7 @@ export class Renderer {
     } = this;
     uniforms[safeName(BC.TIME)] = { value: Date.now() / 1000 - t0 };
     this.render();
-  }
+  };
 
   private render() {
     this.renderer.render(this.scene, this.camera);
@@ -178,4 +160,3 @@ export class Renderer {
     }
   }
 }
-

@@ -2,15 +2,6 @@ import * as cm from 'codemirror';
 
 export type Node = PipeNode | Statement | Scalar | ErrorNode;
 
-export function pipe(
-  assignments: AssignmentNode[],
-  steps: StepNode[],
-  errors: ErrorNode[],
-  location?: Location
-): PipeNode {
-  return new PipeNode(assignments, steps, errors, location);
-}
-
 export type Statement = AssignmentNode | StepNode | ErrorNode;
 
 export class PipeNode {
@@ -20,6 +11,7 @@ export class PipeNode {
   constructor(
     readonly assignments: AssignmentNode[],
     readonly steps: StepNode[],
+    readonly colors: ColorNode[],
     readonly errors: ErrorNode[],
     readonly location?: Location
   ) {
@@ -31,11 +23,11 @@ export class PipeNode {
   }
 
   toString() {
-    return [...this.assignments, ...this.steps].join('\n');
+    return this.statements.join('\n');
   }
 
   get statements() {
-    return [...this.errors, ...this.steps, ...this.assignments];
+    return [...this.assignments, ...this.steps, ...this.colors, ...this.errors];
   }
 }
 
@@ -92,8 +84,45 @@ export class StepNode {
   ) {}
 
   toString() {
-    return `${this.type}(${this.args.slice(1).join(', ')})`;
+    return `${this.type}(${this.args.join(', ')})`;
   }
+}
+
+export namespace StepNode {
+  export enum Type {
+    CUBE = 'cube',
+    LATTICE = 'lattice',
+    QUATERNION = 'Q',
+    ROTATE = 'R',
+    SPHERE = 'sphere',
+    SPIRAL = 'spiral',
+    STEREO = 'stereo',
+    TORUS = 'torus'
+  }
+
+  export const types = Object.values(Type);
+}
+
+export class ColorNode {
+  readonly kind = 'color';
+
+  constructor(
+    readonly mode: ColorNode.Mode,
+    readonly args: Scalar[],
+    readonly location?: Location
+  ) {}
+
+  toString() {
+    return `${this.mode}(${this.args.join(', ')})`;
+  }
+}
+
+export namespace ColorNode {
+  export enum Mode {
+    HSV = 'hsv'
+  }
+
+  export const modes = Object.values(Mode);
 }
 
 export type Scalar =
@@ -231,7 +260,7 @@ export enum BandName {
   LOW = 'low',
   MID = 'mid',
   HIGH = 'high',
-  FULL = 'full',
+  FULL = 'full'
 }
 
 export namespace BandName {
@@ -293,13 +322,10 @@ export interface Location {
   end: cm.Position;
 }
 
-export const constants = [
-  ...BuiltinConstant.values,
-  ...BandName.values,
-];
+export const constants = [...BuiltinConstant.values, ...BandName.values];
 
 export const alwaysDefinedIds = new Set<string>([
   ...constants,
   ...Object.values(FnName),
-  ...Object.values(StepType),
+  ...Object.values(StepType)
 ]);

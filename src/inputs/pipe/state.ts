@@ -52,6 +52,7 @@ export abstract class NonTerminal<T = any> extends State<T> {
 export class PipeState extends NonTerminal<ast.PipeNode> {
   private readonly assignments: ast.AssignmentNode[] = [];
   private readonly steps: ast.StepNode[] = [];
+  private readonly colors: ast.ColorNode[] = [];
   private readonly errors: ast.ErrorNode[] = [];
   readonly repeatable = true;
 
@@ -72,8 +73,10 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
           )
         ];
       }
-    } else if (peek(/\w+\(/, stream)) {
+    } else if (peek(re`/${or(ast.StepNode.types)}\(/`, stream)) {
       return [new StepState(this.assignmentSet)];
+    } else if (peek(re`/${or(ast.ColorNode.modes)}\(/`, stream)) {
+      return [new ColorState(this.assignmentSet)];
     }
   }
 
@@ -82,13 +85,21 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
       this.assignments.push(value);
     } else if (value instanceof ast.StepNode) {
       this.steps.push(value);
+    } else if (value instanceof ast.ColorNode) {
+      this.colors.push(value);
     } else {
       this.errors.push(value);
     }
   }
 
   resolve() {
-    return ast.pipe(this.assignments, this.steps, this.errors, this.location);
+    return new ast.PipeNode(
+      this.assignments,
+      this.steps,
+      this.colors,
+      this.errors,
+      this.location
+    );
   }
 }
 
@@ -137,6 +148,30 @@ export class StepState extends NonTerminal<ast.StepNode> {
       return ast.step(type, [args], this.location);
     } else {
       return ast.step(type, args?.slice() ?? [], this.location);
+    }
+  }
+}
+
+export class ColorState extends NonTerminal<ast.ColorNode> {
+  constructor(private readonly assignedNames: Set<string>) {
+    super();
+  }
+
+  _successors(stream: StringStream) {
+    return [
+      Terminal.colorMode(),
+      Terminal.lparen(),
+      new ArgListState(this.assignedNames),
+      Terminal.rparen()
+    ];
+  }
+
+  resolve() {
+    const [mode, args] = this.values;
+    if (args instanceof ast.ErrorNode) {
+      return new ast.ColorNode(mode, [args], this.location);
+    } else {
+      return new ast.ColorNode(mode, args?.slice() ?? [], this.location);
     }
   }
 }
@@ -307,6 +342,10 @@ export class Terminal<T = any> extends State<T> {
     });
   }
 
+  static colorMode() {
+    return new Terminal('atom builtin', or(ast.ColorNode.modes), text => text);
+  }
+
   static comma() {
     return new Terminal('operator comma', ',', text => text);
   }
@@ -416,7 +455,11 @@ class LhsState extends Terminal<ast.IdNode | ast.ErrorNode> {
 
   resolve() {
     if (this.isReassignment) {
-      return ast.error(`name '${this.text}' is already defined`, this.text, this.location);
+      return ast.error(
+        `name '${this.text}' is already defined`,
+        this.text,
+        this.location
+      );
     } else if (this.isConstant) {
       return ast.error(
         `name '${this.text}' is a constant and cannot be redfined`,

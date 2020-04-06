@@ -11,6 +11,7 @@ uniform struct Audio {
 } audio;
 
 varying float _i;
+varying vec4 color;
 
 float norm2(float[D_MAX] x) {
   float sum;
