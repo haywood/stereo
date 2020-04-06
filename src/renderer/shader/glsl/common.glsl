@@ -31,3 +31,11 @@ float amix(float no_audio, float with_audio) {
 float log10(float x) {
   return log(x) / _ln10;
 }
+
+float expm1(float x) {
+  return exp(x) - 1.;
+}
+
+float p1(float x) {
+  return x + 1.;
+}

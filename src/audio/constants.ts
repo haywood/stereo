@@ -1,5 +1,4 @@
 import { Audio } from './types';
-import { Band } from './band';
 
 /**
  * This defines the placeholder used for power and chroma when audio is not enabled.
