@@ -44,8 +44,6 @@ function doHint(
   const { start, end } = node.location;
   const src = editor.getRange(node.location.start, node.location.end);
 
-  console.debug({ root, cursor, node, src });
-
   if (Object.keys(variables).includes(src)) return list;
   if (ast.alwaysDefinedIds.has(src)) return list;
 
