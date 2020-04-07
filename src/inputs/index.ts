@@ -1,4 +1,3 @@
-import endent from 'endent';
 import screenfull from 'screenfull';
 
 import debug from '../debug';
@@ -6,21 +5,22 @@ import { ActionInput } from './action';
 import { Context, PipeInput } from './pipe';
 import { ToggleInput } from './toggle';
 
-const pipe = endent`
+const pipe = `
 n = 1000000
 r = 0.01
-tu = sin(t)
-au = expm1(mid) / expm1(1)
+tu = sin(t / 10)
+au = expm1(low) / expm1(1)
 phi = amix(tu, au)
-tau = 500 * phi + 200
+tau = (20 * phi * pi) + (180 * pi)
 d0 = 3
 
 spiral(tau, r)
-R(t / 2, 0)
+R(2 * pi * phi, 0)
+
 hsv(
-  abs(sin(2 * pi * phi * i / n)),
-  mix(1, high, full),
-  mix(1, phi, 0.9)
+  abs(sin(2 * pi * i / n)),
+  1,
+  1
 )
 `;
 
