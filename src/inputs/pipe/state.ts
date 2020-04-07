@@ -73,10 +73,10 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
           )
         ];
       }
-    } else if (peek(re`/${or(ast.StepNode.types)}\(/`, stream)) {
-      return [new StepState(this.assignmentSet)];
     } else if (peek(re`/${or(ast.ColorNode.modes)}\(/`, stream)) {
       return [new ColorState(this.assignmentSet)];
+    } else if (peek(re`/\w+\(/`, stream)) {
+      return [new StepState(this.assignmentSet)];
     }
   }
 
@@ -480,7 +480,7 @@ export class RejectState extends Terminal<ast.ErrorNode> {
     private readonly reason?: string,
     pattern?: RegExp
   ) {
-    super('error', pattern ?? /[^\s]*/, (s, l) =>
+    super('error', pattern ?? /[^\b]*/, (s, l) =>
       ast.error(this.reason ?? `unexpected token: '${s}'`, s, l)
     );
 

@@ -32,7 +32,7 @@ export function findErrors(node: ast.Node, path: ast.Node[] = []): Errors {
     return [
       ...node.assignments.map(n => findErrors(n, newPath)).flat(),
       ...node.steps.map(n => findErrors(n, newPath)).flat(),
-      ...node.errors.map(error => ({error, path: [node]}))
+      ...node.errors.map(error => ({ error, path: [node] }))
     ];
   } else if (node instanceof ast.AssignmentNode) {
     return [
@@ -57,17 +57,23 @@ export function findErrors(node: ast.Node, path: ast.Node[] = []): Errors {
 function findErrorsInStep(node: ast.StepNode, path: ast.Node[]): Errors {
   const errors = node.args.map(n => findErrors(n, [...path, node])).flat();
   const type = node.type;
-  const argDescriptions = descriptions[type]?.args ?? [];
-  const max = argDescriptions.length;
-  const min = argDescriptions.filter(a => a.required != false).length;
-  const found = node.args.length;
-  let message;
+  const description = descriptions[type];
 
-  if (min != null && (min > found || found > max)) {
+  if (typeof description != 'object' || !description.args) {
+    return errors;
+  }
+
+  const max = description.args.length;
+  const min = description.args.filter(a => a.required != false).length;
+  const found = node.args.length;
+
+  if (min > found || found > max) {
+    let message = `wrong number of arguments to ${type}. `;
+
     if (min == max) {
-      message = `wrong number of arguments to ${type}. expected ${min}, but found ${found}`;
+      message += `expected ${min}, but found ${found}`;
     } else {
-      message = `wrong number of arguments to ${type}. expected between ${min} and ${max}, but found ${found}`;
+      message = `expected between ${min} and ${max}, but found ${found}`;
     }
 
     errors.push({
