@@ -12,6 +12,7 @@ import {
   BandName,
   Variables
 } from '../../inputs/pipe/ast';
+import * as ast from '../../inputs/pipe/ast';
 import glsl from './glsl/common.glsl';
 
 const { ADD, DIV, EXP, EXP_CARET, MUL, SUB } = ArithOp;
@@ -57,18 +58,17 @@ export function safeName(name: string) {
 }
 
 export function from(node: Scalar): string {
-  switch (node.kind) {
-    case 'arith':
+    if (node instanceof ast.ArithNode) {
       return fromArith(node);
-    case 'fn':
+    } else if (node instanceof ast.FnNode) {
       return fromFn(node);
-    case 'number':
+    } else if (node instanceof ast.NumberNode) {
       return fromNumber(node.value);
-    case 'paren':
+    } else if (node instanceof ast.ParenNode) {
       return from(node.scalar);
-    case 'id':
+    } else if (node instanceof ast.IdNode) {
       return fromId(node.id);
-  }
+    }
 }
 
 export function ensureFloat(node: Scalar) {
@@ -88,23 +88,21 @@ export function ensureInt(node: Scalar) {
 }
 
 export function isFloat(node: Scalar): boolean {
-  switch (node.kind) {
-    case 'id':
-      if (node.id in defines) {
-        const defined = defines[node.id];
-        return typeof defined == 'number' && !Number.isInteger(defined);
-      }
-      return true; // all user-specified variables are floats
-    case 'number':
-      return !Number.isInteger(node.value);
-    case 'fn':
-      return true; // so far no integer-valued fns
-    case 'arith':
-      return node.operands.some(isFloat);
-    case 'paren':
-      return isFloat(node.scalar);
-    default:
-      return false;
+  if (node instanceof ast.IdNode && node.id in defines) {
+    const defined = defines[node.id];
+    return typeof defined == 'number' && !Number.isInteger(defined);
+  } else if (node instanceof ast.IdNode) {
+    return true; // all user-specified variables are floats
+  } else if (node instanceof ast.NumberNode) {
+    return !Number.isInteger(node.value);
+  } else if (node instanceof ast.FnNode) {
+    return true; // so far no integer-valued fns
+  } else if (node instanceof ast.ArithNode) {
+    return node.operands.some(isFloat);
+  } else if (node instanceof ast.ParenNode) {
+    return isFloat(node.scalar);
+  } else {
+    return false;
   }
 }
 
@@ -112,7 +110,7 @@ function fromArith(node: ArithNode): string {
   const { op, operands } = node;
   const [a, b] = operands.map(operands.some(isFloat) ? ensureFloat : from);
 
-  const binary = op => () => `${a} ${op} ${b}`;
+  const binary = (op: ast.ArithOp) => () => `${a} ${op} ${b}`;
   const exp = () => `pow(${a}, ${b})`;
 
   const ops: Record<ArithOp, () => string> = {

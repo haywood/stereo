@@ -6,7 +6,6 @@ export interface Location {
 }
 
 export interface Node {
-  readonly kind: string;
   readonly children: Node[];
   readonly location: Location;
 }
@@ -17,7 +16,6 @@ export interface Scalar extends Node {}
 
 export class PipeNode implements Node {
   readonly variables: Variables;
-  readonly kind = 'pipe';
 
   constructor(
     readonly assignments: AssignmentNode[],
@@ -57,8 +55,6 @@ export function assignment(
 }
 
 export class AssignmentNode implements Statement {
-  readonly kind = 'assignment';
-
   constructor(
     readonly name: IdNode,
     readonly value: Scalar,
@@ -94,8 +90,6 @@ export function step(
 }
 
 export class StepNode implements Statement {
-  readonly kind = 'step';
-
   constructor(
     readonly type: StepType,
     readonly args: Scalar[],
@@ -127,8 +121,6 @@ export namespace StepNode {
 }
 
 export class ColorNode implements Statement {
-  readonly kind = 'color';
-
   constructor(
     readonly mode: ColorNode.Mode,
     readonly args: Scalar[],
@@ -170,8 +162,6 @@ export enum ArithOp {
 }
 
 export class ArithNode implements Scalar {
-  readonly kind = 'arith';
-
   constructor(
     readonly op: ArithOp,
     readonly operands: [Scalar, Scalar] | [Scalar],
@@ -197,7 +187,6 @@ export function number(value: number, location: Location): NumberNode {
 }
 
 export class NumberNode implements Scalar {
-  readonly kind = 'number';
   readonly children = [];
 
   constructor(readonly value: number, readonly location: Location) {}
@@ -244,8 +233,6 @@ export enum FnName {
 }
 
 export class FnNode implements Scalar {
-  readonly kind = 'fn';
-
   constructor(
     readonly name: FnName,
     readonly args: Scalar[],
@@ -300,7 +287,6 @@ export function id(id: string, location: Location): IdNode {
 }
 
 export class IdNode implements Scalar {
-  readonly kind = 'id';
   readonly children = [];
 
   constructor(readonly id: string, readonly location: Location) {}
@@ -315,10 +301,7 @@ export function paren(scalar: Scalar, location: Location): ParenNode {
 }
 
 export class ParenNode implements Scalar {
-  readonly kind = 'paren';
-
-  constructor(readonly scalar: Scalar, readonly location: Location) {
-  }
+  constructor(readonly scalar: Scalar, readonly location: Location) {}
 
   toString() {
     return `(${this.scalar})`;
@@ -338,7 +321,6 @@ export function error(
 }
 
 export class ErrorNode implements Node {
-  readonly kind = 'error';
   readonly children = [];
 
   constructor(
@@ -358,5 +340,5 @@ export const alwaysDefinedIds = new Set<string>([
   ...constants,
   ...Object.values(FnName),
   ...StepNode.types,
-  ...ColorNode.modes,
+  ...ColorNode.modes
 ]);
