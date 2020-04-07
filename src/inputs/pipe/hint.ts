@@ -41,8 +41,10 @@ function doHint(
 ): Hint[] {
   const list = [];
   const [node] = findCursor(root, cursor);
-  const { start, end } = node.location;
-  const src = editor.getRange(node.location.start, node.location.end);
+  const { start, end } = node == root
+    ? {start: cursor, end: cursor}
+    : node.location;
+  const src = editor.getRange(start, end);
 
   if (Object.keys(variables).includes(src)) return list;
   if (ast.alwaysDefinedIds.has(src)) return list;
@@ -50,13 +52,13 @@ function doHint(
   for (const [name, description] of Object.entries(descriptions)) {
     if (!name.startsWith(src)) continue;
 
-    const hasArgs = typeof description == 'object' && !!description.args;
-    const text = hasArgs ? `${name}()` : name;
+    const addParens = shouldAddParens(description, node.location, editor);
+    const text = addParens ? `${name}()` : name;
     const newCursor = {
       line: start.line + (text.match(/\n/g) ?? []).length,
       ch: text.slice(1 + text.lastIndexOf('\n')).length
     };
-    if (hasArgs) newCursor.ch--;
+    if (addParens) newCursor.ch--;
 
     list.push({
       text,
@@ -76,6 +78,23 @@ function doHint(
   }
 
   return list;
+}
+
+function shouldAddParens(
+  description: Description | string,
+  location: ast.Location,
+  editor: cm.Editor
+) {
+  return (
+    typeof description == 'object' &&
+    !!description.args &&
+    !editor
+      .getRange(location.end, {
+        line: editor.lastLine(),
+        ch: editor.getLine(editor.lastLine()).length
+      })
+      .match(/^\s*\(/)
+  );
 }
 
 function findCursor(
