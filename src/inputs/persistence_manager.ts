@@ -1,26 +1,41 @@
-import debug from '../debug';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import debug from '../debug';
 
 const query = new URLSearchParams(window.location.search);
 
 class PersistenceManager {
   private readonly enabled = query.get('p') != '0';
-  private readonly hash: URLSearchParams;
+  private hash: URLSearchParams;
 
   constructor() {
-    const temp = window.location.hash.substr(1);
-    this.hash = new URLSearchParams(temp ? atob(temp) : '');
+    this.resetHash();
   }
 
-  manage(id: string, stream: Observable<any>, text: () => string) {
+  manage(
+    id: string,
+    stream: Observable<any>,
+    textFn: () => string,
+    onHashChange: (text: string) => void
+  ) {
+    const outOfSync = () => textFn() != this.hash.get(id);
+
     if (this.enabled) {
-      stream.pipe(map(text)).subscribe(text => {
-        this.updateHash(id, text);
+      stream.pipe(map(textFn)).subscribe(text => {
+        if (outOfSync()) {
+          this.updateHash(id, text);
+        }
+      });
+
+      window.addEventListener('hashchange', () => {
+        this.resetHash();
+
+        if (outOfSync()) {
+          onHashChange(this.hash.get(id));
+        }
       });
     }
-
   }
 
   get(id: string, fallback: string) {
@@ -38,8 +53,13 @@ class PersistenceManager {
       this.hash.delete(id);
     }
 
-    document.location.hash = btoa(this.hash.toString());
+    window.location.hash = btoa(this.hash.toString());
   };
+
+  private resetHash() {
+    const temp = window.location.hash.substr(1);
+    this.hash = new URLSearchParams(temp ? atob(temp) : '');
+  }
 }
 
 export const persistenceManager = new PersistenceManager();

@@ -36,9 +36,13 @@ export class PipeInput<T = PipeNode> extends Input<T, HTMLElement> {
     this.text = persistenceManager.get(this.id, defaultText);
     this.tabIndex = options.tabIndex;
 
-    persistenceManager.manage(this.id, this.stream, () =>
-      this.text == this.defaultText ? '' : this.text
-    );
+    const textFn = () => this.text == this.defaultText ? '' : this.text;
+    persistenceManager.manage(this.id, this.stream, textFn, text => {
+      const newText = text ? text : defaultText;
+      if (newText == this.text) return;
+
+      this.editor.setValue(newText);
+    });
   }
 
   protected _setup = () => {

@@ -144,7 +144,6 @@ export class StepState extends NonTerminal<ast.StepNode> {
 
   resolve() {
     const [type, args] = this.values;
-    console.debug({ type, args });
     if (args instanceof ast.ErrorNode) {
       return new ast.StepNode(type, [args], this.location);
     } else {

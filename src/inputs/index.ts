@@ -22,7 +22,7 @@ hsv(
   1,
   1
 )
-`;
+`.trim();
 
 export const inputs = {
   pipe: new PipeInput('pipe', pipe, { startState: Context.pipe, tabIndex: 1 }),

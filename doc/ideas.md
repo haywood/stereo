@@ -10,25 +10,6 @@
     - show the description for Q when someone mouses over the Q
     - show where a variable assignment was made when mousing over a use
 
-## Sync input values with fragment
-
-Currently, changes to the inputs affect the fragment. Changes to the fragment
-should also affect the inputs.
-
-In particular, when the fragment is updated via the forward and back buttons,
-the inputs should also update.
-
-May as well do it on any fragment change though.
-
-Wait, maybe _when the fragment changes, just reload the whole page_, unless an
-input has focus (which, again, is probably not possible)?
-
-Tricky stuff:
-
-- Shouldn't update the inputs if one of them is focused
-  - this probably can't happen though, so wtf...
-- What if the fragment is invalid?
-
 ## Misc
 
 - publish on push

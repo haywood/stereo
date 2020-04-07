@@ -15,12 +15,15 @@ export class ToggleInput extends Input<boolean> {
       const text = persistenceManager.get(this.id, defaultValue ? ' 1' : '0');
       this.value = Boolean(parseInt(text));
 
-      persistenceManager.manage(this.id, this.stream, () => {
+      const textFn = () => {
         if (this.value == defaultValue) {
           return '';
         } else {
           return this.value ? '1' : '0';
         }
+      };
+      persistenceManager.manage(this.id, this.stream, textFn, text => {
+        this.value = text ? text == '1' : defaultValue;
       });
     } else {
       this.value = defaultValue;
