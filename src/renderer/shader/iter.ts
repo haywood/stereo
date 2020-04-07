@@ -1,5 +1,5 @@
 import endent from 'endent';
-import { Scalar, StepNode, StepType, number } from '../../inputs/pipe/ast';
+import { Scalar, StepNode, number } from '../../inputs/pipe/ast';
 import { D_MAX, ensureFloat, ensureInt } from './common';
 
 const {
@@ -11,7 +11,7 @@ const {
   SPIRAL,
   STEREO,
   TORUS
-} = StepType;
+} = StepNode.Type;
 
 export function iter(
   { type, args }: StepNode,
@@ -24,7 +24,7 @@ export function iter(
     d0: string
   ) => { y: string; d: string };
 
-  const fns: Record<StepType, StepFn> = {
+  const fns: Record<StepNode.Type, StepFn> = {
     [TORUS]: torus,
     [SPIRAL]: spiral,
     [SPHERE]: sphere,
@@ -35,7 +35,7 @@ export function iter(
     [QUATERNION]: quaternion
   };
 
-  return fns[type](args, x, d0);
+  return fns[type.id](args, x, d0);
 }
 
 function torus([r0, r]: Scalar[], x: string, d0: string) {

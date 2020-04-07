@@ -75,7 +75,7 @@ export class PipeState extends NonTerminal<ast.PipeNode> {
       }
     } else if (peek(re`/${or(ast.ColorNode.modes)}\(/`, stream)) {
       return [new ColorState(this.assignmentSet)];
-    } else if (peek(re`/\w+\(/`, stream)) {
+    } else if (peek(/\w+\s*\(/, stream)) {
       return [new StepState(this.assignmentSet)];
     }
   }
@@ -144,10 +144,11 @@ export class StepState extends NonTerminal<ast.StepNode> {
 
   resolve() {
     const [type, args] = this.values;
+    console.debug({type, args});
     if (args instanceof ast.ErrorNode) {
-      return ast.step(type, [args], this.location);
+      return new ast.StepNode(type, [args], this.location);
     } else {
-      return ast.step(type, args?.slice() ?? [], this.location);
+      return new ast.StepNode(type, args?.slice() ?? [], this.location);
     }
   }
 }
@@ -243,7 +244,7 @@ class TermState extends NonTerminal<ast.Scalar> {
       return [new ParenState(this.assignedNames)];
     } else if (peek(/\d/, stream)) {
       return [Terminal.number()];
-    } else if (peek(re`/(${FN_NAME})\s*\(/`, stream)) {
+    } else if (peek(/\w+\s*\(/, stream)) {
       return [new FnState(this.assignedNames)];
     } else if (peek(/\w/, stream)) {
       return [Terminal.atom(this.assignedNames)];
@@ -294,9 +295,9 @@ class FnState extends NonTerminal<ast.FnNode> {
     if (name instanceof ast.ErrorNode) {
       return name;
     } else if (args instanceof ast.ErrorNode) {
-      return ast.fn(name, [args], this.location);
+      return new ast.FnNode(name, [args], this.location);
     } else {
-      return ast.fn(name, args.slice(), this.location);
+      return new ast.FnNode(name, args.slice(), this.location);
     }
   }
 }
@@ -359,7 +360,11 @@ export class Terminal<T = any> extends State<T> {
   }
 
   static fnName() {
-    return new Terminal('atom builtin', FN_NAME, text => text);
+    return new Terminal('atom builtin', ID, ast.id, text => {
+      const isValid = (ast.FnNode.names as string[]).includes(text);
+      const reason = isValid ? '' : `name '${text}' is not a function name`;
+      return { isValid, reason };
+    });
   }
 
   static lbrack() {
@@ -389,7 +394,12 @@ export class Terminal<T = any> extends State<T> {
   }
 
   static stepType() {
-    return new Terminal('atom builtin', STEP_TYPE, text => text);
+    return new Terminal('atom builtin', ID, ast.id, text => {
+      const isValid = (ast.StepNode.types as string[]).includes(text);
+      const reason = isValid ? '' : `name '${text}' is not a step type`;
+      return { isValid, reason };
+
+    });
   }
 
   protected text: string;
@@ -499,7 +509,7 @@ const ID = /[a-z]\w*[a-z0-9]*/i;
 const ARITH_OP = or(ast.ArithOp);
 const SCALAR_OP = re`/\.|(${ARITH_OP})/`;
 const FN_NAME = or(ast.FnName);
-const STEP_TYPE = or(ast.StepType);
+const STEP_TYPE = or(ast.StepNode.Type);
 const INT = /[+-]?(0|[1-9])\d*/;
 const MANT = /\.\d*/;
 const NUMBER = re`/(${INT}(${MANT})?|${MANT})([eE]${INT})?/i`;

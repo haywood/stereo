@@ -70,28 +70,9 @@ export class AssignmentNode implements Statement {
   }
 }
 
-export enum StepType {
-  CUBE = 'cube',
-  LATTICE = 'lattice',
-  QUATERNION = 'Q',
-  ROTATE = 'R',
-  SPHERE = 'sphere',
-  SPIRAL = 'spiral',
-  STEREO = 'stereo',
-  TORUS = 'torus'
-}
-
-export function step(
-  type: StepType,
-  args: Scalar[],
-  location: Location
-): StepNode {
-  return new StepNode(type, args, location);
-}
-
 export class StepNode implements Statement {
   constructor(
-    readonly type: StepType,
+    readonly type: IdNode,
     readonly args: Scalar[],
     readonly location: Location
   ) {}
@@ -101,7 +82,7 @@ export class StepNode implements Statement {
   }
 
   get children() {
-    return this.args.slice();
+    return [this.type, ...this.args];
   }
 }
 
@@ -196,10 +177,6 @@ export class NumberNode implements Scalar {
   }
 }
 
-export function fn(name: FnName, args: Scalar[], location: Location): FnNode {
-  return new FnNode(name, args, location);
-}
-
 export enum FnName {
   ABS = 'abs',
   AMIX = 'amix',
@@ -234,7 +211,7 @@ export enum FnName {
 
 export class FnNode implements Scalar {
   constructor(
-    readonly name: FnName,
+    readonly name: IdNode,
     readonly args: Scalar[],
     readonly location: Location
   ) {}
@@ -244,8 +221,12 @@ export class FnNode implements Scalar {
   }
 
   get children() {
-    return this.args.slice();
+    return [this.name, ...this.args];
   }
+}
+
+export namespace FnNode {
+  export const names = Object.values(FnName);
 }
 
 export enum BuiltinConstant {

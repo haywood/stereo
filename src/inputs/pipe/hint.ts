@@ -201,17 +201,17 @@ export const descriptions: Record<string, Description | string> = {
   },
 
   // Step Types
-  [ast.StepType.CUBE]: {
+  [ast.StepNode.Type.CUBE]: {
     summary: 'Map the points onto a cube.',
     args: [{ name: 'l', description: 'the side length of the cube.' }]
   },
 
-  [ast.StepType.LATTICE]: {
+  [ast.StepNode.Type.LATTICE]: {
     summary: 'Map the points into a lattice.',
     args: [{ name: 'l', description: 'the side length of the lattice.' }]
   },
 
-  [ast.StepType.QUATERNION]: {
+  [ast.StepNode.Type.QUATERNION]: {
     summary: 'Right multiples each point by the given quaternion.',
     args: [
       { name: 'r', description: 'the real part of the quaternion.' },
@@ -233,7 +233,7 @@ export const descriptions: Record<string, Description | string> = {
     ]
   },
 
-  [ast.StepType.ROTATE]: {
+  [ast.StepNode.Type.ROTATE]: {
     summary: 'Rotate the points by the given angle in the given plane.',
     args: [
       {
@@ -252,12 +252,12 @@ export const descriptions: Record<string, Description | string> = {
     ]
   },
 
-  [ast.StepType.SPHERE]: {
+  [ast.StepNode.Type.SPHERE]: {
     summary: 'Map the points onto a sphere.',
     args: [{ name: 'r', description: 'the radius of the sphere.' }]
   },
 
-  [ast.StepType.SPIRAL]: {
+  [ast.StepNode.Type.SPIRAL]: {
     summary: 'Maps the points into a spiral.',
     args: [
       {
@@ -273,7 +273,7 @@ export const descriptions: Record<string, Description | string> = {
     ]
   },
 
-  [ast.StepType.STEREO]: {
+  [ast.StepNode.Type.STEREO]: {
     summary: 'Perform stereographic projection into the given dimension.',
     args: [
       {
@@ -284,7 +284,7 @@ export const descriptions: Record<string, Description | string> = {
     ]
   },
 
-  [ast.StepType.TORUS]: {
+  [ast.StepNode.Type.TORUS]: {
     summary: 'Map the points onto a torus.',
     args: [
       {
