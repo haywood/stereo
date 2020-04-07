@@ -10,12 +10,6 @@
     - show the description for Q when someone mouses over the Q
     - show where a variable assignment was made when mousing over a use
 
-## Redo color
-
-Make it a single input similar to pipe with its own grammar. Have the user
-provide code that sets the values of builtin variables hue, saturation, and
-value.
-
 ## Sync input values with fragment
 
 Currently, changes to the inputs affect the fragment. Changes to the fragment
@@ -34,23 +28,6 @@ Tricky stuff:
 - Shouldn't update the inputs if one of them is focused
   - this probably can't happen though, so wtf...
 - What if the fragment is invalid?
-
-## More detailed audio
-
-- Expose powers for individual notes and/or chroma
-
-Enables an effect like the following:
-
-  - Assign hue using something like sin(2pi * i / n)
-
-  - Assign value using something like cpower(i)
-      ; cpower (chroma power) = power of chroma mod(i, abins) % nchroma
-
-  - Assign saturation using something like 1 - opower(i)
-      ; opower (octave power) = power of octave floor(mod(i, abins) / nchroma)
-
-Then the points of each color will vary together with the intensity of their
-associated note.
 
 ## Misc
 
