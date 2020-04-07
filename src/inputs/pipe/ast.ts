@@ -103,7 +103,7 @@ export namespace StepNode {
 
 export class ColorNode implements Statement {
   constructor(
-    readonly mode: ColorNode.Mode,
+    readonly mode: IdNode,
     readonly args: Scalar[],
     readonly location: Location
   ) {}

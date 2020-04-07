@@ -144,7 +144,7 @@ export class StepState extends NonTerminal<ast.StepNode> {
 
   resolve() {
     const [type, args] = this.values;
-    console.debug({type, args});
+    console.debug({ type, args });
     if (args instanceof ast.ErrorNode) {
       return new ast.StepNode(type, [args], this.location);
     } else {
@@ -344,7 +344,11 @@ export class Terminal<T = any> extends State<T> {
   }
 
   static colorMode() {
-    return new Terminal('atom builtin', or(ast.ColorNode.modes), text => text);
+    return new Terminal('atom builtin', ID, ast.id, text => {
+      const isValid = (ast.ColorNode.modes as string[]).includes(text);
+      const reason = isValid ? '' : `name '${text}' is not a color mode`;
+      return { isValid, reason };
+    });
   }
 
   static comma() {
@@ -362,7 +366,7 @@ export class Terminal<T = any> extends State<T> {
   static fnName() {
     return new Terminal('atom builtin', ID, ast.id, text => {
       const isValid = (ast.FnNode.names as string[]).includes(text);
-      const reason = isValid ? '' : `name '${text}' is not a function name`;
+      const reason = isValid ? '' : `'${text}' does not name a scalar function`;
       return { isValid, reason };
     });
   }
@@ -396,9 +400,10 @@ export class Terminal<T = any> extends State<T> {
   static stepType() {
     return new Terminal('atom builtin', ID, ast.id, text => {
       const isValid = (ast.StepNode.types as string[]).includes(text);
-      const reason = isValid ? '' : `name '${text}' is not a step type`;
+      const reason = isValid
+        ? ''
+        : `'${text}' does not name a step type or color mode`;
       return { isValid, reason };
-
     });
   }
 
@@ -406,9 +411,9 @@ export class Terminal<T = any> extends State<T> {
 
   constructor(
     private readonly _style: string,
-    private readonly pattern,
+    private readonly pattern: any,
     private readonly factory: (s: string, location: ast.Location) => T,
-    private readonly valid = (s: string) => ({ isValid: true, reason: '' })
+    private readonly valid = (_: string) => ({ isValid: true, reason: '' })
   ) {
     super();
   }
