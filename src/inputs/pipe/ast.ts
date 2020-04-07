@@ -1,10 +1,21 @@
 import * as cm from 'codemirror';
 
-export type Node = PipeNode | Statement | Scalar | ErrorNode;
+export interface Location {
+  start: cm.Position;
+  end: cm.Position;
+}
 
-export type Statement = AssignmentNode | StepNode | ErrorNode;
+export interface Node {
+  readonly kind: string;
+  readonly children: Node[];
+  readonly location: Location;
+}
 
-export class PipeNode {
+export interface Statement extends Node {}
+
+export interface Scalar extends Node {}
+
+export class PipeNode implements Node {
   readonly variables: Variables;
   readonly kind = 'pipe';
 
@@ -13,7 +24,7 @@ export class PipeNode {
     readonly steps: StepNode[],
     readonly colors: ColorNode[],
     readonly errors: ErrorNode[],
-    readonly location?: Location
+    readonly location: Location
   ) {
     this.variables = {};
 
@@ -29,6 +40,10 @@ export class PipeNode {
   get statements() {
     return [...this.assignments, ...this.steps, ...this.colors, ...this.errors];
   }
+
+  get children(): Node[] {
+    return this.statements;
+  }
 }
 
 export type Variables = Record<string, Scalar>;
@@ -36,22 +51,26 @@ export type Variables = Record<string, Scalar>;
 export function assignment(
   name: IdNode,
   value: Scalar,
-  location?: Location
+  location: Location
 ): AssignmentNode {
   return new AssignmentNode(name, value, location);
 }
 
-export class AssignmentNode {
+export class AssignmentNode implements Statement {
   readonly kind = 'assignment';
 
   constructor(
     readonly name: IdNode,
     readonly value: Scalar,
-    readonly location?: Location
+    readonly location: Location
   ) {}
 
   toString() {
     return `${this.name} = ${this.value}`;
+  }
+
+  get children() {
+    return [this.name, this.value];
   }
 }
 
@@ -69,22 +88,26 @@ export enum StepType {
 export function step(
   type: StepType,
   args: Scalar[],
-  location?: Location
+  location: Location
 ): StepNode {
   return new StepNode(type, args, location);
 }
 
-export class StepNode {
+export class StepNode implements Statement {
   readonly kind = 'step';
 
   constructor(
     readonly type: StepType,
     readonly args: Scalar[],
-    readonly location?: Location
+    readonly location: Location
   ) {}
 
   toString() {
     return `${this.type}(${this.args.join(', ')})`;
+  }
+
+  get children() {
+    return this.args.slice();
   }
 }
 
@@ -103,17 +126,21 @@ export namespace StepNode {
   export const types = Object.values(Type);
 }
 
-export class ColorNode {
+export class ColorNode implements Statement {
   readonly kind = 'color';
 
   constructor(
     readonly mode: ColorNode.Mode,
     readonly args: Scalar[],
-    readonly location?: Location
+    readonly location: Location
   ) {}
 
   toString() {
     return `${this.mode}(${this.args.join(', ')})`;
+  }
+
+  get children() {
+    return this.args.slice();
   }
 }
 
@@ -125,18 +152,10 @@ export namespace ColorNode {
   export const modes = Object.values(Mode);
 }
 
-export type Scalar =
-  | ArithNode
-  | NumberNode
-  | FnNode
-  | IdNode
-  | ParenNode
-  | ErrorNode;
-
 export function arith(
   op: ArithOp,
   operands: [Scalar, Scalar] | [Scalar],
-  location?: Location
+  location: Location
 ): ArithNode {
   return new ArithNode(op, operands, location);
 }
@@ -150,13 +169,13 @@ export enum ArithOp {
   SUB = '-'
 }
 
-export class ArithNode {
+export class ArithNode implements Scalar {
   readonly kind = 'arith';
 
   constructor(
     readonly op: ArithOp,
     readonly operands: [Scalar, Scalar] | [Scalar],
-    readonly location?: Location
+    readonly location: Location
   ) {}
 
   toString() {
@@ -167,23 +186,28 @@ export class ArithNode {
       return `${a} ${this.op} ${b}`;
     }
   }
-}
 
-export function number(value: number, location?: Location): NumberNode {
-  return new NumberNode(value, location);
-}
-
-export class NumberNode {
-  readonly kind = 'number';
-
-  constructor(readonly value: number, readonly location?: Location) {}
-
-  toString() {
-    return this.value;
+  get children() {
+    return this.operands.slice();
   }
 }
 
-export function fn(name: FnName, args: Scalar[], location?: Location): FnNode {
+export function number(value: number, location: Location): NumberNode {
+  return new NumberNode(value, location);
+}
+
+export class NumberNode implements Scalar {
+  readonly kind = 'number';
+  readonly children = [];
+
+  constructor(readonly value: number, readonly location: Location) {}
+
+  toString() {
+    return this.value.toString();
+  }
+}
+
+export function fn(name: FnName, args: Scalar[], location: Location): FnNode {
   return new FnNode(name, args, location);
 }
 
@@ -219,17 +243,21 @@ export enum FnName {
   TAN = 'tan'
 }
 
-export class FnNode {
+export class FnNode implements Scalar {
   readonly kind = 'fn';
 
   constructor(
     readonly name: FnName,
     readonly args: Scalar[],
-    readonly location?: Location
+    readonly location: Location
   ) {}
 
   toString() {
     return `${this.name}(${this.args.join(', ')})`;
+  }
+
+  get children() {
+    return this.args.slice();
   }
 }
 
@@ -267,49 +295,56 @@ export namespace BandName {
   export const values = Object.values(BandName);
 }
 
-export function id(id: string, location?: Location): IdNode {
+export function id(id: string, location: Location): IdNode {
   return new IdNode(id, location);
 }
 
-export class IdNode {
+export class IdNode implements Scalar {
   readonly kind = 'id';
+  readonly children = [];
 
-  constructor(readonly id: string, readonly location?: Location) {}
+  constructor(readonly id: string, readonly location: Location) {}
 
   toString() {
     return this.id;
   }
 }
 
-export function paren(scalar: Scalar, location?: Location): ParenNode {
+export function paren(scalar: Scalar, location: Location): ParenNode {
   return new ParenNode(scalar, location);
 }
 
-export class ParenNode {
+export class ParenNode implements Scalar {
   readonly kind = 'paren';
 
-  constructor(readonly scalar: Scalar, readonly location?: Location) {}
+  constructor(readonly scalar: Scalar, readonly location: Location) {
+  }
 
   toString() {
     return `(${this.scalar})`;
+  }
+
+  get children() {
+    return [this.scalar];
   }
 }
 
 export function error(
   message: string,
   src: string,
-  location?: Location
+  location: Location
 ): ErrorNode {
   return new ErrorNode(message, src, location);
 }
 
-export class ErrorNode {
+export class ErrorNode implements Node {
   readonly kind = 'error';
+  readonly children = [];
 
   constructor(
     readonly message: string,
     readonly src: string,
-    readonly location?: Location
+    readonly location: Location
   ) {}
 
   toString() {
@@ -317,15 +352,11 @@ export class ErrorNode {
   }
 }
 
-export interface Location {
-  start: cm.Position;
-  end: cm.Position;
-}
-
 export const constants = [...BuiltinConstant.values, ...BandName.values];
 
 export const alwaysDefinedIds = new Set<string>([
   ...constants,
   ...Object.values(FnName),
-  ...Object.values(StepType)
+  ...StepNode.types,
+  ...ColorNode.modes,
 ]);
