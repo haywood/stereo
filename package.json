@@ -12,7 +12,7 @@
     "re-template-tag": "^2.0.1",
     "rxjs": "^6.6.3",
     "screenfull": "^5.1.0",
-    "three": "^0.111.0",
+    "three": "^0.125.0",
     "xregexp": "^4.4.1"
   },
   "browserslist": [
