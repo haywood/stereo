@@ -8,6 +8,7 @@ class Processor extends AudioWorkletProcessor {
   private readonly history = new Array<Float32Array>(Band.spectrum.length);
 
   process(inputs: Float32Array[][]) {
+    inputs = inputs.filter(channels => channels.length > 0);
     inputs.forEach((channels, i) => {
       assert.equal(
         channels.length,
