@@ -19,7 +19,7 @@ R(2 * pi * dtheta, 0)
 hsv(
   abs(sin(2 * pi * amix(1, full) * i / n)),
   1,
-  amix(1, full)
+  abs(cos(2 * pi * amix(1, full) * i / n))
 )
 `.trim();
 
