@@ -6,23 +6,23 @@ import { Context, PipeInput } from './pipe';
 import { ToggleInput } from './toggle';
 
 const pipe = `
+d0 = 4
 n = 1000000
 r = 0.01
 tu = sin(t / 10)
-au = expm1(low) / expm1(1)
-phi = amix(tu, au)
-tau = (20 * phi * pi) + (180 * pi)
-d0 = 3
+tau = (20 * tu * pi) + (180 * pi)
+dtheta = tu + (low + mid + high) / 3
 
 spiral(tau, r)
-R(2 * pi * phi, 0)
+R(2 * pi * dtheta, 0)
 
 hsv(
-  abs(sin(2 * pi * i / n)),
+  abs(sin(2 * pi * amix(1, full) * i / n)),
   1,
-  1
+  amix(1, full)
 )
 `.trim();
+
 
 export const inputs = {
   pipe: new PipeInput('pipe', pipe, { startState: Context.pipe, tabIndex: 1 }),

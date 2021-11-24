@@ -119,7 +119,8 @@ export class ColorNode implements Statement {
 
 export namespace ColorNode {
   export enum Mode {
-    HSV = 'hsv'
+    RGB = 'rgb',
+    HSV = 'hsv',
   }
 
   export const modes = Object.values(Mode);

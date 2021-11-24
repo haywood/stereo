@@ -178,3 +178,7 @@ vec4 hsv(float h, float s, float v) {
 
   return vec4(rgb, 1.);
 }
+
+vec4 rgb(float r, float g, float b) {
+  return vec4(r, g, b, 1.);
+}
