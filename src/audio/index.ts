@@ -19,7 +19,12 @@ inputs.mic.stream.subscribe(async ({ newValue, event }) => {
       inputs.mic.value = false;
     }
   } else {
-    if (graph) await graph.close();
-    subject.next(AUDIO_PLACEHOLDER);
+    try {
+      if (graph) await graph.close();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      subject.next(AUDIO_PLACEHOLDER);
+    }
   }
 });
