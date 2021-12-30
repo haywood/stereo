@@ -8,19 +8,20 @@ import { ToggleInput } from './toggle';
 const pipe = `
 d0 = 4
 n = 1000000
-r = 0.01
-tu = sin(t / 10)
-tau = (20 * tu * pi) + (180 * pi)
-dtheta = tu + (low + mid + high) / 3
+tu = sin(t / 100)
+full_or_1 = amix(1, full)
+full_or_tu = amix(tu, full)
+abs_sin_full_or_tu = abs(sin(2 * pi * full_or_tu))
+r = 0.01 * abs_sin_full_or_tu
+tau = 20 * tu * pi + 180 * pi
+dtheta = tu + sin(2 * pi * (low + mid + high) / 3) / 10
+hue = abs(sin(2 * pi * i / n))
+val = amix(1, 0.80 + 0.20 * full)
 
 spiral(tau, r)
 R(2 * pi * dtheta, 0)
 
-hsv(
-  abs(sin(2 * pi * amix(1, full) * i / n)),
-  1,
-  abs(cos(2 * pi * amix(1, full) * i / n))
-)
+hsv(hue, 1, val)
 `.trim();
 
 
