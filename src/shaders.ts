@@ -2,24 +2,43 @@ import endent from "endent";
 
 export const vsSource = endent`
     attribute vec4 aVertexPosition;
+    attribute vec4 aVertexColor;
+
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
 
-    void main() {
+    varying lowp vec4 vColor;
+
+    void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+      vColor = aVertexColor;
     }
   `;
 
 export const fsSource = endent`
-    void main() {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    varying lowp vec4 vColor;
+
+    void main(void) {
+      gl_FragColor = vColor;
     }
   `;
+
+export interface ProgramInfo {
+    program: WebGLProgram;
+    attribLocations: {
+        vertexPosition: number;
+        vertexColor: number;
+    };
+    uniformLocations: {
+        projectionMatrix: WebGLUniformLocation | null;
+        modelViewMatrix: WebGLUniformLocation | null;
+    };
+}
 
 //
 // Initialize a shader program, so WebGL knows how to draw our data
 //
-export function initShaderProgram(gl: WebGL2RenderingContext, vsSource: string, fsSource: string) {
+export function initShaderProgram(gl: WebGL2RenderingContext, vsSource: string, fsSource: string): ProgramInfo {
     const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
     const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
     const shaderProgram = gl.createProgram();
@@ -47,6 +66,7 @@ export function initShaderProgram(gl: WebGL2RenderingContext, vsSource: string, 
         program: shaderProgram,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+            vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
