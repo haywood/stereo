@@ -3,7 +3,7 @@ import { initShaderProgram, vsSource, fsSource } from './shaders';
 import { initBuffers } from './buffers';
 import { drawScene } from './scenes';
 
-let squareRotation = 0.0;
+let cubeRotation = 0.0;
 let deltaTime = 0;
 
 export default function PatternCanvas() {
@@ -39,8 +39,8 @@ function renderScene(gl: WebGL2RenderingContext) {
     deltaTime = now - then;
     then = now;
 
-    drawScene(gl, programInfo, buffers, squareRotation);
-    squareRotation += deltaTime / 2;
+    drawScene(gl, programInfo, buffers, cubeRotation);
+    cubeRotation += deltaTime / 2;
 
     requestAnimationFrame(render);
   }
