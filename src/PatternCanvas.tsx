@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, WireframeGeometry, Float32BufferAttribute, Color, DynamicDrawUsage, SphereGeometry, Points, ShaderMaterial, MeshBasicMaterial, LineBasicMaterial, MeshNormalMaterial, Mesh, BufferGeometry } from 'three';
 
 const theta_ticks = 1_000;
@@ -10,45 +10,69 @@ const phi_turns = 20;
 
 export default function PatternCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [camera, setCamera] = useState<PerspectiveCamera | null>(null);
+  const [renderer, setRenderer] = useState<WebGLRenderer | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    renderScene(canvasRef.current);
-  }, []);
+    initScene(canvasRef.current, dimensions);
+  }, [canvasRef.current]);
 
-  return <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight} />;
-}
-
-function renderScene(canvas: HTMLCanvasElement) {
-  const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.2, 1000);
-  camera.position.z = radius;
-
-  const renderer = new WebGLRenderer({ canvas });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-
-  const geometry = new BufferGeometry();
-  setAttributes(geometry);
-
-  const shaderMaterial = new ShaderMaterial({
-    vertexShader,
-    fragmentShader,
-
-    vertexColors: true
+  useEffect(() => {
+    function handleResize() {
+      setDimensions({ width: window.innerWidth, height: window.innerHeight });
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   });
-  const points = new Points(geometry, shaderMaterial);
 
-  const scene = new Scene();
-  scene.add(points);
+  useEffect(() => {
+    if (renderer) {
+      renderer.setSize(dimensions.width, dimensions.height);
+    }
 
-  function animate() {
-    points.rotation.x += 0.001;
-    points.rotation.y += 0.001;
-    points.rotation.z += 0.001;
+    if (camera) {
+      camera.aspect = dimensions.width / dimensions.height;
+      camera.updateProjectionMatrix();
+    }
+  }, [dimensions]);
 
-    renderer.render(scene, camera);
+  return <canvas ref={canvasRef} width={dimensions.width} height={dimensions.height} />;
+
+  function initScene(canvas: HTMLCanvasElement, dimensions: { width: number; height: number }) {
+    const camera = new PerspectiveCamera(75, dimensions.width / dimensions.height, 0.2, 1000);
+    camera.position.z = radius;
+    setCamera(camera);
+
+    const renderer = new WebGLRenderer({ canvas });
+    renderer.setSize(dimensions.width, dimensions.height);
+    setRenderer(renderer);
+
+    const geometry = new BufferGeometry();
+    setAttributes(geometry);
+
+    const shaderMaterial = new ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+
+      vertexColors: true
+    });
+    const points = new Points(geometry, shaderMaterial);
+
+    const scene = new Scene();
+    scene.add(points);
+
+    function animate() {
+      points.rotation.x += 0.001;
+      points.rotation.y += 0.001;
+      points.rotation.z += 0.001;
+
+      renderer.render(scene, camera);
+    }
+    renderer.setAnimationLoop(animate);
   }
-  renderer.setAnimationLoop(animate);
 }
 
 function setAttributes(geometry: BufferGeometry) {
